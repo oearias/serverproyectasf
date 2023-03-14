@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>Amortizacion</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<style>
+    /*Esto hace que imprima los colores cuando se genera un pdf local*/
+    html {
+        -webkit-print-color-adjust: exact;
+    }
+
+    .bg-encabezado {
+        background-color: rgb(170, 170, 170);
+    }
+
+    table {
+        width: 100%;
+        padding: 0;
+    }
+
+    .customTable th,
+    .customTable td {
+        border: 1px solid #5d5d5d;
+        padding-left: 10px;
+    }
+
+    .hoja {
+        border-radius: 7px 0 7px 0;
+        height: 30px;
+    }
+
+    .punteado {
+        border: 1px solid black;
+        border-style: dashed;
+    }
+</style>
+
+<body>
+
+    <div class="page">
+
+        <div class="row">
+
+            <div class="col">
+                <div>
+                    <img style="height: 60px; " src="https://smapac.gob.mx/assets/images/proyecta_logo_gris.png" alt="">
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center" style="font-weight: bold;">FORMATO DE ENTREGAS DE CRÉDITO</div>
+
+        <div class="row mb-1">
+
+            <div style="border-radius: 10px; padding-bottom: 3px;">
+
+                <table class="customTable mt-1" style="font-size: 8px;">
+                    <thead class="bg-encabezado" style="height: 30px;">
+                        <tr>
+                            <th class="text-center">Zona</th>
+                            <th class="text-center">Agencia</th>
+                            <th class="text-center">Nombre</th>
+                            <th class="text-center">Calle</th>
+                            <th class="text-center">Colonia</th>
+                            <th class="text-center">Tel</th>
+                            <th class="text-center">Tarifa <br>semanal</th>
+                            <th class="text-center">Monto</th>
+                            <th class="text-center">Hora</th>
+                            <th class="text-center">F. de entrega</th>
+                            <th class="text-center">Estatus</th>
+                            <th class="text-center">Quien entrega</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each rows}}
+                        <tr>
+                            <td class="text-center align-middle">
+                                {{this.zona}}
+                            </td>
+
+                            <td class="text-center align-middle">
+                                {{this.agencia}}
+                            </td>
+
+                            <td class="align-middle" style="width: 200px;">
+                                {{this.nombre_completo}}
+                            </td>
+
+                            <td class="align-middle">
+                                {{this.calle}} # {{this.num_ext}}
+                            </td>
+
+                            <td class="align-middle">
+                                {{this.colonia}}
+                            </td>
+
+                            <td class="text-center align-middle">
+                                {{this.telefono}}
+                            </td>
+
+                            <td class="text-end align-middle">
+                                ${{this.monto_semanal}}
+                            </td>
+
+                            <td class="text-end align-middle">
+                                ${{this.monto_otorgado}}
+                            </td>
+
+                            <td class="text-center align-middle">
+                                --:--
+                            </td>
+
+                            <td class="text-center align-middle">
+                                {{this.fecha_entrega_prog}}
+                            </td>
+
+                            <td class="text-center align-middle">
+                                {{#ifCond this.cn_r 0}}
+                                CN
+                                {{else}}
+                                R
+                                {{/ifCond}}
+                            </td>
+
+                            <td class="text-center align-middle">
+                                ???
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="7" class="text-end" style="border:none">Total:</td>
+                            <td class="text-end" style="font-weight: bold; border-left:none; border-right:none;">
+                                ${{creditos.monto_total_creditos}}</td>
+                            <td colspan="4" style="border:none;"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="7" class="text-end" style="border:none;">Autorizado:</td>
+                            <td style="border-left: none; border-right:none;">&nbsp;</td>
+                            <td colspan="4" style="border:none"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="d-flex mt-4">
+
+            <div style="width: 40%; font-size: 8px;">
+                <div>*Anexo
+                    <br>
+                    Comprobante de transferencia
+                </div>
+            </div>
+            <div style="width: 60%; border: 1px solid black;">
+                <div class="col">
+                    <table class="customTable" style="width: 50%; font-size: 8px; ">
+                        <thead>
+                            <tr>
+                                <th style="border-left: none; border-top: none;">Total de créditos</th>
+                                <th class="text-center" style="border-top: none;">{{creditos.count_cn_r}}</th>
+                                <th class="text-center" style="border-top: none;">R</th>
+                                <th class="text-center" style="border-top: none;">CN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center" style="border-left: none;">Fecha Entrega</td>
+                                <td>Monto entrega</td>
+                                <td class="text-center">{{creditos.count_r}}</td>
+                                <td class="text-center">{{creditos.count_cn}}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center" style="border-left: none;">
+                                    <span style="font-weight: bold; ">{{creditos.fecha_entrega_programada}}</span>
+                                </td>
+                                <td class="text-end">
+                                    <span style="font-weight: bold;">{{creditos.monto_total_creditos}}</span>
+                                </td>
+                                <td>{{creditos.monto_r}}</td>
+                                <td>{{creditos.monto_cn}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col mt-3" style="font-size: 8px;">
+                    <div class="row">
+                        <div class="col">
+                            <div class="mb-2" style="padding-left: 5px;">Resultados de entregas:</div>
+                            <table class="customTable" style="width:65%; font-size: 8px; ">
+                                <tr>
+                                    <td style="border: none; padding-left: 5px;">N. de creditos</td>
+                                    <td style="width: 85px;"></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: none; padding-left: 5px;">Monto entregados</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+
+                            <div class="mt-3 mb-2" style="padding-left: 5px;">Sobrante</div>
+                            <table class="customTable" style="width:65%; font-size: 8px;">
+                                <tr>
+                                    <td style="border: none; padding-left: 5px;">N. de creditos</td>
+                                    <td style="width: 85px;"></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: none; padding-left: 5px;">Monto</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col text-center">
+                            <div class="mb-5">Reporta</div>
+                            <div>______________________________________</div>
+                            <div>Aux. de entregas</div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col text-center">
+                            <div class="mb-5">Coordinación Administración</div>
+                            <div>______________________________________</div>
+                            <div>Nombre y firma</div>
+                        </div>
+                        <div class="col text-center">
+                            <div class="mb-5">Dirección</div>
+                            <div>______________________________________</div>
+                            <div>Nombre y firma</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row mt-3" style="font-size: 10px;">
+            <div class="col text-center">
+                <div class="mb-5">Elabora</div>
+                <div>______________________________________</div>
+                <div>Nombre y firma</div>
+            </div>
+
+            <div class="col text-center">
+                <div class="mb-5">Coordinación Administración</div>
+                <div>______________________________________</div>
+                <div>Nombre y firma</div>
+            </div>
+
+            <div class="col text-center">
+                <div class="mb-5">Dirección</div>
+                <div>______________________________________</div>
+                <div>Nombre y firma</div>
+            </div>
+        </div>
+
+        {{!-- {{#times 19 }}
+        <span>Hola</span><br>
+        {{/times}} --}}
+
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<style>
+    /*Esto hace que imprima los colores cuando se genera un pdf local*/
+    html {
+        -webkit-print-color-adjust: exact;
+    }
+
+    table {
+        width: 100%;
+        padding: 0;
+    }
+
+    .customTable td {
+        border: 1px solid #5d5d5d;
+        border-style: dashed;
+        padding-left: 10px;
+    }
+
+    .page {
+        height: 981px;
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+
+    .bg-encabezado {
+        background-color: rgb(219, 219, 219);
+    }
+
+    .encabezado {
+        font-size: 11px;
+        text-align: center;
+    }
+
+    .subrayado {
+        text-decoration: underline;
+    }
+
+    .fs7 {
+        font-size: 9px;
+    }
+
+    .fs8 {
+        font-size: 10px;
+    }
+
+    .hoja {
+        border-radius: 7px 0 7px 0;
+        height: 30px;
+    }
+
+    .punteado {
+        border: 1px solid black;
+        border-style: dashed;
+    }
+</style>
+
+<body>
+
+    {{!-- Contrato --}}
+    <div class="page">
+
+        <div class="row">
+            <div class="col">
+                <div style="margin-left: -20px;">
+                    <img style="height: 60px; " src="https://smapac.gob.mx/assets/images/proyecta_logo_gris.png" alt="">
+                </div>
+            </div>
+            <div class="col fw-bold d-flex justify-content-end">
+                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+            </div>
+        </div>
+
+        <div class="text-center fw-bold">
+            "ANEXO 1"
+        </div>
+        <div class="text-center fw-bold">
+            "CARATULA DE CONTRATO"
+        </div>
+        <div class="bg-encabezado encabezado">
+            Nombre del producto: <b>Contrato de Apertura de Crédito Simple</b>
+        </div>
+        <div class="text-center fw-bold mt-3 mb-3" style="font-size: 11px;">
+            COMPARECIENTES:
+        </div>
+        <div class="bg-encabezado encabezado fw-bold">
+            DATOS DEL ACREDITANTE, EN LO SUCESIVO REFERIDO COMO "PROYECTA"
+        </div>
+
+        <table class="customTable">
+            <tr style="border-top: none;">
+                <td class="fw-bold fs7" style="width: 200px; border-top: none; border-left:none;">
+                    Denominación social:
+                </td>
+                <td class="fs8" style="border-top: none; border-right: none;">PROYECTA SF, SOCIEDAD ANONIMA DE CAPITAL
+                    VARIABLE</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Registro federal de contribuyentes:</td>
+                <td class="fs8" style="border-right: none;">PSF180310464</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none; border-bottom:none;">Domicilio:</td>
+                <td class="fs8" style="line-height: 11px; border-right: none; border-bottom: none;">Avenida Periférica
+                    Norte número 60 colonia Fraccionamiento Malibrán código postal 24197
+                    Ciudad del Carmen, Campeche</td>
+            </tr>
+        </table>
+
+        <div class="bg-encabezado encabezado fw-bold">
+            DATOS DEL CLIENTE, EN LO SUCESIVO DESIGNADO "ACREDITADO"
+        </div>
+
+        <table class="customTable">
+            <tr>
+                <td class="fw-bold fs7" style="width: 200px; border-top:none; border-left: none;">Nombre:</td>
+                <td class="fs8" style="border-right: none; border-top: none;">{{contrato.rows.0.nombre_completo}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Estado civil:</td>
+                <td style="border-right: none;">{{contrato.rows.0.nombre}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Ocupación:</td>
+                <td class="fs8" style="border-right: none;">{{contrato.rows.0.ocupacion}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Lugar y fecha de nacimiento:</td>
+                <td class="fs8" style="border-right: none;">Ciudad del Carmen, Campeche
+                    {{contrato.rows.0.dia_fecha_nacimiento}}-{{contrato.rows.0.mes_fecha_nacimiento}}-{{contrato.rows.0.año_fecha_nacimiento}}
+                </td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Registro federal de contribuyentes:</td>
+                <td class="fs8" style="border-right: none;">{{contrato.rows.0.rfc}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none; border-bottom: none;">Clave única de registro de
+                    población:</td>
+                <td class="fs8" style="border-bottom: none; border-right: none;">{{contrato.rows.0.curp}}</td>
+            </tr>
+        </table>
+
+        <div class="bg-encabezado encabezado fw-bold">
+            DATOS DEL CRÉDITO
+        </div>
+
+        <table class="table table-bordered" style="border: #5d5d5d;">
+            <tr>
+                <td class="text-center fw-bold">
+                    <div>MONTO DEL CRÉDITO</div>
+                    <div>${{contrato.rows.0.monto_otorgado}}</div>
+                </td>
+                <td class="text-center fw-bold">
+                    <div>MONTO TOTAL A PAGAR</div>
+                    <div>${{contrato.rows.0.monto_total}}</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="customTable">
+            <tr>
+                <td class="fw-bold fs7" style="width: 200px; border-left: none;">Plazo del crédito (semanas):</td>
+                <td class="fs8" style="border-right: none;">{{contrato.rows.0.num_semanas}} SEMANAS</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Monto del pago semanal:</td>
+                <td class="fs8" style="border-right: none;">${{contrato.rows.0.monto_semanal}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Corte de pago (día):</td>
+                <td class="fs8" style="border-right: none;">Martes</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Fecha límite de pago:</td>
+                <td class="fs8" style="border-right: none;">{{contrato.rows.0.fecha_fin}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Penalización por incumplimiento:</td>
+                <td class="fs8" style="border-right: none;">
+                    <span class="fw-bold" style="text-decoration: underline;">1% diario</span> sobre el
+                    monto del crédito contándose a partir del día <span class="fw-bold"
+                        style="text-decoration: underline;">jueves</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="fs7" style="border-left: none; border-right: none; border-bottom: none;">Los
+                    pagos son asignados para cubrir el monto total del préstamo y los cargos
+                    que se deriven por el servicio (incluyendo el IVA)</td>
+            </tr>
+        </table>
+
+        <div class="bg-encabezado encabezado fw-bold mt-3">
+            ADVERTENCIAS:
+        </div>
+
+        <div class="bg-encabezado encabezado fw-bold">
+            *El contratar créditos por arriba de tu capacidad de pago puede afectar tu historial crediticio.
+        </div>
+
+        <div class="bg-encabezado encabezado fw-bold mt-3">
+            ACLARACIONES Y RECLAMACIONES:
+        </div>
+
+
+        <table class="customTable">
+            <tr>
+                <td class="fw-bold fs7" style="width: 200px; border-left: none; border-top: none;">Domicilio:</td>
+                <td class="fs8" style="border-right: none; border-top: none;">Av. Periférica Norte número 60 colonia
+                    Fracc. Malibrán, C.P. 24197
+                    Cd. del
+                    Carmen, Camp.</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Teléfono:</td>
+                <td class="fs8" style="border-right: none;">938-38-14413</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Whatsapp:</td>
+                <td class="fs8" style="border-right: none;">9381369893</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Correo electrónico:</td>
+                <td class="fs8" style="border-right: none;">admon.proyectasf@gmail.com</td>
+            </tr>
+        </table>
+
+        <div class="fw-bold mt-3" style="font-size: 10px; text-align:justify;">
+            <p>
+                EL CLIENTE EN ESTE MOMENTO CERTIFICA HABER RECIBIDO EL CRÉDITO EN EFECTIVO, CHEQUE O LA TARJETA BANCARIA
+                AL INSTANTE DE FIRMAR Y EN LA FECHA ASENTADA. (Sujeta a lo dispuesto en la cláusula quinta del
+                Contrato.)
+            </p>
+        </div>
+
+        <div class="mt-2" style="font-size: 10px;">
+            <p>
+                <b>LUGAR Y FECHA DE FIRMA: Ciudad del Carmen, Campeche a </b>___________ <b>de</b> __________________
+                <b>del</b>
+                _____________.
+            </p>
+        </div>
+
+
+        <div class="mt-3" style="font-size: 10px;">
+            <p>
+                <span
+                    class="fw-bold">ACREDITADO:</span>____________________________________________________&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                    class="fw-bold">FIRMA:</span>________________________
+            </p>
+        </div>
+
+        <div class="mt-3 text-center" style="font-size: 10px;">
+            <p>
+                <span class="fw-bold">ELABORADO POR:</span>
+            </p>
+        </div>
+
+        <div class="mt-3" style="font-size: 10px;">
+            <p>
+                <span class="fw-bold">NOMBRE:
+                </span>________________________________________________________&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                    class="fw-bold">FIRMA:</span>________________________
+            </p>
+        </div>
+
+
+
+
+    </div>
+
+    <div class="page">
+
+        <div class="row">
+            <div class="col">
+                <div style="margin-left: -20px;">
+                    <img style="height: 60px; " src="https://smapac.gob.mx/assets/images/proyecta_logo_gris.png" alt="">
+                </div>
+            </div>
+            <div class="col fw-bold d-flex justify-content-end">
+                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+            </div>
+        </div>
+
+        <div class="mt-2" style="font-size: 10px; text-align:justify; line-height:10px">
+            <p>
+                <b>CONTRATO DE APERTURA DE CRÉDITO SIMPLE NÚMERO {{contrato.rows.0.num_contrato}}</b> QUE CELEBRAN POR
+                UNA PARTE,
+                <b>"PROYECTA SF" SOCIEDAD ANÓNIMA DE CAPITAL VARIABLE,</b> REPRESENTADA EN ESTE ACTO POR <b>JONATHAN DEL
+                    CARMEN CONTRERAS VALDEZ</b> A QUIEN EN LO SUCESIVO SE LE DENOMINA <b>"PROYECTA"</b> Y POR OTRA PARTE
+                <span class="fw-bold" style="text-decoration: underline;">{{contrato.rows.0.nombre_completo}}</span> POR
+                SU PROPIO
+                DERECHO A QUIÉN EN LO SUCESIVO SE LE
+                DENOMINARÁ COMO EL <b>"ACREDITADO"</b> DE
+                CONFORMIDAD CON LAS DECLARACIONES Y CLÁUSULAS SIGUIENTES:
+            </p>
+
+            <div class="text-center fw-bold" style="letter-spacing: 0.3em;">DECLARACIONES:</div>
+            <div class="fw-bold mt-2">A. Declara "PROYECTA" por conducto de su representante legal:</div>
+
+            <div>
+                <p>
+                    a. Que es una sociedad mercantil que se encuentra constituida conforme a las leyes de los Estados
+                    Unidos
+                    Mexicanos, según consta en el Acta número 153, Tomo 5, Libro Cuarto, Folio 323, de fecha 10 de
+                    marzo de
+                    2018, otorgada ante la fe del Licenciado en Derecho Luis Enrique López Martín, Notario Público del
+                    Estado de Yucatán, Titular de la Notaría Pública número 23, con residencia en la Ciudad de Mérida,
+                    Yucatán, misma que se encuentra debidamente inscrita en el Registro Público de la Propiedad y de
+                    Comercio de su jurisdicción, bajo el folio mercantil electrónico número N-2018022490, de fecha 15 de
+                    marzo de 2018, con Registro Federal de Contribuyente PSF180310464.
+                    <br>
+                    b. Que dentro de su objeto social se encuentra el de “obtener y conceder toda clase de préstamos,
+                    créditos o financiamientos, otorgando o recibiendo garantías específicas, entre otras actividades,
+                    la cual ha sido debidamente autorizado por todas las medidas corporativas pertinentes y no están
+                    en conflicto con, ni son inconsistentes con, ni resultan en incumplimiento de (i) sus estatutos
+                    vigentes a la fecha del presente contrato, ni (ii) cualquier ley, término, condición obligación o
+                    restricción contractual alguna que obligue o afecte el presente contrato.
+                    <br>
+                    c. Que cuenta con capacidad legal y facultades suficientes para celebrar el presente Contrato en
+                    nombre y representación de PROYECTA, mismas que al momento de su celebración no le han sido
+                    revocadas, limitadas ni modificadas en forma alguna y está autorizado para residir y tener su
+                    estancia legal en México.
+                    <br>
+                    d. Que su domicilio se encuentra ubicado en: Calle 31-A, número 54, colonia Aviación, código
+                    postal 24170, Ciudad del Carmen, Campeche.
+                    <br>
+                    e. Que cuenta con una Unidad de Atención al Usuario con domicilio en: Avenida Periférica Norte
+                    número 60 colonia Fraccionamiento Malibran código postal 24197 Ciudad del Carmen, Campeche;
+                    a quien podrás dirigirte en el número telefónico: 938-38-14413, en un horario de atención de
+                    lunes a viernes de 09:00 a 14:00 horas; o bien, a través de correo electrónico:
+                    admon.proyectasf@gmail.com en cualquier horario.
+                    <br>
+                    <span class="fw-bold">B. Declara el "ACREDITADO", Bajo Protesta de decir verdad:</span>
+                    <br>
+                    a. Ser de nacionalidad mexicana, mayor de edad y con plena capacidad legal para obligarse y
+                    celebrar el presente Contrato, así como para asumir y dar cumplimiento a las obligaciones que en
+                    él se establecen.
+                    <br>
+                    b. Que para la celebración del contrato actúa a nombre y por cuenta propia y no por cuenta de un
+                    tercero.
+                    <br>
+                    c. Que ha solicitado a "PROYECTA" un crédito simple en los términos establecidos en el presente
+                    Contrato. Manifestando que los beneficios que recibirá de dicho Crédito son para él y no para una
+                    tercera persona.
+                    <br>
+                    d. Que toda la información y documentación que ha proporcionado a "PROYECTA"; para el análisis
+                    y estudio del otorgamiento del Crédito objeto del presente Contrato es verdadera y refleja en
+                    forma correcta y compleja su situación actual.
+                    <br>
+                    e. Que "PROYECTA" hizo de su conocimiento, previo a la firma del presente Contrato y de los
+                    documentos que forman parte integrante del mismo, su contenido y efectos jurídicos, cargos o
+                    gastos que se generarán por su celebración.
+                    <br>
+                    f. Que una vez que le fueron explicados el contenido y alcances legales del presente contrato, al
+                    momento de la celebración de la operación "PROYECTA" le hizo entrega de un ejemplar del
+                    contrato, de la "Carátula del contrato sirviendo su firma como el recibo mas amplio y suficiente
+                    que en derecho proceda.
+                    <br>
+                    g. Que su domicilio se encuentra ubicado en: Calle <span
+                        class="subrayado">&nbsp;&nbsp;{{contrato.rows.0.calle}}&nbsp;&nbsp;</span> número
+                    <span class="subrayado">&nbsp;&nbsp;{{contrato.rows.0.num_ext}}&nbsp;&nbsp;</span>,
+                    {{tipo_asentamiento}} <span
+                        class="subrayado">&nbsp;&nbsp;{{contrato.rows.0.colonia}}&nbsp;&nbsp;</span> código postal <span
+                        class="subrayado">&nbsp;{{contrato.rows.0.cp}}&nbsp;</span>,Ciudad del Carmen Campeche.
+                    <br>
+                    h. Que conoce y esíá conforme con el Aviso de Privacidad de "PROYECTA", cuyo contenido se le
+                    ha hecho saber previo al otorgamiento de la firma de este instrumento, el cual Se encuentra
+                    conforme a los iérminos de la Ley Federal de Protección de Datos Personales en Posesión de los
+                    Particulares vigente, su reglamento y demás disposiciones aplicables.
+                    <br>
+                    i. Que cuenta con los recursos financieros, necesarios y suficientes para cumplir con las
+                    obligaciones derivadas del presente contrato y sus anexos y que dichos recursos no son ni serán de
+                    procedencia ilícita.
+                    <br>
+                    <span class="fw-bold">C. Declara el "ACREDITADO" y "PROYECTA":</span>
+                    <br>
+                    a. Se reconocen la capacidad jurídica y personalidad, con las que, respectivamente, comparecen para
+                    celebrar el Contrato.
+                    <br>
+                    b. Para el supuesto de intervenir de manera conjunta en diversas estipulaciones del Contrato, se les
+                    denominará como
+                    las "PARTES".
+                    <br>
+                    c. El Contrato lo celebran: (i) de mutuo acuerdo; (ii) sin que medie coacción alguna
+                    de diversa especie; (iii) sin que exista diverso vicio de la voluntad; y, (iv) bajo el amparo de sus
+                    estipulaciones.
+                    <br>
+                    En virtud de lo anterior, las partes convienen sujetar el presente Contrato al
+                    contenido de las siguientes:
+                </p>
+                <div class="text-center fw-bold">CLÁUSULAS:</div>
+                <p>
+                    <b>PRIMERA. - DEFINICIONES. -</b> A reserva de que existan términos que sean definidos cualquier
+                    otra sección o cláusula del presente contrato, las "PARTES" acuerdan que, para efectos del presente
+                    contrato, los siguientes términos tendrán el significado que se indica a continuación,
+                    independientemente de su utilización en singular o en plural:
+                    <br>
+                    <b>a. "Carátula del Contrato":</b> significa el documento que contiene el formulario que forma parte
+                    integrante del presente contrato como "Anexo 1".
+                    <br>
+                    <b>b. "Comisión":</b> significa cualquier cargo, independientemente de su denominación o modalidad,
+                    diferente al interés, que una entidad financiera cobre a un usuario
+                    por operaciones pasivas, activas o de servicio, incluidos los cargos por el uso o aceptación de
+                    medios de disposición.
+                    <br>
+                    <b>SEGUNDA. - OBJETO DEL CONTRATO. -</b> "PROYECTA" otorga al "ACREDITADO" un crédito simple hasta
+                    por la cantidad de $<span class="subrayado">{{contrato.rows.0.monto_total}}</span>, son <span
+                        class="subrayado">{{contrato.rows.0.monto_total_letras}} </span> m.n. (el
+                    "Crédito"). Obligándose el "ACREDITADO" a pagar al primero de éstos el monto identificado como
+                    "Monto Total a Pagar" de acuerdo al número de pagos semanales y modalidades establecidas en la
+                    caratula del Contrato.
+                    <br>
+                    Las "PARTES" convienen en que el "ACREDITADO" podrá disponer del importe del Crédito aprobado por
+                    "PROYECTA" en una sola disposición total o en varias
+                    parciales, pero, en cualquier caso, hasta por el importe total del Crédito. En el importe del
+                    Crédito, no quedan comprendidos los intereses, comisiones, gastos o
+                    accesorios que deberá cubrir el "ACREDITADO" a "PROYECTA".
+                    <br>
+                    <b>TERCERA. - ENTREGA DEL CRÉDITO Y FORMA DE PAGO. - </b>La entrega del Crédito y los pagos
+                    semanaies
+                    realizados por parte del "ACREDITADO", serán llevado a cabo
+                    en el domicilio del “ACREDITADO”. La entrega y recepción de los pagos será por conducto de cualquier
+                    representante, empleado o agente autorizado por
+                    PROYECTA. En caso de algún cambio con respecto a lo anterior PROYECTA se obliga a comunicarlo
+                    inmediatamente al ACREDITADO.
+                    <br>
+                    <b>CUARTA. - PLAZO DEL CONTRATO. - </b> La vigencia del presente contrato es de <span
+                        class="subrayado">&nbsp;{{contrato.rows.0.num_semanas}}&nbsp;</span> semanas, que empezará a
+                    partir del día de
+                    firma del
+                    presente contrato para concluir el día <span
+                        class="subrayado">&nbsp;{{contrato.rows.0.dia_fin}}&nbsp;</span> del
+                    mes de <span class="subrayado">&nbsp;{{contrato.rows.0.mes_letra_fin}}&nbsp;</span> del año <span
+                        class="subrayado">&nbsp;{{contrato.rows.0.año_fin}}&nbsp;</span>.
+                    <br>
+                    <b>QUINTA.- DISPOSICIÓN DEL CRÉDITO. - </b>"EL ACREDITADO" podrá disponer del crédito en dinero en
+                    efectivo,
+                    cheque o mediante una tarjeta plástica emitida por una Institución Bancaria debidamente autorizada.
+                    En caso de que el Crédito, Sea en efectivo, el
+                    "ACREDITADO" dispondrá del recurso una vez que se firme el presente
+                    Contrato y será a partir de este momento en que sus obligaciones de pago nacerán de acuerdo a lo
+                    pactado en este contrato y su carátula. En caso, de que el
+                    Crédito se entregue mediante cheque o tarjeta, el ACREDITADO tendrá un plazo de 3 días hábiles a
+                    partir de la frma del presente Contrato para disponer del
+                    recurso. Lo anterior, independientemente de que empiece su obligación de pago a la firma del
+                    presente Contrato. En caso de que el "ACREDITADO" no cambie
+                    el cheque por efectivo o no active la tarjeta plástica en el plazo antes indicado, PROYECTA se
+                    reserva el derecho de cancelar dicho Contrato en el momento que
+                    así lo considere, con la finalidad de evitar el cobro de un Crédito sobre el cual el ACREDITADO no
+                    ha dispuesto.
+                    <br>
+                    <b>SEXTA. PAGARÉ. </b>El "ACREDITADO" conjuntamente con el presente contrato, suscribe un pagaré
+                    "ANEXO 3"
+                    a favor de "PROYECTA" que documenta la disposición
+                    del crédito. El "ACREDITADO" autoriza en este acto a "PROYECTA" a ceder, endosar o negociar en
+                    cualquier forma antes de su vencimiento, el pagaré que
+                    documente la disposición del presente Crédito. En caso de que por cualquier causa estipulada en la
+                    Cláusula DÉCIMA SEGUNDA se rescinda o se dé por vencido
+                    anticipadamente el crédito, “PROYECTA" dará por vencido anticipadamente el pagaré.
+                    <br>
+                    <b>SÉPTIMA. - RECIBOS DE PAGO. -</b> PROYECTA se obliga a entregar al ACREDITADO por cada pago que
+                    realice,
+                    un recibo debidamente membretado con su logotipo,
+                    y el cual deberá incluir la cantidad pagada, el concepto, la fecha de pago y frma del representante,
+                    empleado o agente autorizado por PROYECTA. El
+                    ACREDITADO será el resxponsable de conservar debidamente dichos recibos, los cuales no deberán de
+                    presentar tachnaduras ni enmendaduras, obligándose
+                    también a no alterarlos, dañarlos o distorsionar su legibilidad. En caso contrario, PROYECTA no
+                    reconocerá el pago que se pretenda acreditar con dicho recibo.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="page">
+
+        <div class="row">
+            <div class="col">
+                <div style="margin-left: -20px;">
+                    <img style="height: 60px; " src="https://smapac.gob.mx/assets/images/proyecta_logo_gris.png" alt="">
+                </div>
+            </div>
+            <div class="col fw-bold d-flex justify-content-end">
+                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+            </div>
+        </div>
+
+        <div class="mt-2" style="font-size: 10px; text-align:justify; line-height:10px">
+
+            <div>
+                <p>
+                    <b>OCTAVA. - VENCIMIENTO DEL PAGO EN DÍAS INHÁBILES. - </b>Cuando la fecha límite de pago de las
+                    obligaciones que se originen con motivo del presente contrato coresponda a un día inhábil bancario,
+                    el "ACREDITADO"
+                    deberá pagar a más tardar el día hábil inmediato siguiente a
+                    aquel en que debiera hacerse el pago.
+                    <br>
+                    <b>NOVENA. - PAGOS ANTICIPADOS Y ADELANTADOS. - </b> El ACREDITADO podrá realizar pagos anticipados
+                    o
+                    adelantados respecto del saldo insoluto, en cualquier
+                    momento durante la vigencia del Contrato, lo que incluye desde la fecha en que se le entrega
+                    fisicamente el recurso hasta la fecha en que deba de quedar
+                    cubierto totalmente el mismo. En caso de que el ACREDITADO realice pagos anticipados y éstos fueran
+                    suficientes para cubrir el saldo insoluto en su totalidad, las
+                    partes acuerdan que aplicarán directamente al "Monto total a pagar", disminuyéndolo en proporción al
+                    monto de dichos pagos anticipados. No obstante, lo
+                    anterior, las partes convienen en que los pagos anticipados no eximen al ACREDITADO de la obligación
+                    de realizar los pagos inmediatos siguientes. En caso de que
+                    el "ACREDITADO" realice pagos anticipados o adelantados, se sujetará a lo indicado en la cláusula
+                    séptima.
+                    <br>
+                    <b>DÉCIMA. - PAGO TOTAL DEL ADEUDO. - </b>Una vez que el ACREDITADO cubra el "Monto total a Pagar",
+                    tendrá
+                    derecho a solicitar a PROYECTA una constancia de no
+                    adeudo.
+                    <br>
+                    <b>DÉCIMA PRIMERA. - MODIFICACIONES AL CONTRATO. - </b>Cualquier modificación que se realice al
+                    presente contrato forzosamente deberá de constar por escrito y
+                    firmado por las PARTES.
+                    <br>
+                    <b>DÉCIMA SEGUNDA. - INCUMPLIMIENTO. - </b>Serán causas de incumplimiento las siguientes:
+                    <br>
+                    a.- Si el cliente incumple cualquier obligación de pago derivada de este contrato, ya sea por causas
+                    imputables a éste o a que cualquier representante, empleado
+                    o agente autorizado por PROYECTA no se haya presentado a recibir el pago correspondiente, bajo
+                    ninguna circunstancia se entenderá que PROYECTA renuncia
+                    a dicho pago. Por tal motivo, la cantidad que se haya dejado de recibir deberá ser entregada a
+                    PROYECTA junto con el siguiente pago Semanal.
+                    <br>
+                    b.- Por lo anterior, para los efectos de este contrato se entenderá que el ACREDITADO incurre en
+                    mora cuando no realice el pago puntual el día señalado de
+                    cualquiera de los pagos Semanales establecidos en la carátula del presente contrato (Anexo 1), por
+                    causas imputables al Cliente. <span class="fw-bold subrayado">La penalización por mora se aplicará
+                        por cada día de pago incumplido contándose a partir del día jueves de la Semana
+                        correspondiente.</span>
+                    <br>
+                    c.- En caso, de incumplimiento del pago total y puntual de cada pago semanal, las partes acuerdan
+                    que el “Monto total a pagar” pendiente de pago será
+                    considerado inmediatamente como devengado y pagadero a solicitud de PROYECTA.
+                    d.- En caso, de que el ACREDITADO cambie su domicilio, deberá notificarlo por escrito a PROYECTA, y
+                    en el supuesto de que el cliente no notifique dicho cambio
+                    previamente a PROYECTA, se obliga a reembolsar a éste último, todos los gastos en que haya incurrido
+                    en la búsqueda y/o localización del cliente, incluyendo
+                    cualquier gasto judicial o extrajudicial en que incurra PROYECTA con la finalidad de recuperar la
+                    cantidad o cantidades que se le aluden. En relación con lo
+                    anterior, PROYECTA estará facultado para reportar al ACREDITADO al Buró de Crédito o ante cualquier
+                    sociedad de información crediticia autorizada, por cualquier
+                    falta de pago.
+                    <br>
+                    <b>DÉCIMA TERCERA. - VENCIMIENTO ANTICIPADO. - </b> "PROYECTA" podrá dar por vencido anticipadamente
+                    el
+                    plazo para el pago de Crédito efectivamente dispuesto
+                    por el "ACREDITADO", en caso de que:
+                    a. El "ACREDITADO" no efectúe uno o más pagos en términos del presente contrato y los anexos al
+                    mismo. .
+                    b. Si el "ACREDITADO" cambia de domicilio, número telefónico o empleo y no da aviso a "PROYECTA"
+                    dentro de los 10 (diez) días naturales siguientes a la fecha
+                    en que se dé cualquiera de esos eventos.
+                    c. Si resulta ser falsa cualquier información o dato proporcionado por el “ACREDITADO” 0 cualquier
+                    información que hubiese o deba proporcionar a "PROYECTA".
+                    Para que "PROYECTA" dé por vencido anticipadamente el presente contrato bastará que dé aviso al
+                    "ACREDITADO" por escrito con 7 (siete) días naturales de
+                    anticipación a la fecha efectiva de terminación.
+                    Una vez declarado el vencimiento anticipado del plazo al cual quedó sujeto el presente contrato, el
+                    "ACREDITADO" sín necesidad de requerimiento judicial o
+                    extrajudicial alguno, deberá cubrir de inmediato a “PROYECTA" el saldo del Crédito que estuviere
+                    pendiente de pago a dicha fecha.
+                    <br>
+                    <b>DÉCIMA CUARTA. - TERMINACIÓN ANTICIPADA. - </b>El "ACREDITADO" podrá en todo momento solicitar la
+                    terminación anticipada del presente Contrato, para lo cual
+                    bastará la petición hecha a "PROYECTA" en forma escrita con documento que contenga la firma
+                    autógrafa del "ACREDITADO".
+                    "PROYECTA" deberá cerciorarse previamente de la autenticidad y veracidad de la identidad del
+                    "ACREDITADO" para lo cual deberá proporcionar una
+                    identificación oficial vigente con fotografía
+                    "PROYECTA" entregará e informará al día hábil inmediato siguiente a que "PROYECTA" haya recibido la
+                    solicitud de terminación del Contrato, el saldo existente
+                    con motivo del Crédito otorgado.
+                    En caso de que el "ACREDITADO" solicite la terminación anticipada del presente contrato y no tenga
+                    adeudos pendientes a dicha fecha, "PROYECTA" dará por
+                    terminado el presente contrato el día hábil siguiente a la fecha en que haya recibido la solicitud
+                    de terminación. En caso de que existan adeudos pendientes al
+                    momento de recibir la solicitud de terminación anticipada, “PROYECTA" a más tardar el día hábil
+                    siguiente al de la recepción de la solicitud, comunicará por la vía
+                    que el “ACREDITADO” haya formulado su petición, el importe de los adeudos y una vez liquidados los
+                    mismos se dará por terminado el presente contrato.
+                    <br>
+                    <b>DÉCIMA QUINTA. - PROCEDIMIENTO PARA LA PRESENTACIÓN Y SEGUIMIENTO DE SOLICITUDES, DUDAS,
+                        ACLARACIONES Y QUEJAS. - </b>En caso de que el ACREDITADO
+                    tenga alguna duda, requiera alguna aclaración o presentar alguna queja referente a este Contrato,
+                    así como a sus recibos, estados de cuenta, entre otros, podrá
+                    acudir a la sucursal indicada, el ACREDITADO podrá levantar un reporte sobre el cual PROYECTA tiene
+                    la obligación de proporcionar una respuesta en un plazo
+                    mínimo de 24 horas y máximo de 30 días naturales, dependiendo de la naturaleza de la solicitud,
+                    duda, aclaración y/o queja.
+                    <br>
+                    <b>DÉCIMA SEXTA. - CESIÓN Y TRASPASO DE LOS DERECHOS DEL PRESENTE CONTRATO. - </b>"PROYECTA" queda
+                    expresamente autorizado, para ceder o traspasar todos o
+                    parte de los derechos que a su favor se derivan del presente contrato, así como a dar en garantía
+                    los derechos que a su favor se deriven del mismo.
+                    El "ACREDITADO" no podrá ceder o transmitir en cualquier forma y por ningún motivo los derechos y
+                    obligaciones que respectivamente se generen a su favor y a
+                    su cargo derivados del presente contrato; el incumplimiento por parte de "EL ACREDITADO" a la
+                    anterior prohibición será causa de rescisión del presente contrato,
+                    quedando obligado además a cubrir a "PROYECTA" los daños y perjuicios que le ocasione dicha
+                    violación.
+                    <br>
+                    <b>DÉCIMA SÉPTIMA. - AVISO DE PRIVACIDAD Y PROTECCIÓN DE DATOS PERSONALES. - </b>El ACREDITADO
+                    autoriza a
+                    PROYECTA para captar, usar, almacenar, transferir,
+                    adminisitrar y en general tratar los datos personales y financieros que de forma voluntaria le
+                    proporcione el ACREDITADO para el cumplimiento del presente contrato.
+                    Para tales efectos, PROYECTA garantiza al derecho que tiene el Cliente para limitar el uso o
+                    divulgación de sus datos personales, de conformidad con el aviso de
+                    Privacidad que previamente fue puesto a su disposición.
+                    <br>
+                    <b>DÉCIMO OCTAVA: - ANEXOS. - </b>Forman parte integrante del presente Contrato los anexos que se
+                    enlistan a continuación, los cuales se tienen por reproducidos en
+                    el presente Contrato como sí a la letra se insertaran:
+                    Anexo 1. “Carátula del Contrato, Anexo 2. “Pagaré”.
+                    <br>
+                    <b>DÉCIMO NOVENA. - JURISDICCIÓN Y COMPETENCIA. - </b>Para todo lo que se refiere a la
+                    interpretación,
+                    cumplimiento y ejecución del presente contrato, las partes se
+                    someten a la jurisdicción y competencia de los tribunales competentes de la Ciudad de del Carmen,
+                    Campeche, renunciando a cualquier otro fuero que por
+                    razón de sus domicilios presentes o futuros o por cualquier otra causa pudiera corresponderles.
+                    <br>
+                    <b>VIGÉSIMA. - TÍTULOS DE LAS CLÁUSULAS. </b>Los subtítulos en las CLÁUSULAS del Contrato, son
+                    exclusivamente por conveniencia de las “PARTES”, para una referencia y
+                    lectura, por lo que no podrán afectar la interpretación de este Contrato.
+                    <br>
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="mt-2" style="text-align: justify; font-size: 10px">
+            <b>Enteradas las Partes del alcance legal de todas y cada una de las obligaciones previstas y
+                derivadas del presente contrato, es su voluntad firmarlo a los</b> __________ <b>días del mes de
+            </b> _______________________________ <b> de </b> _______________.
+        </div>
+
+        <div class="mt-4 row text-center" style="font-size: 10px;">
+            <div class="col">
+                <div class="fw-bold">
+                    "PROYECTA SF" S.A. DE C.V.
+                </div>
+                <div class="mt-4">_______________________________________________</div>
+                <div>
+                    Representada en este acto por su representante
+                </div>
+                <div class="fw-bold">Jonathan del Carmen Contreras Valdez</div>
+            </div>
+
+            <div class="col">
+                <div class="fw-bold">
+                    ACREDITADO
+                </div>
+                <div class="mt-4">_______________________________________________</div>
+                <div class="fw-bold">Nombre:</div>
+            </div>
+        </div>
+
+
+    </div>
+
+    {{!-- Contrato - COPIA 2 --}} 
+    <div class="page">
+
+        <div class="row">
+            <div class="col">
+                <div style="margin-left: -20px;">
+                    <img style="height: 60px; " src="https://smapac.gob.mx/assets/images/proyecta_logo_gris.png" alt="">
+                </div>
+            </div>
+            <div class="col fw-bold d-flex justify-content-end">
+                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+            </div>
+        </div>
+
+        <div class="text-center fw-bold">
+            "ANEXO 1"
+        </div>
+        <div class="text-center fw-bold">
+            "CARATULA DE CONTRATO"
+        </div>
+        <div class="bg-encabezado encabezado">
+            Nombre del producto: <b>Contrato de Apertura de Crédito Simple</b>
+        </div>
+        <div class="text-center fw-bold mt-3 mb-3" style="font-size: 11px;">
+            COMPARECIENTES:
+        </div>
+        <div class="bg-encabezado encabezado fw-bold">
+            DATOS DEL ACREDITANTE, EN LO SUCESIVO REFERIDO COMO "PROYECTA"
+        </div>
+
+        <table class="customTable">
+            <tr style="border-top: none;">
+                <td class="fw-bold fs7" style="width: 200px; border-top: none; border-left:none;">
+                    Denominación social:
+                </td>
+                <td class="fs8" style="border-top: none; border-right: none;">PROYECTA SF, SOCIEDAD ANONIMA DE CAPITAL
+                    VARIABLE</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Registro federal de contribuyentes:</td>
+                <td class="fs8" style="border-right: none;">PSF180310464</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none; border-bottom:none;">Domicilio:</td>
+                <td class="fs8" style="line-height: 11px; border-right: none; border-bottom: none;">Avenida Periférica
+                    Norte número 60 colonia Fraccionamiento Malibrán código postal 24197
+                    Ciudad del Carmen, Campeche</td>
+            </tr>
+        </table>
+
+        <div class="bg-encabezado encabezado fw-bold">
+            DATOS DEL CLIENTE, EN LO SUCESIVO DESIGNADO "ACREDITADO"
+        </div>
+
+        <table class="customTable">
+            <tr>
+                <td class="fw-bold fs7" style="width: 200px; border-top:none; border-left: none;">Nombre:</td>
+                <td class="fs8" style="border-right: none; border-top: none;">{{contrato.rows.0.nombre_completo}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Estado civil:</td>
+                <td style="border-right: none;">{{contrato.rows.0.nombre}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Ocupación:</td>
+                <td class="fs8" style="border-right: none;">{{contrato.rows.0.ocupacion}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Lugar y fecha de nacimiento:</td>
+                <td class="fs8" style="border-right: none;">Ciudad del Carmen, Campeche
+                    {{contrato.rows.0.dia_fecha_nacimiento}}-{{contrato.rows.0.mes_fecha_nacimiento}}-{{contrato.rows.0.año_fecha_nacimiento}}
+                </td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Registro federal de contribuyentes:</td>
+                <td class="fs8" style="border-right: none;">{{contrato.rows.0.rfc}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none; border-bottom: none;">Clave única de registro de
+                    población:</td>
+                <td class="fs8" style="border-bottom: none; border-right: none;">{{contrato.rows.0.curp}}</td>
+            </tr>
+        </table>
+
+        <div class="bg-encabezado encabezado fw-bold">
+            DATOS DEL CRÉDITO
+        </div>
+
+        <table class="table table-bordered" style="border: #5d5d5d;">
+            <tr>
+                <td class="text-center fw-bold">
+                    <div>MONTO DEL CRÉDITO</div>
+                    <div>${{contrato.rows.0.monto_otorgado}}</div>
+                </td>
+                <td class="text-center fw-bold">
+                    <div>MONTO TOTAL A PAGAR</div>
+                    <div>${{contrato.rows.0.monto_total}}</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="customTable">
+            <tr>
+                <td class="fw-bold fs7" style="width: 200px; border-left: none;">Plazo del crédito (semanas):</td>
+                <td class="fs8" style="border-right: none;">{{contrato.rows.0.num_semanas}} SEMANAS</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Monto del pago semanal:</td>
+                <td class="fs8" style="border-right: none;">${{contrato.rows.0.monto_semanal}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Corte de pago (día):</td>
+                <td class="fs8" style="border-right: none;">Martes</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Fecha límite de pago:</td>
+                <td class="fs8" style="border-right: none;">{{contrato.rows.0.fecha_fin}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Penalización por incumplimiento:</td>
+                <td class="fs8" style="border-right: none;">
+                    <span class="fw-bold" style="text-decoration: underline;">1% diario</span> sobre el
+                    monto del crédito contándose a partir del día <span class="fw-bold"
+                        style="text-decoration: underline;">jueves</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="fs7" style="border-left: none; border-right: none; border-bottom: none;">Los
+                    pagos son asignados para cubrir el monto total del préstamo y los cargos
+                    que se deriven por el servicio (incluyendo el IVA)</td>
+            </tr>
+        </table>
+
+        <div class="bg-encabezado encabezado fw-bold mt-3">
+            ADVERTENCIAS:
+        </div>
+
+        <div class="bg-encabezado encabezado fw-bold">
+            *El contratar créditos por arriba de tu capacidad de pago puede afectar tu historial crediticio.
+        </div>
+
+        <div class="bg-encabezado encabezado fw-bold mt-3">
+            ACLARACIONES Y RECLAMACIONES:
+        </div>
+
+
+        <table class="customTable">
+            <tr>
+                <td class="fw-bold fs7" style="width: 200px; border-left: none; border-top: none;">Domicilio:</td>
+                <td class="fs8" style="border-right: none; border-top: none;">Av. Periférica Norte número 60 colonia
+                    Fracc. Malibrán, C.P. 24197
+                    Cd. del
+                    Carmen, Camp.</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Teléfono:</td>
+                <td class="fs8" style="border-right: none;">938-38-14413</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Whatsapp:</td>
+                <td class="fs8" style="border-right: none;">9381369893</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Correo electrónico:</td>
+                <td class="fs8" style="border-right: none;">admon.proyectasf@gmail.com</td>
+            </tr>
+        </table>
+
+        <div class="fw-bold mt-3" style="font-size: 10px; text-align:justify;">
+            <p>
+                EL CLIENTE EN ESTE MOMENTO CERTIFICA HABER RECIBIDO EL CRÉDITO EN EFECTIVO, CHEQUE O LA TARJETA BANCARIA
+                AL INSTANTE DE FIRMAR Y EN LA FECHA ASENTADA. (Sujeta a lo dispuesto en la cláusula quinta del
+                Contrato.)
+            </p>
+        </div>
+
+        <div class="mt-2" style="font-size: 10px;">
+            <p>
+                <b>LUGAR Y FECHA DE FIRMA: Ciudad del Carmen, Campeche a </b>___________ <b>de</b> __________________
+                <b>del</b>
+                _____________.
+            </p>
+        </div>
+
+
+        <div class="mt-3" style="font-size: 10px;">
+            <p>
+                <span
+                    class="fw-bold">ACREDITADO:</span>____________________________________________________&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                    class="fw-bold">FIRMA:</span>________________________
+            </p>
+        </div>
+
+        <div class="mt-3 text-center" style="font-size: 10px;">
+            <p>
+                <span class="fw-bold">ELABORADO POR:</span>
+            </p>
+        </div>
+
+        <div class="mt-3" style="font-size: 10px;">
+            <p>
+                <span class="fw-bold">NOMBRE:
+                </span>________________________________________________________&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                    class="fw-bold">FIRMA:</span>________________________
+            </p>
+        </div>
+
+
+
+
+    </div>
+
+    <div class="page">
+
+        <div class="row">
+            <div class="col">
+                <div style="margin-left: -20px;">
+                    <img style="height: 60px; " src="https://smapac.gob.mx/assets/images/proyecta_logo_gris.png" alt="">
+                </div>
+            </div>
+            <div class="col fw-bold d-flex justify-content-end">
+                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+            </div>
+        </div>
+
+        <div class="mt-2" style="font-size: 10px; text-align:justify; line-height:10px">
+            <p>
+                <b>CONTRATO DE APERTURA DE CRÉDITO SIMPLE NÚMERO {{contrato.rows.0.num_contrato}}</b> QUE CELEBRAN POR
+                UNA PARTE,
+                <b>"PROYECTA SF" SOCIEDAD ANÓNIMA DE CAPITAL VARIABLE,</b> REPRESENTADA EN ESTE ACTO POR <b>JONATHAN DEL
+                    CARMEN CONTRERAS VALDEZ</b> A QUIEN EN LO SUCESIVO SE LE DENOMINA <b>"PROYECTA"</b> Y POR OTRA PARTE
+                <span class="fw-bold" style="text-decoration: underline;">{{contrato.rows.0.nombre_completo}}</span> POR
+                SU PROPIO
+                DERECHO A QUIÉN EN LO SUCESIVO SE LE
+                DENOMINARÁ COMO EL <b>"ACREDITADO"</b> DE
+                CONFORMIDAD CON LAS DECLARACIONES Y CLÁUSULAS SIGUIENTES:
+            </p>
+
+            <div class="text-center fw-bold" style="letter-spacing: 0.3em;">DECLARACIONES:</div>
+            <div class="fw-bold mt-2">A. Declara "PROYECTA" por conducto de su representante legal:</div>
+
+            <div>
+                <p>
+                    a. Que es una sociedad mercantil que se encuentra constituida conforme a las leyes de los Estados
+                    Unidos
+                    Mexicanos, según consta en el Acta número 153, Tomo 5, Libro Cuarto, Folio 323, de fecha 10 de
+                    marzo de
+                    2018, otorgada ante la fe del Licenciado en Derecho Luis Enrique López Martín, Notario Público del
+                    Estado de Yucatán, Titular de la Notaría Pública número 23, con residencia en la Ciudad de Mérida,
+                    Yucatán, misma que se encuentra debidamente inscrita en el Registro Público de la Propiedad y de
+                    Comercio de su jurisdicción, bajo el folio mercantil electrónico número N-2018022490, de fecha 15 de
+                    marzo de 2018, con Registro Federal de Contribuyente PSF180310464.
+                    <br>
+                    b. Que dentro de su objeto social se encuentra el de “obtener y conceder toda clase de préstamos,
+                    créditos o financiamientos, otorgando o recibiendo garantías específicas, entre otras actividades,
+                    la cual ha sido debidamente autorizado por todas las medidas corporativas pertinentes y no están
+                    en conflicto con, ni son inconsistentes con, ni resultan en incumplimiento de (i) sus estatutos
+                    vigentes a la fecha del presente contrato, ni (ii) cualquier ley, término, condición obligación o
+                    restricción contractual alguna que obligue o afecte el presente contrato.
+                    <br>
+                    c. Que cuenta con capacidad legal y facultades suficientes para celebrar el presente Contrato en
+                    nombre y representación de PROYECTA, mismas que al momento de su celebración no le han sido
+                    revocadas, limitadas ni modificadas en forma alguna y está autorizado para residir y tener su
+                    estancia legal en México.
+                    <br>
+                    d. Que su domicilio se encuentra ubicado en: Calle 31-A, número 54, colonia Aviación, código
+                    postal 24170, Ciudad del Carmen, Campeche.
+                    <br>
+                    e. Que cuenta con una Unidad de Atención al Usuario con domicilio en: Avenida Periférica Norte
+                    número 60 colonia Fraccionamiento Malibran código postal 24197 Ciudad del Carmen, Campeche;
+                    a quien podrás dirigirte en el número telefónico: 938-38-14413, en un horario de atención de
+                    lunes a viernes de 09:00 a 14:00 horas; o bien, a través de correo electrónico:
+                    admon.proyectasf@gmail.com en cualquier horario.
+                    <br>
+                    <span class="fw-bold">B. Declara el "ACREDITADO", Bajo Protesta de decir verdad:</span>
+                    <br>
+                    a. Ser de nacionalidad mexicana, mayor de edad y con plena capacidad legal para obligarse y
+                    celebrar el presente Contrato, así como para asumir y dar cumplimiento a las obligaciones que en
+                    él se establecen.
+                    <br>
+                    b. Que para la celebración del contrato actúa a nombre y por cuenta propia y no por cuenta de un
+                    tercero.
+                    <br>
+                    c. Que ha solicitado a "PROYECTA" un crédito simple en los términos establecidos en el presente
+                    Contrato. Manifestando que los beneficios que recibirá de dicho Crédito son para él y no para una
+                    tercera persona.
+                    <br>
+                    d. Que toda la información y documentación que ha proporcionado a "PROYECTA"; para el análisis
+                    y estudio del otorgamiento del Crédito objeto del presente Contrato es verdadera y refleja en
+                    forma correcta y compleja su situación actual.
+                    <br>
+                    e. Que "PROYECTA" hizo de su conocimiento, previo a la firma del presente Contrato y de los
+                    documentos que forman parte integrante del mismo, su contenido y efectos jurídicos, cargos o
+                    gastos que se generarán por su celebración.
+                    <br>
+                    f. Que una vez que le fueron explicados el contenido y alcances legales del presente contrato, al
+                    momento de la celebración de la operación "PROYECTA" le hizo entrega de un ejemplar del
+                    contrato, de la "Carátula del contrato sirviendo su firma como el recibo mas amplio y suficiente
+                    que en derecho proceda.
+                    <br>
+                    g. Que su domicilio se encuentra ubicado en: Calle <span
+                        class="subrayado">&nbsp;&nbsp;{{contrato.rows.0.calle}}&nbsp;&nbsp;</span> número
+                    <span class="subrayado">&nbsp;&nbsp;{{contrato.rows.0.num_ext}}&nbsp;&nbsp;</span>,
+                    {{tipo_asentamiento}} <span
+                        class="subrayado">&nbsp;&nbsp;{{contrato.rows.0.colonia}}&nbsp;&nbsp;</span> código postal <span
+                        class="subrayado">&nbsp;{{contrato.rows.0.cp}}&nbsp;</span>,Ciudad del Carmen Campeche.
+                    <br>
+                    h. Que conoce y esíá conforme con el Aviso de Privacidad de "PROYECTA", cuyo contenido se le
+                    ha hecho saber previo al otorgamiento de la firma de este instrumento, el cual Se encuentra
+                    conforme a los iérminos de la Ley Federal de Protección de Datos Personales en Posesión de los
+                    Particulares vigente, su reglamento y demás disposiciones aplicables.
+                    <br>
+                    i. Que cuenta con los recursos financieros, necesarios y suficientes para cumplir con las
+                    obligaciones derivadas del presente contrato y sus anexos y que dichos recursos no son ni serán de
+                    procedencia ilícita.
+                    <br>
+                    <span class="fw-bold">C. Declara el "ACREDITADO" y "PROYECTA":</span>
+                    <br>
+                    a. Se reconocen la capacidad jurídica y personalidad, con las que, respectivamente, comparecen para
+                    celebrar el Contrato.
+                    <br>
+                    b. Para el supuesto de intervenir de manera conjunta en diversas estipulaciones del Contrato, se les
+                    denominará como
+                    las "PARTES".
+                    <br>
+                    c. El Contrato lo celebran: (i) de mutuo acuerdo; (ii) sin que medie coacción alguna
+                    de diversa especie; (iii) sin que exista diverso vicio de la voluntad; y, (iv) bajo el amparo de sus
+                    estipulaciones.
+                    <br>
+                    En virtud de lo anterior, las partes convienen sujetar el presente Contrato al
+                    contenido de las siguientes:
+                </p>
+                <div class="text-center fw-bold">CLÁUSULAS:</div>
+                <p>
+                    <b>PRIMERA. - DEFINICIONES. -</b> A reserva de que existan términos que sean definidos cualquier
+                    otra sección o cláusula del presente contrato, las "PARTES" acuerdan que, para efectos del presente
+                    contrato, los siguientes términos tendrán el significado que se indica a continuación,
+                    independientemente de su utilización en singular o en plural:
+                    <br>
+                    <b>a. "Carátula del Contrato":</b> significa el documento que contiene el formulario que forma parte
+                    integrante del presente contrato como "Anexo 1".
+                    <br>
+                    <b>b. "Comisión":</b> significa cualquier cargo, independientemente de su denominación o modalidad,
+                    diferente al interés, que una entidad financiera cobre a un usuario
+                    por operaciones pasivas, activas o de servicio, incluidos los cargos por el uso o aceptación de
+                    medios de disposición.
+                    <br>
+                    <b>SEGUNDA. - OBJETO DEL CONTRATO. -</b> "PROYECTA" otorga al "ACREDITADO" un crédito simple hasta
+                    por la cantidad de $<span class="subrayado">{{contrato.rows.0.monto_total}}</span>, son <span
+                        class="subrayado">{{contrato.rows.0.monto_total_letras}} </span> m.n. (el
+                    "Crédito"). Obligándose el "ACREDITADO" a pagar al primero de éstos el monto identificado como
+                    "Monto Total a Pagar" de acuerdo al número de pagos semanales y modalidades establecidas en la
+                    caratula del Contrato.
+                    <br>
+                    Las "PARTES" convienen en que el "ACREDITADO" podrá disponer del importe del Crédito aprobado por
+                    "PROYECTA" en una sola disposición total o en varias
+                    parciales, pero, en cualquier caso, hasta por el importe total del Crédito. En el importe del
+                    Crédito, no quedan comprendidos los intereses, comisiones, gastos o
+                    accesorios que deberá cubrir el "ACREDITADO" a "PROYECTA".
+                    <br>
+                    <b>TERCERA. - ENTREGA DEL CRÉDITO Y FORMA DE PAGO. - </b>La entrega del Crédito y los pagos
+                    semanaies
+                    realizados por parte del "ACREDITADO", serán llevado a cabo
+                    en el domicilio del “ACREDITADO”. La entrega y recepción de los pagos será por conducto de cualquier
+                    representante, empleado o agente autorizado por
+                    PROYECTA. En caso de algún cambio con respecto a lo anterior PROYECTA se obliga a comunicarlo
+                    inmediatamente al ACREDITADO.
+                    <br>
+                    <b>CUARTA. - PLAZO DEL CONTRATO. - </b> La vigencia del presente contrato es de <span
+                        class="subrayado">&nbsp;{{contrato.rows.0.num_semanas}}&nbsp;</span> semanas, que empezará a
+                    partir del día de
+                    firma del
+                    presente contrato para concluir el día <span
+                        class="subrayado">&nbsp;{{contrato.rows.0.dia_fin}}&nbsp;</span> del
+                    mes de <span class="subrayado">&nbsp;{{contrato.rows.0.mes_letra_fin}}&nbsp;</span> del año <span
+                        class="subrayado">&nbsp;{{contrato.rows.0.año_fin}}&nbsp;</span>.
+                    <br>
+                    <b>QUINTA.- DISPOSICIÓN DEL CRÉDITO. - </b>"EL ACREDITADO" podrá disponer del crédito en dinero en
+                    efectivo,
+                    cheque o mediante una tarjeta plástica emitida por una Institución Bancaria debidamente autorizada.
+                    En caso de que el Crédito, Sea en efectivo, el
+                    "ACREDITADO" dispondrá del recurso una vez que se firme el presente
+                    Contrato y será a partir de este momento en que sus obligaciones de pago nacerán de acuerdo a lo
+                    pactado en este contrato y su carátula. En caso, de que el
+                    Crédito se entregue mediante cheque o tarjeta, el ACREDITADO tendrá un plazo de 3 días hábiles a
+                    partir de la frma del presente Contrato para disponer del
+                    recurso. Lo anterior, independientemente de que empiece su obligación de pago a la firma del
+                    presente Contrato. En caso de que el "ACREDITADO" no cambie
+                    el cheque por efectivo o no active la tarjeta plástica en el plazo antes indicado, PROYECTA se
+                    reserva el derecho de cancelar dicho Contrato en el momento que
+                    así lo considere, con la finalidad de evitar el cobro de un Crédito sobre el cual el ACREDITADO no
+                    ha dispuesto.
+                    <br>
+                    <b>SEXTA. PAGARÉ. </b>El "ACREDITADO" conjuntamente con el presente contrato, suscribe un pagaré
+                    "ANEXO 3"
+                    a favor de "PROYECTA" que documenta la disposición
+                    del crédito. El "ACREDITADO" autoriza en este acto a "PROYECTA" a ceder, endosar o negociar en
+                    cualquier forma antes de su vencimiento, el pagaré que
+                    documente la disposición del presente Crédito. En caso de que por cualquier causa estipulada en la
+                    Cláusula DÉCIMA SEGUNDA se rescinda o se dé por vencido
+                    anticipadamente el crédito, “PROYECTA" dará por vencido anticipadamente el pagaré.
+                    <br>
+                    <b>SÉPTIMA. - RECIBOS DE PAGO. -</b> PROYECTA se obliga a entregar al ACREDITADO por cada pago que
+                    realice,
+                    un recibo debidamente membretado con su logotipo,
+                    y el cual deberá incluir la cantidad pagada, el concepto, la fecha de pago y frma del representante,
+                    empleado o agente autorizado por PROYECTA. El
+                    ACREDITADO será el resxponsable de conservar debidamente dichos recibos, los cuales no deberán de
+                    presentar tachnaduras ni enmendaduras, obligándose
+                    también a no alterarlos, dañarlos o distorsionar su legibilidad. En caso contrario, PROYECTA no
+                    reconocerá el pago que se pretenda acreditar con dicho recibo.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="page">
+
+        <div class="row">
+            <div class="col">
+                <div style="margin-left: -20px;">
+                    <img style="height: 60px; " src="https://smapac.gob.mx/assets/images/proyecta_logo_gris.png" alt="">
+                </div>
+            </div>
+            <div class="col fw-bold d-flex justify-content-end">
+                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+            </div>
+        </div>
+
+        <div class="mt-2" style="font-size: 10px; text-align:justify; line-height:10px">
+
+            <div>
+                <p>
+                    <b>OCTAVA. - VENCIMIENTO DEL PAGO EN DÍAS INHÁBILES. - </b>Cuando la fecha límite de pago de las
+                    obligaciones que se originen con motivo del presente contrato coresponda a un día inhábil bancario,
+                    el "ACREDITADO"
+                    deberá pagar a más tardar el día hábil inmediato siguiente a
+                    aquel en que debiera hacerse el pago.
+                    <br>
+                    <b>NOVENA. - PAGOS ANTICIPADOS Y ADELANTADOS. - </b> El ACREDITADO podrá realizar pagos anticipados
+                    o
+                    adelantados respecto del saldo insoluto, en cualquier
+                    momento durante la vigencia del Contrato, lo que incluye desde la fecha en que se le entrega
+                    fisicamente el recurso hasta la fecha en que deba de quedar
+                    cubierto totalmente el mismo. En caso de que el ACREDITADO realice pagos anticipados y éstos fueran
+                    suficientes para cubrir el saldo insoluto en su totalidad, las
+                    partes acuerdan que aplicarán directamente al "Monto total a pagar", disminuyéndolo en proporción al
+                    monto de dichos pagos anticipados. No obstante, lo
+                    anterior, las partes convienen en que los pagos anticipados no eximen al ACREDITADO de la obligación
+                    de realizar los pagos inmediatos siguientes. En caso de que
+                    el "ACREDITADO" realice pagos anticipados o adelantados, se sujetará a lo indicado en la cláusula
+                    séptima.
+                    <br>
+                    <b>DÉCIMA. - PAGO TOTAL DEL ADEUDO. - </b>Una vez que el ACREDITADO cubra el "Monto total a Pagar",
+                    tendrá
+                    derecho a solicitar a PROYECTA una constancia de no
+                    adeudo.
+                    <br>
+                    <b>DÉCIMA PRIMERA. - MODIFICACIONES AL CONTRATO. - </b>Cualquier modificación que se realice al
+                    presente contrato forzosamente deberá de constar por escrito y
+                    firmado por las PARTES.
+                    <br>
+                    <b>DÉCIMA SEGUNDA. - INCUMPLIMIENTO. - </b>Serán causas de incumplimiento las siguientes:
+                    <br>
+                    a.- Si el cliente incumple cualquier obligación de pago derivada de este contrato, ya sea por causas
+                    imputables a éste o a que cualquier representante, empleado
+                    o agente autorizado por PROYECTA no se haya presentado a recibir el pago correspondiente, bajo
+                    ninguna circunstancia se entenderá que PROYECTA renuncia
+                    a dicho pago. Por tal motivo, la cantidad que se haya dejado de recibir deberá ser entregada a
+                    PROYECTA junto con el siguiente pago Semanal.
+                    <br>
+                    b.- Por lo anterior, para los efectos de este contrato se entenderá que el ACREDITADO incurre en
+                    mora cuando no realice el pago puntual el día señalado de
+                    cualquiera de los pagos Semanales establecidos en la carátula del presente contrato (Anexo 1), por
+                    causas imputables al Cliente. <span class="fw-bold subrayado">La penalización por mora se aplicará
+                        por cada día de pago incumplido contándose a partir del día jueves de la Semana
+                        correspondiente.</span>
+                    <br>
+                    c.- En caso, de incumplimiento del pago total y puntual de cada pago semanal, las partes acuerdan
+                    que el “Monto total a pagar” pendiente de pago será
+                    considerado inmediatamente como devengado y pagadero a solicitud de PROYECTA.
+                    d.- En caso, de que el ACREDITADO cambie su domicilio, deberá notificarlo por escrito a PROYECTA, y
+                    en el supuesto de que el cliente no notifique dicho cambio
+                    previamente a PROYECTA, se obliga a reembolsar a éste último, todos los gastos en que haya incurrido
+                    en la búsqueda y/o localización del cliente, incluyendo
+                    cualquier gasto judicial o extrajudicial en que incurra PROYECTA con la finalidad de recuperar la
+                    cantidad o cantidades que se le aluden. En relación con lo
+                    anterior, PROYECTA estará facultado para reportar al ACREDITADO al Buró de Crédito o ante cualquier
+                    sociedad de información crediticia autorizada, por cualquier
+                    falta de pago.
+                    <br>
+                    <b>DÉCIMA TERCERA. - VENCIMIENTO ANTICIPADO. - </b> "PROYECTA" podrá dar por vencido anticipadamente
+                    el
+                    plazo para el pago de Crédito efectivamente dispuesto
+                    por el "ACREDITADO", en caso de que:
+                    a. El "ACREDITADO" no efectúe uno o más pagos en términos del presente contrato y los anexos al
+                    mismo. .
+                    b. Si el "ACREDITADO" cambia de domicilio, número telefónico o empleo y no da aviso a "PROYECTA"
+                    dentro de los 10 (diez) días naturales siguientes a la fecha
+                    en que se dé cualquiera de esos eventos.
+                    c. Si resulta ser falsa cualquier información o dato proporcionado por el “ACREDITADO” 0 cualquier
+                    información que hubiese o deba proporcionar a "PROYECTA".
+                    Para que "PROYECTA" dé por vencido anticipadamente el presente contrato bastará que dé aviso al
+                    "ACREDITADO" por escrito con 7 (siete) días naturales de
+                    anticipación a la fecha efectiva de terminación.
+                    Una vez declarado el vencimiento anticipado del plazo al cual quedó sujeto el presente contrato, el
+                    "ACREDITADO" sín necesidad de requerimiento judicial o
+                    extrajudicial alguno, deberá cubrir de inmediato a “PROYECTA" el saldo del Crédito que estuviere
+                    pendiente de pago a dicha fecha.
+                    <br>
+                    <b>DÉCIMA CUARTA. - TERMINACIÓN ANTICIPADA. - </b>El "ACREDITADO" podrá en todo momento solicitar la
+                    terminación anticipada del presente Contrato, para lo cual
+                    bastará la petición hecha a "PROYECTA" en forma escrita con documento que contenga la firma
+                    autógrafa del "ACREDITADO".
+                    "PROYECTA" deberá cerciorarse previamente de la autenticidad y veracidad de la identidad del
+                    "ACREDITADO" para lo cual deberá proporcionar una
+                    identificación oficial vigente con fotografía
+                    "PROYECTA" entregará e informará al día hábil inmediato siguiente a que "PROYECTA" haya recibido la
+                    solicitud de terminación del Contrato, el saldo existente
+                    con motivo del Crédito otorgado.
+                    En caso de que el "ACREDITADO" solicite la terminación anticipada del presente contrato y no tenga
+                    adeudos pendientes a dicha fecha, "PROYECTA" dará por
+                    terminado el presente contrato el día hábil siguiente a la fecha en que haya recibido la solicitud
+                    de terminación. En caso de que existan adeudos pendientes al
+                    momento de recibir la solicitud de terminación anticipada, “PROYECTA" a más tardar el día hábil
+                    siguiente al de la recepción de la solicitud, comunicará por la vía
+                    que el “ACREDITADO” haya formulado su petición, el importe de los adeudos y una vez liquidados los
+                    mismos se dará por terminado el presente contrato.
+                    <br>
+                    <b>DÉCIMA QUINTA. - PROCEDIMIENTO PARA LA PRESENTACIÓN Y SEGUIMIENTO DE SOLICITUDES, DUDAS,
+                        ACLARACIONES Y QUEJAS. - </b>En caso de que el ACREDITADO
+                    tenga alguna duda, requiera alguna aclaración o presentar alguna queja referente a este Contrato,
+                    así como a sus recibos, estados de cuenta, entre otros, podrá
+                    acudir a la sucursal indicada, el ACREDITADO podrá levantar un reporte sobre el cual PROYECTA tiene
+                    la obligación de proporcionar una respuesta en un plazo
+                    mínimo de 24 horas y máximo de 30 días naturales, dependiendo de la naturaleza de la solicitud,
+                    duda, aclaración y/o queja.
+                    <br>
+                    <b>DÉCIMA SEXTA. - CESIÓN Y TRASPASO DE LOS DERECHOS DEL PRESENTE CONTRATO. - </b>"PROYECTA" queda
+                    expresamente autorizado, para ceder o traspasar todos o
+                    parte de los derechos que a su favor se derivan del presente contrato, así como a dar en garantía
+                    los derechos que a su favor se deriven del mismo.
+                    El "ACREDITADO" no podrá ceder o transmitir en cualquier forma y por ningún motivo los derechos y
+                    obligaciones que respectivamente se generen a su favor y a
+                    su cargo derivados del presente contrato; el incumplimiento por parte de "EL ACREDITADO" a la
+                    anterior prohibición será causa de rescisión del presente contrato,
+                    quedando obligado además a cubrir a "PROYECTA" los daños y perjuicios que le ocasione dicha
+                    violación.
+                    <br>
+                    <b>DÉCIMA SÉPTIMA. - AVISO DE PRIVACIDAD Y PROTECCIÓN DE DATOS PERSONALES. - </b>El ACREDITADO
+                    autoriza a
+                    PROYECTA para captar, usar, almacenar, transferir,
+                    adminisitrar y en general tratar los datos personales y financieros que de forma voluntaria le
+                    proporcione el ACREDITADO para el cumplimiento del presente contrato.
+                    Para tales efectos, PROYECTA garantiza al derecho que tiene el Cliente para limitar el uso o
+                    divulgación de sus datos personales, de conformidad con el aviso de
+                    Privacidad que previamente fue puesto a su disposición.
+                    <br>
+                    <b>DÉCIMO OCTAVA: - ANEXOS. - </b>Forman parte integrante del presente Contrato los anexos que se
+                    enlistan a continuación, los cuales se tienen por reproducidos en
+                    el presente Contrato como sí a la letra se insertaran:
+                    Anexo 1. “Carátula del Contrato, Anexo 2. “Pagaré”.
+                    <br>
+                    <b>DÉCIMO NOVENA. - JURISDICCIÓN Y COMPETENCIA. - </b>Para todo lo que se refiere a la
+                    interpretación,
+                    cumplimiento y ejecución del presente contrato, las partes se
+                    someten a la jurisdicción y competencia de los tribunales competentes de la Ciudad de del Carmen,
+                    Campeche, renunciando a cualquier otro fuero que por
+                    razón de sus domicilios presentes o futuros o por cualquier otra causa pudiera corresponderles.
+                    <br>
+                    <b>VIGÉSIMA. - TÍTULOS DE LAS CLÁUSULAS. </b>Los subtítulos en las CLÁUSULAS del Contrato, son
+                    exclusivamente por conveniencia de las “PARTES”, para una referencia y
+                    lectura, por lo que no podrán afectar la interpretación de este Contrato.
+                    <br>
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="mt-2" style="text-align: justify; font-size: 10px">
+            <b>Enteradas las Partes del alcance legal de todas y cada una de las obligaciones previstas y
+                derivadas del presente contrato, es su voluntad firmarlo a los</b> __________ <b>días del mes de
+            </b> _______________________________ <b> de </b> _______________.
+        </div>
+
+        <div class="mt-4 row text-center" style="font-size: 10px;">
+            <div class="col">
+                <div class="fw-bold">
+                    "PROYECTA SF" S.A. DE C.V.
+                </div>
+                <div class="mt-4">_______________________________________________</div>
+                <div>
+                    Representada en este acto por su representante
+                </div>
+                <div class="fw-bold">Jonathan del Carmen Contreras Valdez</div>
+            </div>
+
+            <div class="col">
+                <div class="fw-bold">
+                    ACREDITADO
+                </div>
+                <div class="mt-4">_______________________________________________</div>
+                <div class="fw-bold">Nombre:</div>
+            </div>
+        </div>
+
+
+    </div>
+
+    {{!-- Pagaré --}}
+    <div class="page">
+
+        <div class="row">
+
+            <div class="col">
+                <div style="margin-left: -20px;">
+                    <img style="height: 60px; " src="https://smapac.gob.mx/assets/images/proyecta_logo_gris.png" alt="">
+                </div>
+            </div>
+            <div class="col fw-bold d-flex justify-content-end">
+                No. <span class="text-danger">{{credito.num_contrato}}</span>
+            </div>
+        </div>
+
+        <div class="text-center fw-bold">
+            "ANEXO 2"
+        </div>
+        <div class="text-center fw-bold">
+            "PAGARÉ"
+        </div>
+        <div style="font-size: 14px;" class="text-end mt-5">
+            Lugar de Suscripción: Ciudad del Carmen, Campeche.
+        </div>
+
+
+        <div class="mt-3" style="font-size: 14px; text-align:justify;">
+            <p>Bueno por: $<span class="subrayado">&nbsp;&nbsp;{{credito.monto_total}}&nbsp;&nbsp;</span></p>
+            <p>
+                Por virtud del presente pagaré, <span class="subrayado">&nbsp;&nbsp;{{credito.nombre}}
+                    {{credito.apellido_materno}}
+                    {{credito.apellido_materno}}&nbsp;&nbsp;</span> (en lo sucesivo denominado (a) como el "Deudor")
+                debo
+                (debemos) y pagaré (pagaremos) incindicionalmente a la orden de Proyecta SF, S.A. de C.V. (o a cualquier
+                otra persona que posea el presente pagaré, en lo sucesivo "Tenedor"), cantidad que fue suscrita y que se
+                encuentra inmersa en el contrato del mismo número que el presente título de crédito, en el domicilio
+                ubicado en : <span class="subrayado">&nbsp;CALLE {{credito.calle}} {{credito.num_ext}},
+                    &nbsp;{{credito.tipo_asentamiento}}&nbsp;{{credito.colonia}} C.P. {{credito.cp}}&nbsp;</span> de Ciudad del Carmen,
+                Campeche,
+                el día <span></span> establecida como fecha de vencimiento, para realizar el pago de la cantidad de $
+                <span class="subrayado">&nbsp;{{credito.monto_total}}&nbsp;</span> (<span
+                    class="subrayado">&nbsp;{{credito.monto_total_letras}}&nbsp;</span>moneda nacional).
+                <br>
+                Valor recibido a mi entera satisfacción, Este pagaré está sujeto a la condición de que, al no pagarse a
+                su vencimiento, será exigible, desde la fecha de vencimiento de este documento hasta el día de su
+                liquidación, causará intereses moratorios al tipo de 2% por ciento mensual, pagadero en esta Ciudad del
+                Carmen, Campeche y que será exigible de acuerdo a la jurisdicción de los tribunales de la misma
+                conjuntamente con la suerte principal. El deudor reconoce que el presente pagaré podrá ser transmitido
+                por el "Tenedor" ya sea por ndoso o cesión ordinaria o cualquier otra forma permitida por la Ley para su
+                cobro, incluyendo el caso de transmisión, endoso o cesión del mismo no se requerirá protesto previo.
+            </p>
+        </div>
+
+        <div class="mt-2" style="font-size: 13px;">
+            <b>Datos del Deudor</b>
+        </div>
+        <div style="font-size: 14px;" class="mt-1">
+
+            <div>Nombre: <span class="subrayado">&nbsp;{{credito.nombre}} {{credito.apellido_materno}}
+                    {{credito.apellido_materno}}&nbsp;</span>
+            </div>
+
+            <div class="mt-2">Domicilio: <span class="subrayado">&nbsp;CALLE {{credito.calle}} {{credito.num_ext}},
+                    &nbsp;{{credito.tipo_asentamiento}}&nbsp;{{credito.colonia}}&nbsp;</span></div>
+
+            <div class="mt-2">Fecha de suscripción: ___________________________________________</div>
+
+        </div>
+
+        <div class="fw-bold mt-3" style="font-size: 13px;">
+            <b>A C E P T O:</b>
+        </div>
+
+        <div class="mt-5">
+            <div>_____________________</div>
+            <div style="font-size: 13px;">FIRMA DEUDOR</div>
+        </div>
+
+    </div>
+
+    {{!-- Hoja de amortización --}}
+    <div class="page">
+
+        <div class="row">
+            <div class="col">
+                <div style="margin-left: -20px;">
+                    <img style="height: 60px; " src="https://smapac.gob.mx/assets/images/proyecta_logo_gris.png" alt="">
+                </div>
+            </div>
+            <div class="col d-flex justify-content-end">
+                <div>
+                    {{!-- <div>Contrato de crédito No.:<span class="fw-bold text-danger">{{credito.num_contrato}}</span>
+                    </div>
+                    <div>Tarifa semanal:{{credito.monto_semanal}}</div>
+                    <div>Tarifa semanal:<span class="text-danger">{{credito.num_contrato}}</span></div>
+                    <div>Fecha primer pago:{{credito.monto_semanal}}</div> --}}
+                    <table class="encabezadoTable" style="font-size: 10px;">
+                        <tr>
+                            <td class="fw-bold text-end">Contrato de crédito No.:</td>
+                            <td style="width: 200px; border-bottom: 1px solid black;"
+                                class="fw-bold text-center bg-encabezado">{{credito.num_contrato}}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-end">Importe:</td>
+                            <td style="padding-right: 10px;" class="text-end bg-encabezado">${{credito.monto_otorgado2}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-end">Tarifa semanal:</td>
+                            <td class="text-end bg-encabezado"
+                                style="padding-right: 10px; border-top: 1px solid black;">
+                                ${{credito.monto_semanal}}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-end">Fecha primer pago:</td>
+                            <td class="text-center bg-encabezado" style="border-top: 1px solid black;">
+                                martes, {{rows.0.dia_pago}} de {{rows.0.mes_letra_fin}} de
+                                {{rows.0.año_pago}}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center fw-bold mt-2" style="font-size: 10px; border-bottom: 2px solid black;">
+            Tabla de Amortización
+        </div>
+
+        <table class="customTable mt-1" style="font-size: 10px;">
+            <thead>
+                <th class="text-center">No. pago <br> (periodo)</th>
+                <th class="text-center">Amortización</th>
+                <th class="text-center">Fecha de pago</th>
+                <th class="text-center" style="width: 100px;">Pago a realizar</th>
+                <th class="text-center" style="width: 100px;">Saldo al Final del Periodo</th>
+            </thead>
+            <tbody>
+                {{#each rows}}
+                <tr>
+                    <td class="text-center fw-bold">{{this.num_semana}}</td>
+                    <td class="text-end" style="padding-right: 10px;">${{this.amortizacion}}</td>
+                    <td class="text-center fw-bold">martes, {{this.dia_pago}} de {{this.mes_letra_fin}} de
+                        {{this.año_pago}}</td>
+                    <td class="text-end fw-bold" style="padding-right: 10px;">${{this.monto_semanal}}</td>
+                    <td class="text-end" style="padding-right: 10px;">
+                        {{this.monto_fin_periodo}}
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+
+        <div style="font-size: 10px;">
+
+            <div class="row mt-5">
+                <div class="col-3">
+                    <span class="fw-bold">
+                        Nombre del Cliente:
+                    </span>
+                </div>
+                <div class="col-6">
+                    <div class="bg-encabezado"
+                        style="padding: 5px 0px 0px 10px; height: 25px; border-bottom: 1px solid black;">
+                        {{credito.nombre}} {{credito.apellido_paterno}} {{credito.apellido_materno}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-3">
+                    <span class="fw-bold">
+                        Firma:
+                    </span>
+                </div>
+                <div class="col-6">
+                    <div class="bg-encabezado" style="height: 70px; border: 1px solid black;"></div>
+                </div>
+            </div>
+
+            <div class="text-center mt-3" style="font-style: italic;">Recuerda que pagar puntual tiene grandes
+                beneficios con Proyecta</div>
+
+        </div>
+
+    </div>
+
+    {{!-- Hoja de amortización - COPIA 2--}}
+    <div class="page">
+
+        <div class="row">
+            <div class="col">
+                <div style="margin-left: -20px;">
+                    <img style="height: 60px; " src="https://smapac.gob.mx/assets/images/proyecta_logo_gris.png" alt="">
+                </div>
+            </div>
+            <div class="col d-flex justify-content-end">
+                <div>
+                    {{!-- <div>Contrato de crédito No.:<span class="fw-bold text-danger">{{credito.num_contrato}}</span>
+                    </div>
+                    <div>Tarifa semanal:{{credito.monto_semanal}}</div>
+                    <div>Tarifa semanal:<span class="text-danger">{{credito.num_contrato}}</span></div>
+                    <div>Fecha primer pago:{{credito.monto_semanal}}</div> --}}
+                    <table class="encabezadoTable" style="font-size: 10px;">
+                        <tr>
+                            <td class="fw-bold text-end">Contrato de crédito No.:</td>
+                            <td style="width: 200px; border-bottom: 1px solid black;"
+                                class="fw-bold text-center bg-encabezado">{{credito.num_contrato}}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-end">Importe:</td>
+                            <td style="padding-right: 10px;" class="text-end bg-encabezado">${{credito.monto_otorgado2}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-end">Tarifa semanal:</td>
+                            <td class="text-end bg-encabezado"
+                                style="padding-right: 10px; border-top: 1px solid black;">
+                                ${{credito.monto_semanal}}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-end">Fecha primer pago:</td>
+                            <td class="text-center bg-encabezado" style="border-top: 1px solid black;">
+                                martes, {{rows.0.dia_pago}} de {{rows.0.mes_letra_fin}} de
+                                {{rows.0.año_pago}}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center fw-bold mt-2" style="font-size: 10px; border-bottom: 2px solid black;">
+            Tabla de Amortización
+        </div>
+
+        <table class="customTable mt-1" style="font-size: 10px;">
+            <thead>
+                <th class="text-center">No. pago <br> (periodo)</th>
+                <th class="text-center">Amortización</th>
+                <th class="text-center">Fecha de pago</th>
+                <th class="text-center" style="width: 100px;">Pago a realizar</th>
+                <th class="text-center" style="width: 100px;">Saldo al Final del Periodo</th>
+            </thead>
+            <tbody>
+                {{#each rows}}
+                <tr>
+                    <td class="text-center fw-bold">{{this.num_semana}}</td>
+                    <td class="text-end" style="padding-right: 10px;">${{this.amortizacion}}</td>
+                    <td class="text-center fw-bold">martes, {{this.dia_pago}} de {{this.mes_letra_fin}} de
+                        {{this.año_pago}}</td>
+                    <td class="text-end fw-bold" style="padding-right: 10px;">${{this.monto_semanal}}</td>
+                    <td class="text-end" style="padding-right: 10px;">
+                        {{this.monto_fin_periodo}}
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+
+        <div style="font-size: 10px;">
+
+            <div class="row mt-5">
+                <div class="col-3">
+                    <span class="fw-bold">
+                        Nombre del Cliente:
+                    </span>
+                </div>
+                <div class="col-6">
+                    <div class="bg-encabezado"
+                        style="padding: 5px 0px 0px 10px; height: 25px; border-bottom: 1px solid black;">
+                        {{credito.nombre}} {{credito.apellido_paterno}} {{credito.apellido_materno}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-3">
+                    <span class="fw-bold">
+                        Firma:
+                    </span>
+                </div>
+                <div class="col-6">
+                    <div class="bg-encabezado" style="height: 70px; border: 1px solid black;"></div>
+                </div>
+            </div>
+
+            <div class="text-center mt-3" style="font-style: italic;">Recuerda que pagar puntual tiene grandes
+                beneficios con Proyecta</div>
+
+        </div>
+
+    </div>
+
+
+</body>
+
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>Amortizacion</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<style>
+    table {
+        width: 100%;
+        padding: 0;
+    }
+
+    .customTable th,
+    .customTable td {
+        border: 1px solid #5d5d5d;
+        padding-left: 10px;
+    }
+
+    .encabezadoTable th,
+    .encabezadoTable td {
+        padding-left: 10px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .page{
+        height: 981px;
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+
+    .bg-encabezado {
+        background-color: rgb(238, 238, 238);
+    }
+
+    .encabezado {
+        font-size: 11px;
+        text-align: center;
+    }
+
+    .subrayado {
+        text-decoration: underline;
+    }
+
+    .fs7 {
+        font-size: 9px;
+    }
+
+    .fs8 {
+        font-size: 10px;
+    }
+</style>
+
+<body>
+
+    <div class="page">
+
+        <div class="row">
+            <div class="col">
+                <div style="margin-left: -20px;">
+                    <img style="height: 60px; " src="https://smapac.gob.mx/assets/images/proyecta_logo_gris.png" alt="">
+                </div>
+            </div>
+            <div class="col d-flex justify-content-end">
+                <div>
+                    {{!-- <div>Contrato de crédito No.:<span class="fw-bold text-danger">{{credito.num_contrato}}</span>
+                    </div>
+                    <div>Tarifa semanal:{{credito.monto_semanal}}</div>
+                    <div>Tarifa semanal:<span class="text-danger">{{credito.num_contrato}}</span></div>
+                    <div>Fecha primer pago:{{credito.monto_semanal}}</div> --}}
+                    <table class="encabezadoTable" style="font-size: 10px;">
+                        <tr>
+                            <td class="fw-bold text-end">Contrato de crédito No.:</td>
+                            <td style="width: 200px; border-bottom: 1px solid black;"
+                                class="fw-bold text-center bg-encabezado">{{credito.num_contrato}}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-end">Importe:</td>
+                            <td style="padding-right: 10px;" class="text-end bg-encabezado">${{credito.monto_otorgado2}}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-end">Tarifa semanal:</td>
+                            <td class="text-end bg-encabezado" style="padding-right: 10px; border-top: 1px solid black;">
+                                ${{credito.monto_semanal}}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-end">Fecha primer pago:</td>
+                            <td class="text-center bg-encabezado" style="border-top: 1px solid black;">
+                                martes, {{rows.0.dia_pago}} de {{rows.0.mes_letra_fin}} de
+                                {{rows.0.año_pago}}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center fw-bold mt-2" style="font-size: 10px; border-bottom: 2px solid black;">
+            Tabla de Amortización
+        </div>
+
+        <table class="customTable mt-1" style="font-size: 10px;">
+            <thead>
+                <th class="text-center">No. pago <br> (periodo)</th>
+                <th class="text-center">Amortización</th>
+                <th class="text-center">Fecha de pago</th>
+                <th class="text-center" style="width: 100px;">Pago a realizar</th>
+                <th class="text-center" style="width: 100px;">Saldo al Final del Periodo</th>
+            </thead>
+            <tbody>
+                {{#each rows}}
+                <tr>
+                    <td class="text-center fw-bold">{{this.num_semana}}</td>
+                    <td class="text-end" style="padding-right: 10px;">${{this.amortizacion}}</td>
+                    <td class="text-center fw-bold">martes, {{this.dia_pago}} de {{this.mes_letra_fin}} de
+                        {{this.año_pago}}</td>
+                    <td class="text-end fw-bold" style="padding-right: 10px;">${{this.monto_semanal}}</td>
+                    <td class="text-end" style="padding-right: 10px;">
+                        {{this.monto_fin_periodo}}
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+
+        <div style="font-size: 10px;">
+
+            <div class="row mt-5">
+                <div class="col-3">
+                    <span class="fw-bold">
+                        Nombre del Cliente:
+                    </span>
+                </div>
+                <div class="col-6">
+                    <div class="bg-encabezado"
+                        style="padding: 5px 0px 0px 10px; height: 25px; border-bottom: 1px solid black;">
+                        {{credito.nombre}} {{credito.apellido_paterno}} {{credito.apellido_materno}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-3">
+                    <span class="fw-bold">
+                        Firma:
+                    </span>
+                </div>
+                <div class="col-6">
+                    <div class="bg-encabezado" style="height: 70px; border: 1px solid black;"></div>
+                </div>
+            </div>
+
+            <div class="text-center mt-3" style="font-style: italic;">Recuerda que pagar puntual tiene grandes
+                beneficios con Proyecta</div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,45 @@
+
+
+
+const paths = {
+    
+    auth                        : '/api/auth',
+    agencias                    : '/api/agencias',
+    balances                    : '/api/balances',
+    blacklist                   : '/api/blacklist',
+    clientes                    : '/api/clientes',
+    clienteParentela            : '/api/clientes/parentela',
+    colonias                    : '/api/colonias',
+    contratos                   : '/api/contratos',
+    creditos                    : '/api/creditos',
+    datasheet                   : '/api/datasheet',
+    direcciones                 : '/api/direcciones',
+    eventos                     : '/api/eventos',
+    groups                      : '/api/groups',
+    groupRole                   : '/api/groups_roles',
+    montos                      : '/api/montos',
+    ocupaciones                 : '/api/ocupaciones',
+    pagos                       : '/api/pagos',
+    roles                       : '/api/roles',
+    servicios                   : '/api/servicios',
+    solicitudes                 : '/api/solicitudes',
+    sucursales                  : '/api/sucursales',
+    tarifas                     : '/api/tarifas',
+    tipoAsentamiento            : '/api/tipos/asentamiento',
+    tipoCliente                 : '/api/tipos/cliente',
+    tipoContrato                : '/api/tipos/contrato',
+    tipoCredito                 : '/api/tipos/credito',
+    tipoEmpleo                  : '/api/tipos/empleo',
+    tipoEstatusContrato         : '/api/tipos/estatus/contrato',
+    tipoEstatusCredito          : '/api/tipos/estatus/credito',
+    tipoEstatusSolicitud        : '/api/tipos/estatus/solicitud',
+    tipofuenteFinanciamiento    : '/api/tipos/fuente_financiamiento',
+    identificacion              : '/api/tipos/identificacion',
+    tipoParentesco              : '/api/tipos/parentesco',
+    userGroup                   : '/api/usuarios_groups',
+    userRole                    : '/api/usuarios_roles',
+    usuarios                    : '/api/usuarios',
+    zonas                       : '/api/zonas',
+}
+
+module.exports = paths;
