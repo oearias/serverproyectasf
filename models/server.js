@@ -73,8 +73,12 @@ class Server {
 
     listen() {
 
+        const fechaHoy = new Date()
+
         this.app.listen(process.env.PORT, () => {
             console.log('Server running on port:', this.port);
+            console.log(fechaHoy);
+
         })
     }
 }
