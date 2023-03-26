@@ -77,7 +77,8 @@ const solicitudCreditoPost = async (req, res = response) => {
         //preguntamos si ya existe el cliente_id, sino existe lo creamos
         if (!req.body.cliente_id) {
 
-            req.body.cliente.sucursal_id = req.body.sucursal_id;
+            // req.body.cliente.sucursal_id = req.body.sucursal_id;
+            req.body.cliente.agencia_id = req.body.agencia_id;
 
             let queryInsertClient = buildPostQuery(tableUSer, req.body.cliente);
 

@@ -21,6 +21,7 @@ const paths = {
     ocupaciones                 : '/api/ocupaciones',
     pagos                       : '/api/pagos',
     roles                       : '/api/roles',
+    semanas                     : '/api/semanas',    
     servicios                   : '/api/servicios',
     solicitudes                 : '/api/solicitudes',
     sucursales                  : '/api/sucursales',

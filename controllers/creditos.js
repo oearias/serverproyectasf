@@ -89,7 +89,12 @@ const creditoPost = async (req, res = response) => {
 
         const { id, num_contrato } = rows[0];
 
-        const createWeeksCounter = `CALL pr_create_weeks_counter(${id}, '${fecha_inicio}')`;
+        //Crea el balance semanal
+        //const createWeeksCounter = `CALL pr_create_weeks_counter(${id}, '${fecha_inicio}')`;
+
+        //FASE DE DESARROLLO
+        const createWeeksCounter = `CALL pr_create_weeks_counter_test(${id}, '${fecha_inicio}')`;
+
         const changeEstatusSolicitud = `CALL pr_change_estatus_solicitud_credito(${solicitud_id})`;
 
         const procedimientos = [

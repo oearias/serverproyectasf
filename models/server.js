@@ -26,6 +26,10 @@ class Server {
         this.app.set('view engine', 'hbs');
 
         this.app.use(express.urlencoded({ extended: true }));
+
+        //Directorio público
+        this.app.use(express.static('public'));
+
     }
 
     routes() {
@@ -45,6 +49,7 @@ class Server {
         this.app.use(paths.ocupaciones, require('../routes/ocupaciones.routes'));
         this.app.use(paths.pagos, require('../routes/pagos.routes'));
         this.app.use(paths.roles, require('../routes/roles.routes'));
+        this.app.use(paths.semanas, require('../routes/semanas.routes'));
         this.app.use(paths.sucursales, require('../routes/sucursales.routes'));
         this.app.use(paths.servicios, require('../routes/servicios.routes'));
         this.app.use(paths.solicitudes, require('../routes/solicitud_credito.routes'));

@@ -311,7 +311,8 @@ const generateAmortizacion = async (result = []) => {
 
 
         if (rows.length) {
-            console.log('Ya terminó el man');
+
+            //console.log('Ya terminó el man');
 
             console.log(rows);
 
@@ -327,6 +328,27 @@ const generateAmortizacion = async (result = []) => {
         fechaToCompare = new Date(fechaToCompare.getFullYear(), fechaToCompare.getMonth(), fechaToCompare.getDate());
 
         let num_semana = 1;
+
+
+        ////En este bloque calculamos la semana del año, para eso tomamos la fecha inicial y un dia deespues para que solo delimite una semana del resultado de la query
+        let fechaWeekyear = new Date(fecha_inicial);
+        let fechaWeekyear2 = fechaWeekyear;
+        fechaWeekyear.setDate(fechaWeekyear.getDate());
+        fechaWeekyear2.setDate(fechaWeekyear.getDate() +1 )
+        fechaWeekyear = fechaWeekyear.toISOString().slice(0, 10);
+        fechaWeekyear2 = fechaWeekyear2.toISOString().slice(0, 10);
+
+        console.log(fechaWeekyear);
+
+        const resultado_weekyear = await pool.query(`
+        SELECT a.weekyear
+        FROM dbo.semanas a
+        WHERE '${fechaWeekyear}' >= a.fecha_inicio AND '${fechaWeekyear}' <= a.fecha_fin
+        AND '${fechaWeekyear2}' >= a.fecha_inicio AND '${fechaWeekyear2}' <= a.fecha_fin
+    `);
+
+
+        let semana_weekyear = resultado_weekyear.rows[0]['weekyear'];
 
 
         //Hacemos el For de la amortizacion
@@ -347,6 +369,8 @@ const generateAmortizacion = async (result = []) => {
             let transcurriendo = null;
 
 
+
+
             //intentando sumar un día aquí estaba y todo marchaba bien pero no pude sumar un día, lo tueve que sacar del for
             //fechaToCompare = new Date(fechaToCompare.getFullYear(), fechaToCompare.getMonth(), fechaToCompare.getDate() + 1 );
 
@@ -357,7 +381,10 @@ const generateAmortizacion = async (result = []) => {
 
             let fecha2 = new Date(fecha);
             let fechac2 = fecha2;
-            fecha2.setDate(fecha2.getDate() + (6));
+
+            //fecha2.setDate(fecha2.getDate() + (6)); //Este funciona pero solo establece el limite de Martes a Lunes
+            //DESARROLLO. Intentemos sumar un día mas a la fecha_fin de la semana
+            fecha2.setDate(fecha2.getDate() + (7));
             fecha2 = fecha2.toISOString().slice(0, 10);
 
             let fec1 = new Date(fechac1.getFullYear(), fechac1.getMonth(), fechac1.getDate());
@@ -378,9 +405,10 @@ const generateAmortizacion = async (result = []) => {
 
             console.log('transcurrida', transcurrida);
             console.log('transcurriendo', transcurriendo);
-            console.log(fechaToCompare);
+            //console.log(fechaToCompare);
             console.log(fec1);
             console.log(fec2);
+
 
             //Calculamos la fecha en que inician los recargos
             let fecha_inicio_recargo = new Date(fecha);
@@ -392,22 +420,53 @@ const generateAmortizacion = async (result = []) => {
             fecha_fin_recargo = fecha_fin_recargo.toISOString().slice(0, 10);
 
 
+            // const { rows } = await pool.query(`
+            // SELECT a.credito_id,
+            //             b.num_semana,
+            //             a.folio,
+            //             a.monto as monto_pagado,
+            //             (SELECT 
+            //     SUM(z.monto) as suma_monto_pagado
+            //     FROM dbo.pagos z
+            //     INNER JOIN 
+            //     dbo.balance_semanal x 
+            //     ON z.credito_id = x.credito_id 
+            //     AND z.cancelado IS NULL
+            //     AND z.fecha >= x.fecha_inicio AND z.fecha <= x.fecha_fin
+            //     AND z.fecha BETWEEN  '${fecha}' AND '${fecha2}'
+            //     AND z.credito_id = ${credito_id}
+            //         ) as suma_monto_pagado,
+            //             a.fecha as fecha_pago
+            // FROM dbo.pagos a
+            // INNER JOIN dbo.balance_semanal b 
+            // ON a.credito_id = b.credito_id 
+            // AND a.fecha BETWEEN  '${fecha}' AND '${fecha2}'
+            // AND a.fecha >= b.fecha_inicio AND a.fecha <= b.fecha_fin 
+            // AND a.credito_id = ${credito_id}
+            // AND a.cancelado IS NULL
+            // GROUP BY b.num_semana, a.id, b.id
+            // ORDER BY a.credito_id, b.num_semana;
+            //         `);
+
             const { rows } = await pool.query(`
             SELECT a.credito_id,
+                        b.weekyear,
                         b.num_semana,
                         a.folio,
                         a.monto as monto_pagado,
                         (SELECT 
-                SUM(z.monto) as suma_monto_pagado
-                FROM dbo.pagos z
-                INNER JOIN 
-                dbo.balance_semanal x 
-                ON z.credito_id = x.credito_id 
-                AND z.cancelado IS NULL
-                AND z.fecha >= x.fecha_inicio AND z.fecha <= x.fecha_fin
-                AND z.fecha BETWEEN  '${fecha}' AND '${fecha2}'
-                AND z.credito_id = ${credito_id}
-                    ) as suma_monto_pagado,
+                            SUM(z.monto) as suma_monto_pagado
+                            FROM dbo.pagos z
+                            INNER JOIN 
+                            dbo.balance_semanal x 
+                            ON z.credito_id = x.credito_id 
+                            AND z.cancelado IS NULL
+                            AND z.fecha >= x.fecha_inicio AND z.fecha <= x.fecha_fin
+                            AND z.fecha BETWEEN  '${fecha}' AND '${fecha2}'
+                            AND z.weekyear = x.weekyear
+                            AND z.weekyear = ${semana_weekyear}
+                            AND z.credito_id = ${credito_id}
+                        ) as suma_monto_pagado,
                         a.fecha as fecha_pago
             FROM dbo.pagos a
             INNER JOIN dbo.balance_semanal b 
@@ -416,6 +475,8 @@ const generateAmortizacion = async (result = []) => {
             AND a.fecha >= b.fecha_inicio AND a.fecha <= b.fecha_fin 
             AND a.credito_id = ${credito_id}
             AND a.cancelado IS NULL
+            AND a.weekyear = b.weekyear
+            AND a.weekyear = ${semana_weekyear}
             GROUP BY b.num_semana, a.id, b.id
             ORDER BY a.credito_id, b.num_semana;
                     `);
@@ -439,6 +500,8 @@ const generateAmortizacion = async (result = []) => {
             if (suma_monto_pagado >= monto_semanal) {
                 pago_cubierto = 1;
 
+                console.log('se cubrio el pago');
+
 
 
                 //TODO:
@@ -451,7 +514,13 @@ const generateAmortizacion = async (result = []) => {
                 console.log(fecha);
                 console.log(fecha2);
 
-                const { rows } = await pool.query(`SELECT fecha FROM dbo.pagos a WHERE a.credito_id = ${credito_id} AND a.fecha BETWEEN '${fecha_inicio_recargo}' AND  '${fecha_fin_recargo}' AND a.cancelado IS NULL `);
+                const { rows } = await pool.query(`
+                    SELECT fecha 
+                    FROM dbo.pagos a 
+                    WHERE a.credito_id = ${credito_id} 
+                    AND a.fecha BETWEEN '${fecha_inicio_recargo}' AND  '${fecha_fin_recargo}' 
+                    AND a.cancelado IS NULL
+                    AND a.weekyear =  ${semana_weekyear}`);
 
 
                 if (rows.length > 0) {
@@ -498,7 +567,7 @@ const generateAmortizacion = async (result = []) => {
 
                     //PENALIZACION RECALCULABLE
                     //Preguntamos si es recalculable la semana
-                    if ( fecha_ultimo_pago != null && fecha_ultimo_pago < fec2) {
+                    if (fecha_ultimo_pago != null && fecha_ultimo_pago < fec2) {
                         dias_penalizacion = 0
                     }
                 }
@@ -514,7 +583,7 @@ const generateAmortizacion = async (result = []) => {
 
                     //PENALIZACION RECALCULABLE
                     //Preguntamos si es recalculable la semana
-                    if ( fecha_ultimo_pago != null && fecha_ultimo_pago < fec2) {
+                    if (fecha_ultimo_pago != null && fecha_ultimo_pago < fec2) {
                         dias_penalizacion = null
                     }
                 } else {
@@ -532,13 +601,18 @@ const generateAmortizacion = async (result = []) => {
                             //calculamos cuantos dias de penalizacion
                             let diferencia = Date.parse(fechaHoy) - Date.parse(fecha_inicio_recargo);
                             let diferenciaDias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
-                            //dias_penalizacion = diferenciaDias + 1;
-                            dias_penalizacion = diferenciaDias;
+                            console.log(fecha_inicio_recargo);
+                            console.log(fechaHoy);
+                            console.log(diferenciaDias);
+
+                            //Aqui hay que ver por que aveces necesita el mas uno y a veces no
+                            dias_penalizacion = diferenciaDias + 1;
+                            //dias_penalizacion = diferenciaDias;
                         }
 
                         //PENALIZACION RECALCULABLE
                         //Preguntamos si es recalculable la semana
-                        if ( fecha_ultimo_pago != null && fecha_ultimo_pago < fec2) {
+                        if (fecha_ultimo_pago != null && fecha_ultimo_pago < fec2) {
                             console.log('aplica el null');
                             dias_penalizacion = null
                         }
@@ -554,12 +628,19 @@ const generateAmortizacion = async (result = []) => {
             penalizacion_total += penalizacion_semanal;
             pagado_total += Number(suma_monto_pagado);
 
+            //Restamos el día de la penalización de mas
+            if(dias_penalizacion > 5){
+                console.log('si hay penas');
+                dias_penalizacion = 5
+            }
+
             //si ya se termino de pagar el credito guardamos en la base de datos
             //que datos necesitamos credito_id, num_semana, fecha, y los totales
 
 
 
             semanas.push({
+                weekyear:semana_weekyear,
                 num_semana: i + 1,
                 fecha_inicio: fecha,
                 fecha_fin: fecha2,
@@ -576,6 +657,7 @@ const generateAmortizacion = async (result = []) => {
             });
 
             num_semana++;
+            semana_weekyear++;
 
         }//Cierre For
 

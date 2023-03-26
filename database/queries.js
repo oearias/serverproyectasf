@@ -52,10 +52,16 @@ const queries = {
                             WHERE id = $2 RETURNING *`,
     deletePago:             `DELETE FROM dbo.pagos WHERE id = $1 RETURNING *`,
 
+    getSemana:              `SELECT id, fecha_inicio, fecha_fin, weekyear, year, estatus FROM dbo.semanas WHERE id = $1`,
+    getSemanas:             `SELECT id, fecha_inicio, fecha_fin, weekyear, year, estatus FROM dbo.semanas ORDER BY year desc, weekyear desc`,
+    insertSemana:           `INSERT INTO dbo.semanas (fecha_inicio, fecha_fin, weekyear, year, estatus) VALUES($1, $2, $3, $4, $5) RETURNING *`,
+    updateSemana:           `UPDATE dbo.semanas SET fecha_inicio = $1, fecha_fin = $2, weekyear = $3, year = $4, estatus = $5 WHERE id = $6 RETURNING*`,
+    deleteSemana:           `DELETE FROM dbo.semanas WHERE id = $1 RETURNING *`,
+
     getSucursales:          'SELECT * FROM dbo.sucursales order by nombre',
     getSucursal:            'SELECT * FROM dbo.sucursales WHERE id = $1',
     insertSucursal:         'INSERT INTO dbo.sucursales (nombre, clave) VALUES($1, $2) RETURNING *',
-    updateSucursal:         'UPDATE dbo.sucursales set nombre = $1, clave = $2 WHERE id = $3 RETURNING *',
+    updateSucursal:         'UPDATE dbo.sucursales SET nombre = $1, clave = $2 WHERE id = $3 RETURNING *',
     deleteSucursal:         'DELETE FROM dbo.sucursales WHERE id = $1 RETURNING *',
 
     getCliente:             `SELECT
