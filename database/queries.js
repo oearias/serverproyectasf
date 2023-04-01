@@ -46,11 +46,25 @@ const queries = {
                             a.credito_id = $1
                             ORDER BY a.fecha DESC`,
 
-    insertPago:             `INSERT INTO dbo.pagos (credito_id, fecha, hora, monto, metodo_pago, weekyear) VALUES($1, $2, $3, $4, $5, $6) RETURNING *`,
+    insertPago:             `INSERT INTO dbo.pagos (credito_id, fecha, monto, weekyear, folio, serie) VALUES($1, $2, $3, $4, $5, $6) RETURNING *`,
     updatePago:             `UPDATE dbo.pagos 
                             SET observaciones = $1, cancelado = 1 
                             WHERE id = $2 RETURNING *`,
     deletePago:             `DELETE FROM dbo.pagos WHERE id = $1 RETURNING *`,
+
+    getSeriePago:           `SELECT c.nombre as agencia, d.nombre as zona
+                            FROM 
+                            dbo.creditos a
+                            INNER JOIN
+                            dbo.clientes b
+                            on a.cliente_id = b.id
+                            INNER JOIN
+                            dbo.agencias c
+                            on b.agencia_id = c.id
+                            INNER JOIN
+                            dbo.zonas d
+                            on c.zona_id = d.id
+                            WHERE a.id = $1 `,
 
     getSemana:              `SELECT id, fecha_inicio, fecha_fin, weekyear, year, estatus FROM dbo.semanas WHERE id = $1`,
     getSemanas:             `SELECT id, fecha_inicio, fecha_fin, weekyear, year, estatus FROM dbo.semanas ORDER BY year desc, weekyear desc`,
@@ -847,6 +861,7 @@ const queries = {
     getAmortizacion:                    `SELECT
                                         a.id as credito_id,
                                         a.fecha_inicio_prog,
+                                        a.fecha_inicio_real,
                                         a.monto_otorgado,
                                         a.monto_total,
                                         c.num_semanas

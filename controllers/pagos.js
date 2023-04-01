@@ -72,10 +72,19 @@ const pagoPost = async (req, res = response) => {
 
     try {
 
-        const { credito_id, fecha, hora, monto, metodo_pago, weekyear } = req.body;
+        const { credito_id, fecha, monto, folio, weekyear } = req.body;
 
-        const values = [ credito_id, fecha, hora, monto, metodo_pago, weekyear];
+        const arreglo_credito_id = [credito_id]
 
+        //Obtenemos la serie
+        const resultado = await pool.query(queries.getSeriePago, arreglo_credito_id);
+        
+        const agencia = resultado.rows[0]['agencia'];
+        const zona = resultado.rows[0]['zona'];
+        const serie = `${zona}-${agencia}-${folio}`;
+        
+
+        const values = [ credito_id, fecha, monto, weekyear, folio, serie];
         const result = await pool.query(queries.insertPago, values);
 
         //Esta linea tengo que ver si todavía es util

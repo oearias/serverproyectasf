@@ -268,10 +268,13 @@ const amortizacionGet = async (req, res = response) => {
 
     try {
 
+        console.log(req.params);
+
         const { id } = req.params;
         const values = [id];
 
         const { rows } = await pool.query(queries.getAmortizacion, values);
+
 
         //necesitamos saber datos generales del credito, tarifa num de semanas, monto semanal y monto total.
         const resultado = await generateAmortizacion(rows);
@@ -294,6 +297,7 @@ const amortizacionPost = async (req, res = response) => {
 
     try {
 
+        //Aqui tengo pendiente el ver como se envia el req.body ya que se realizaron algunos cambios al generateAmortizacion sobretodo por el [0]
         const resultado = await generateAmortizacion(req.body);
 
         res.status(200).json(

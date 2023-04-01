@@ -280,12 +280,13 @@ const generateAmortizacion = async (result = []) => {
 
     try {
 
-        const credito_id = result['id'];
-        const monto_total = Number(result['monto_total']);
-        const semanas = [];
+        const credito_id = result[0]['credito_id'];
+        const monto_otorgado = Number(result[0]['monto_otorgado']);
+        const monto_total = Number(result[0]['monto_total']);
+        let semanas = [];
         //const fecha_inicial = result['fecha_inicio_prog'];
-        const fecha_inicial = result['fecha_inicio_real'];
-        const monto_semanal = result['monto_total'] / result['num_semanas'];
+        const fecha_inicial = result[0]['fecha_inicio_real'];
+        const monto_semanal = result[0]['monto_total'] / result[0]['num_semanas'];
 
         //TOTALES
         let penalizacion_total = 0;
@@ -310,11 +311,11 @@ const generateAmortizacion = async (result = []) => {
         `);
 
 
+
         if (rows.length) {
 
             //console.log('Ya terminó el man');
 
-            console.log(rows);
 
             fecha_ultimo_pago = rows[0]['fecha_finalizacion'];
             //fechaToCompare = new Date(rows[0]['fecha_finalizacion']);
@@ -332,27 +333,44 @@ const generateAmortizacion = async (result = []) => {
 
         ////En este bloque calculamos la semana del año, para eso tomamos la fecha inicial y un dia deespues para que solo delimite una semana del resultado de la query
         let fechaWeekyear = new Date(fecha_inicial);
-        let fechaWeekyear2 = fechaWeekyear;
-        fechaWeekyear.setDate(fechaWeekyear.getDate());
-        fechaWeekyear2.setDate(fechaWeekyear.getDate() +1 )
-        fechaWeekyear = fechaWeekyear.toISOString().slice(0, 10);
-        fechaWeekyear2 = fechaWeekyear2.toISOString().slice(0, 10);
 
-        console.log(fechaWeekyear);
+
+        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+        fechaFormateada = fechaWeekyear.toISOString('es-ES', options).replace(/\//g, '-').slice(0, 10);
+        
+        let fechaWeekyear2 = fechaWeekyear;
+        fechaWeekyear.setDate(fechaWeekyear.getDate() );
+        fechaWeekyear2.setDate(fechaWeekyear.getDate() +1 );
+
+        fechaFormateada2 = fechaWeekyear.toISOString('es-ES', options).replace(/\//g, '-').slice(0, 10);
+
+        console.log('fechaa',fechaFormateada);
+        console.log('fechaa2',fechaFormateada2);
+        
+        //fechaWeekyear = fechaWeekyear.toISOString().slice(0, 10);
+        //fechaWeekyear2 = fechaWeekyear2.toISOString().slice(0, 10);
+        
+        
+        // console.log(fecha_inicial);
+        // console.log(fechaWeekyear);
+        // console.log(fechaWeekyear2);
+        // console.log(fechaWeekyear3);
 
         const resultado_weekyear = await pool.query(`
         SELECT a.weekyear
         FROM dbo.semanas a
-        WHERE '${fechaWeekyear}' >= a.fecha_inicio AND '${fechaWeekyear}' <= a.fecha_fin
-        AND '${fechaWeekyear2}' >= a.fecha_inicio AND '${fechaWeekyear2}' <= a.fecha_fin
+        WHERE '${fechaFormateada}' >= a.fecha_inicio AND '${fechaFormateada}' <= a.fecha_fin
+        AND '${fechaFormateada2}' >= a.fecha_inicio AND '${fechaFormateada2}' <= a.fecha_fin
     `);
 
 
         let semana_weekyear = resultado_weekyear.rows[0]['weekyear'];
 
+        console.log(semana_weekyear);
+
 
         //Hacemos el For de la amortizacion
-        for (let i = 0; i < result['num_semanas']; i++) {
+        for (let i = 0; i < result[0]['num_semanas']; i++) {
 
             console.log('////////////////////////////');
             console.log('num de semana: ', num_semana);
@@ -367,6 +385,7 @@ const generateAmortizacion = async (result = []) => {
             let genera_recargo = null;
             let transcurrida = null;
             let transcurriendo = null;
+
 
 
 
@@ -405,6 +424,7 @@ const generateAmortizacion = async (result = []) => {
 
             console.log('transcurrida', transcurrida);
             console.log('transcurriendo', transcurriendo);
+            console.log('semana year',semana_weekyear);
             //console.log(fechaToCompare);
             console.log(fec1);
             console.log(fec2);
@@ -448,6 +468,7 @@ const generateAmortizacion = async (result = []) => {
             // ORDER BY a.credito_id, b.num_semana;
             //         `);
 
+
             const { rows } = await pool.query(`
             SELECT a.credito_id,
                         b.weekyear,
@@ -485,6 +506,8 @@ const generateAmortizacion = async (result = []) => {
             if (rows.length > 0) {
                 suma_monto_pagado = rows[0]['suma_monto_pagado'];
                 monto_pagado = rows[0]['monto_pagado'];
+
+                console.log(rows[0]['suma_monto_pagado']);
                 //fecha_pago = rows[0]['fecha'];
             } else {
                 suma_monto_pagado = 0;
@@ -497,7 +520,7 @@ const generateAmortizacion = async (result = []) => {
 
 
             //Preguntamos si se cubrió el pago
-            if (suma_monto_pagado >= monto_semanal) {
+            if ( suma_monto_pagado >= monto_semanal) {
                 pago_cubierto = 1;
 
                 console.log('se cubrio el pago');
@@ -622,17 +645,19 @@ const generateAmortizacion = async (result = []) => {
                 }
             }
 
-            penalizacion_semanal = (monto_total * dias_penalizacion) / 100;
-            adeudo_semanal = (monto_semanal + penalizacion_semanal) - suma_monto_pagado;
-
-            penalizacion_total += penalizacion_semanal;
-            pagado_total += Number(suma_monto_pagado);
-
             //Restamos el día de la penalización de mas
             if(dias_penalizacion > 5){
                 console.log('si hay penas');
                 dias_penalizacion = 5
             }
+
+            penalizacion_semanal = (monto_otorgado * dias_penalizacion) / 100;
+            adeudo_semanal = (monto_semanal + penalizacion_semanal) - suma_monto_pagado;
+
+            penalizacion_total += penalizacion_semanal;
+            pagado_total += Number(suma_monto_pagado);
+
+            
 
             //si ya se termino de pagar el credito guardamos en la base de datos
             //que datos necesitamos credito_id, num_semana, fecha, y los totales
