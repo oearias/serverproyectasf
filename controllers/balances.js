@@ -23,8 +23,6 @@ const balanceGet = async (req, res = response) => {
 
         const result = await pool.query(queries.getBalance, values);
 
-        console.log(result.rows[0]);
-
         res.status(200).json(
             result.rows[0]
         );

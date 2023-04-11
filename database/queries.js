@@ -149,6 +149,7 @@ const queries = {
                             a.vivienda, a.vivienda_otra,
                             a.num_dependientes, 
                             a.tiempo_vivienda_años, a.tiempo_vivienda_meses,
+                            a.observaciones_negocio,
                             a.tiempo_empleo_años, a.tiempo_empleo_meses, 
                             a.fecha_creacion, 
                             a.calle, a.num_ext, a.num_int, 
@@ -576,6 +577,7 @@ const queries = {
                         a.monto_otorgado, 
                         a.fecha_creacion, 
                         a.fecha_entrega_prog,
+                        a.hora_entrega,
                         a.fecha_inicio_prog,
                         a.fecha_entrega_real,
                         a.fecha_inicio_real,
@@ -596,7 +598,8 @@ const queries = {
                         a.entregado,
                         a.no_entregado,
                         a.num_cheque,
-                        a.motivo
+                        a.motivo,
+                        a.inversion_positiva
                         FROM  
                         dbo.creditos a 
                         LEFT JOIN  
@@ -642,7 +645,9 @@ const queries = {
             fu_get_cn_renovacion(a.id) as cn_r,
             a.monto_total,
             TO_CHAR(a.fecha_entrega_prog, 'DD/MM/YYYY') as fecha_entrega_prog,
-            a.fecha_creacion, a.fecha_inicio_prog, a.fecha_entrega_real, a.fecha_inicio_real,
+            a.fecha_creacion, a.fecha_inicio_prog, 
+            TO_CHAR(a.hora_entrega, 'HH24:MI') as hora_entrega, 
+            a.fecha_entrega_real, a.fecha_inicio_real,
             a.tarifa_id, b.nombre as tarifa, b.num_semanas, 
             c.nombre, c.apellido_paterno, c.apellido_materno, 
             c.nombre||' '||c.apellido_paterno||' '||c.apellido_materno as nombre_completo,
@@ -700,7 +705,7 @@ const queries = {
                         TRIM(TO_CHAR(a.monto_otorgado,'999,999D99')) as monto_otorgado2, 
                         fu_numero_letras(a.monto_total) as monto_total_letras,
                         ROUND((a.monto_total / b.num_semanas),2) as monto_semanal,
-                        a.fecha_creacion, a.fecha_inicio_prog, a.fecha_fin_prog, a.fecha_entrega_prog,  
+                        a.fecha_creacion, a.fecha_inicio_prog, a.hora_entrega, a.fecha_fin_prog, a.fecha_entrega_prog,  
                         TO_CHAR(a.fecha_entrega_prog,'DD-MM-YYYY') as fecha_entrega_prog2, 
                         TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog2, 
                         a.fecha_inicio_real, a.fecha_fin_real, a.fecha_entrega_real,
@@ -715,7 +720,8 @@ const queries = {
                         a.locked,
                         a.renovacion,
                         a.entregado,
-                        a.preaprobado
+                        a.preaprobado,
+                        a.inversion_positiva
                         FROM  
                         dbo.creditos a 
                         LEFT JOIN  
@@ -864,7 +870,8 @@ const queries = {
                                         a.fecha_inicio_real,
                                         a.monto_otorgado,
                                         a.monto_total,
-                                        c.num_semanas
+                                        c.num_semanas,
+                                        a.inversion_positiva
                                         FROM 
                                         dbo.creditos a
                                         INNER JOIN
@@ -950,7 +957,7 @@ const queries = {
                                         WHERE a.credito_id = $1
                                         ORDER by a.num_semana`,
 
-    getEventosByCreditoId:              `SELECT usuario, observacion, fecha
+    getEventosByCreditoId:              `SELECT usuario, evento, observacion, fecha
                                         FROM dbo.solicitud_eventos 
                                         WHERE solicitud_credito_id = $1 ORDER BY fecha DESC`,
                                 

@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { rotateRadians } = require('pdf-lib');
 const { creditoGet, creditosGet, creditoPost, creditoPut, creditoDelete, 
-        amortizacionGet, printContrato, printAmortizacion, printAllDoc, printTarjetaPagos, amortizacionPost, setFechaCreditosMasivos, printEntregasCredito } = require('../controllers/creditos');
+        amortizacionGet, printContrato, printAmortizacion, printAllDoc, printTarjetaPagos, amortizacionPost, setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete } = require('../controllers/creditos');
 const { createCreditosMasivos } = require('../controllers/solicitud_creditos');
 const { validarCampos } = require('../middlewares/validar-campos');
 
@@ -63,5 +63,9 @@ router.patch('/creditosMasivos', createCreditosMasivos);
 router.patch('/items', setFechaCreditosMasivos);
 
 router.post('/print/reporteEntregaCredito/:id', printEntregasCredito);
+
+router.patch('/inversion/:id',creditoPut);
+
+router.patch('/deleteInversion/:id',inversionPositivaDelete);
 
 module.exports = router;

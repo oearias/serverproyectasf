@@ -49,7 +49,8 @@
 
             <div class="col">
                 <div>
-                    <img style="height: 60px; " src="https://system-proyectasfweb.com//assets/images/proyecta_logo_gris.png" alt="">
+                    <img style="height: 60px; "
+                        src="https://system-proyectasfweb.com//assets/images/proyecta_logo_gris.png" alt="">
                 </div>
             </div>
         </div>
@@ -74,7 +75,6 @@
                             <th class="text-center">Hora</th>
                             <th class="text-center">F. de entrega</th>
                             <th class="text-center">Estatus</th>
-                            <th class="text-center">Quien entrega</th>
 
                         </tr>
                     </thead>
@@ -114,7 +114,7 @@
                             </td>
 
                             <td class="text-center align-middle">
-                                --:--
+                                {{this.hora_entrega}}
                             </td>
 
                             <td class="text-center align-middle">
@@ -129,9 +129,6 @@
                                 {{/ifCond}}
                             </td>
 
-                            <td class="text-center align-middle">
-                                ???
-                            </td>
                         </tr>
                         {{/each}}
                     </tbody>
@@ -186,8 +183,26 @@
                                 <td class="text-end">
                                     <span style="font-weight: bold;">{{creditos.monto_total_creditos}}</span>
                                 </td>
-                                <td>{{creditos.monto_r}}</td>
-                                <td>{{creditos.monto_cn}}</td>
+                                <td>
+
+                                    {{#ifCond creditos.monto_r '.00'}}
+                                        &nbsp;
+                                    {{else}}
+                                        {{creditos.monto_r}}
+                                    {{/ifCond}}
+
+                                </td>
+                                <td>
+
+                                    {{#ifCond creditos.monto_cn '.00'}}
+                                        &nbsp;
+                                    {{else}}
+                                        {{creditos.monto_cn}}
+                                    {{/ifCond}}
+
+                                    
+
+                                </td>
                             </tr>
                         </tbody>
                     </table>

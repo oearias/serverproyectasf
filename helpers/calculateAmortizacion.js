@@ -286,7 +286,14 @@ const generateAmortizacion = async (result = []) => {
         let semanas = [];
         //const fecha_inicial = result['fecha_inicio_prog'];
         const fecha_inicial = result[0]['fecha_inicio_real'];
-        const monto_semanal = result[0]['monto_total'] / result[0]['num_semanas'];
+        let monto_semanal = result[0]['monto_total'] / result[0]['num_semanas'];
+        const inversion_positiva = result[0]['inversion_positiva'];
+        const cliente_cump = await pool.query(`SELECT fu_get_cliente_cumplido(${credito_id})`);
+
+        const {fu_get_cliente_cumplido} = cliente_cump.rows[0];
+        const cliente_cumplido = fu_get_cliente_cumplido;
+
+        console.log(cliente_cumplido);
 
         //TOTALES
         let penalizacion_total = 0;
@@ -337,20 +344,20 @@ const generateAmortizacion = async (result = []) => {
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
         fechaFormateada = fechaWeekyear.toISOString('es-ES', options).replace(/\//g, '-').slice(0, 10);
-        
+
         let fechaWeekyear2 = fechaWeekyear;
-        fechaWeekyear.setDate(fechaWeekyear.getDate() );
-        fechaWeekyear2.setDate(fechaWeekyear.getDate() +1 );
+        fechaWeekyear.setDate(fechaWeekyear.getDate());
+        fechaWeekyear2.setDate(fechaWeekyear.getDate() + 1);
 
         fechaFormateada2 = fechaWeekyear.toISOString('es-ES', options).replace(/\//g, '-').slice(0, 10);
 
-        console.log('fechaa',fechaFormateada);
-        console.log('fechaa2',fechaFormateada2);
-        
+        console.log('fechaa', fechaFormateada);
+        console.log('fechaa2', fechaFormateada2);
+
         //fechaWeekyear = fechaWeekyear.toISOString().slice(0, 10);
         //fechaWeekyear2 = fechaWeekyear2.toISOString().slice(0, 10);
-        
-        
+
+
         // console.log(fecha_inicial);
         // console.log(fechaWeekyear);
         // console.log(fechaWeekyear2);
@@ -365,9 +372,6 @@ const generateAmortizacion = async (result = []) => {
 
 
         let semana_weekyear = resultado_weekyear.rows[0]['weekyear'];
-
-        console.log(semana_weekyear);
-
 
         //Hacemos el For de la amortizacion
         for (let i = 0; i < result[0]['num_semanas']; i++) {
@@ -385,8 +389,6 @@ const generateAmortizacion = async (result = []) => {
             let genera_recargo = null;
             let transcurrida = null;
             let transcurriendo = null;
-
-
 
 
 
@@ -424,7 +426,14 @@ const generateAmortizacion = async (result = []) => {
 
             console.log('transcurrida', transcurrida);
             console.log('transcurriendo', transcurriendo);
-            console.log('semana year',semana_weekyear);
+
+            //Reiniciamos el contador de semanas con cambios de año
+            if(semana_weekyear > 52){
+                semana_weekyear = 1;
+            }
+
+            console.log('semana year', semana_weekyear);
+            
             //console.log(fechaToCompare);
             console.log(fec1);
             console.log(fec2);
@@ -468,39 +477,38 @@ const generateAmortizacion = async (result = []) => {
             // ORDER BY a.credito_id, b.num_semana;
             //         `);
 
-
-            const { rows } = await pool.query(`
-            SELECT a.credito_id,
-                        b.weekyear,
-                        b.num_semana,
-                        a.folio,
-                        a.monto as monto_pagado,
-                        (SELECT 
-                            SUM(z.monto) as suma_monto_pagado
-                            FROM dbo.pagos z
-                            INNER JOIN 
-                            dbo.balance_semanal x 
-                            ON z.credito_id = x.credito_id 
-                            AND z.cancelado IS NULL
-                            AND z.fecha >= x.fecha_inicio AND z.fecha <= x.fecha_fin
-                            AND z.fecha BETWEEN  '${fecha}' AND '${fecha2}'
-                            AND z.weekyear = x.weekyear
-                            AND z.weekyear = ${semana_weekyear}
-                            AND z.credito_id = ${credito_id}
-                        ) as suma_monto_pagado,
-                        a.fecha as fecha_pago
-            FROM dbo.pagos a
-            INNER JOIN dbo.balance_semanal b 
-            ON a.credito_id = b.credito_id 
-            AND a.fecha BETWEEN  '${fecha}' AND '${fecha2}'
-            AND a.fecha >= b.fecha_inicio AND a.fecha <= b.fecha_fin 
-            AND a.credito_id = ${credito_id}
-            AND a.cancelado IS NULL
-            AND a.weekyear = b.weekyear
-            AND a.weekyear = ${semana_weekyear}
-            GROUP BY b.num_semana, a.id, b.id
-            ORDER BY a.credito_id, b.num_semana;
-                    `);
+            let { rows } = await pool.query(`
+                SELECT a.credito_id,
+                            b.weekyear,
+                            b.num_semana,
+                            a.folio,
+                            a.monto as monto_pagado,
+                            (SELECT 
+                                SUM(z.monto) as suma_monto_pagado
+                                FROM dbo.pagos z
+                                INNER JOIN 
+                                dbo.balance_semanal x 
+                                ON z.credito_id = x.credito_id 
+                                AND z.cancelado IS NULL
+                                AND z.fecha >= x.fecha_inicio AND z.fecha <= x.fecha_fin
+                                AND z.fecha BETWEEN  '${fecha}' AND '${fecha2}'
+                                AND z.weekyear = x.weekyear
+                                AND z.weekyear = ${semana_weekyear}
+                                AND z.credito_id = ${credito_id}
+                            ) as suma_monto_pagado,
+                            a.fecha as fecha_pago
+                FROM dbo.pagos a
+                INNER JOIN dbo.balance_semanal b 
+                ON a.credito_id = b.credito_id 
+                AND a.fecha BETWEEN  '${fecha}' AND '${fecha2}'
+                AND a.fecha >= b.fecha_inicio AND a.fecha <= b.fecha_fin 
+                AND a.credito_id = ${credito_id}
+                AND a.cancelado IS NULL
+                AND a.weekyear = b.weekyear
+                AND a.weekyear = ${semana_weekyear}
+                GROUP BY b.num_semana, a.id, b.id
+                ORDER BY a.credito_id, b.num_semana;
+            `);
 
 
             if (rows.length > 0) {
@@ -516,18 +524,24 @@ const generateAmortizacion = async (result = []) => {
                 //num_semana = null;
             }
 
-            //TODO: ANTES que todo debo preguntar si el total de lo pagado ya superó el monto_total mas recargos, de ser así ya no se seguirán calculando los recargos
+            //Preguntamos si existen bonificaciones para cambiar montos a pagar semanalmente
+            //Esto solo si ya es la ultima vuelta
+            const descuento = monto_semanal / 2;
 
+            if( num_semana === result[0]['num_semanas'] && (inversion_positiva || cliente_cumplido ) ){
+                
+                if( (inversion_positiva && !cliente_cumplido) || (cliente_cumplido && !inversion_positiva) ){
+                    monto_semanal = monto_semanal / 2;
+                }
+
+            }
 
             //Preguntamos si se cubrió el pago
-            if ( suma_monto_pagado >= monto_semanal) {
+            if (suma_monto_pagado >= monto_semanal) {
                 pago_cubierto = 1;
 
                 console.log('se cubrio el pago');
 
-
-
-                //TODO:
                 //Preguntamos si hay pagos fuera de tiempo que generen recargos
 
                 console.log('FECHAS  ///');
@@ -538,7 +552,7 @@ const generateAmortizacion = async (result = []) => {
                 console.log(fecha2);
 
                 const { rows } = await pool.query(`
-                    SELECT fecha 
+                    SELECT a.fecha, a.monto 
                     FROM dbo.pagos a 
                     WHERE a.credito_id = ${credito_id} 
                     AND a.fecha BETWEEN '${fecha_inicio_recargo}' AND  '${fecha_fin_recargo}' 
@@ -551,10 +565,17 @@ const generateAmortizacion = async (result = []) => {
 
                     //Antes de calcular los dias de penalizacion necesitamos saber que día se termino de pagar la semana
 
-
-                    const lista_pagos = await pool.query(`SELECT fecha, monto FROM dbo.pagos a WHERE a.credito_id = ${credito_id} AND a.fecha BETWEEN '${fecha_inicio_recargo}' AND  '${fecha_fin_recargo}' AND a.cancelado IS NULL `);
+                    const lista_pagos = await pool.query(`
+                        SELECT fecha, monto 
+                        FROM dbo.pagos a 
+                        WHERE a.credito_id = ${credito_id} 
+                        AND a.fecha BETWEEN '${fecha}' 
+                        AND  '${fecha2}' 
+                        AND a.cancelado IS NULL 
+                        AND a.weekyear = ${semana_weekyear}`);
 
                     console.log('No de pagos en la semana: ', lista_pagos.rows.length);
+                    console.log('No de pagos fuera de tiempo: ', rows.length);
 
                     console.log('Lista de pagos en la semana');
                     console.log(lista_pagos.rows);
@@ -563,21 +584,20 @@ const generateAmortizacion = async (result = []) => {
 
                     //Determinamos que la fecha a comparar va a ser el ultimo dia de pago en que se termino de pagar completamente la semana, 
                     //para esto lo ideal es un CICLO FOR e ir comparando cada pago con el adeudo semanal, así hasta obtener el ultimo dia de pago
+                    //pero cabe considerar que también pusimos la condicion de que el monto cobrado semanal debe ser menor al monto semanal 
+                    //para que ya no siga agarrando mas fechas de pagos posteriores en la misma semana en caso de que los hayan
 
-                    for (let i = 0; i < lista_pagos.rows.length; i++) {
 
-                        //TODO: Falta por comprobar cuando se realizan varios pagos en la semana y se acompleta el pago en día que genere penalizacion
-                        //Preguntamos si se cubre el pago
+                    for (let i = 0; i < lista_pagos.rows.length && monto_pagado_semanal < monto_semanal; i++) {
+
                         monto_pagado_semanal = Number(monto_pagado_semanal) + Number(lista_pagos.rows[i]['monto']);
 
-                        console.log('El monto pagado semanalmente es: ', monto_pagado_semanal);
-
+                        //Preguntamos si se cubre el pago en cada vuelta y calculamos penalizacion
                         if (monto_pagado_semanal >= monto_semanal) {
                             fechaToCompare = lista_pagos.rows[i]['fecha']
                         }
 
                     }
-
 
 
                     //Calculamos los días de penalizacion
@@ -598,6 +618,10 @@ const generateAmortizacion = async (result = []) => {
 
             } else {
 
+                console.log('no se curbio el pago parce');
+                console.log(suma_monto_pagado);
+                console.log(monto_semanal);
+
                 pago_cubierto = 0;
 
                 //Si no se ha cubierto, Preguntamos si es semana transcurrida
@@ -612,10 +636,6 @@ const generateAmortizacion = async (result = []) => {
                 } else {
                     //
                     if (transcurriendo === 1) {
-
-
-                        //Cuando la semana esta transcurriendo
-                        console.log('se cumple la condicion madafaca');
 
                         //Hoy es dia de penalizacion???
                         if (Date.parse(fechaHoy) >= fec1 && Date.parse(fechaHoy) < Date.parse(fecha_inicio_recargo)) {
@@ -646,26 +666,77 @@ const generateAmortizacion = async (result = []) => {
             }
 
             //Restamos el día de la penalización de mas
-            if(dias_penalizacion > 5){
-                console.log('si hay penas');
+            if (dias_penalizacion > 5) {
                 dias_penalizacion = 5
             }
 
+            //si ya se termino de pagar el credito guardamos en la base de datos
+            //que datos necesitamos credito_id, num_semana, fecha, y los totales
             penalizacion_semanal = (monto_otorgado * dias_penalizacion) / 100;
             adeudo_semanal = (monto_semanal + penalizacion_semanal) - suma_monto_pagado;
 
             penalizacion_total += penalizacion_semanal;
             pagado_total += Number(suma_monto_pagado);
 
-            
+            //Ultima vuelta, inversion positiva y cliente cumplido
+            if (num_semana === result[0]['num_semanas']) {
 
-            //si ya se termino de pagar el credito guardamos en la base de datos
-            //que datos necesitamos credito_id, num_semana, fecha, y los totales
+                console.log('Entra a las bonif');
+
+                if (inversion_positiva && cliente_cumplido) {
+
+                    console.log('Descuento % inversion positiva, cliente cumplido');
+                    adeudo_semanal = 0;
+
+                    dias_penalizacion = 0;
+                    penalizacion_semanal = 0;
+                    penalizacion_total = 0;
+                    adeudo_semanal = 0;
+                    monto_pagado = descuento * 2;
+
+                    rows = [{
+                        weekyear: num_semana,
+                        bonificacion:true,
+                        concepto: '-100% de dto. inversion positiva y cliente cumplido',
+                        monto_pagado: descuento * 2
+                    }];
 
 
+                }else if(inversion_positiva){
+
+                    //adeudo_semanal = adeudo_semanal - (descuento);
+                    //monto_semanal = monto_semanal - (descuento);
+
+                    rows.push({
+                        weekyear: num_semana,
+                        bonificacion:true,
+                        concepto: '-50% dto. inversion positiva',
+                        monto_pagado: descuento
+                    });
+                }else if(cliente_cumplido){
+
+                    console.log('Es cliente cumplido');
+                    console.log('monto semanal', monto_semanal);
+                    console.log('adeudo semanal',adeudo_semanal);
+                    console.log('monto pgado', suma_monto_pagado);
+                    console.log('descuento', descuento);
+
+                    rows.push({
+                        weekyear: num_semana,
+                        bonificacion:true,
+                        concepto: '-50% dto. cliente cumplido',
+                        monto_pagado: descuento
+                    });
+                }
+                
+                //Para saber si es cliente distinguido no debe existir ningun pago fuera de fecha y al menos 15
+
+
+
+            }
 
             semanas.push({
-                weekyear:semana_weekyear,
+                weekyear: semana_weekyear,
                 num_semana: i + 1,
                 fecha_inicio: fecha,
                 fecha_fin: fecha2,
@@ -678,7 +749,7 @@ const generateAmortizacion = async (result = []) => {
                 pago_cubierto,
                 pagos: rows,
                 transcurriendo,
-                transcurrida
+                transcurrida,
             });
 
             num_semana++;
@@ -691,17 +762,6 @@ const generateAmortizacion = async (result = []) => {
         console.log('Total pagado:', pagado_total);
         console.log('Total de penalizaciones:', penalizacion_total);
         console.log('Grand Total:', grand_total);
-
-        //Si el vato ya terminó, insertamos en el balance final y esto generaría que se cumpla un true en el if del inicio de este método
-        // if (grand_total === 0) {
-        //     const resp = await pool.query(`
-        //     INSERT INTO
-        //             dbo.balance_final
-        //                 (credito_id, grand_total, fecha_finalizacion)
-        //             VALUES(${credito_id}, ${grand_total}, '${fechaToCompare.toISOString().slice(0, 10)}') RETURNING *
-        //                 `);
-        //     console.log(resp.rows);
-        // }
 
 
         return semanas;

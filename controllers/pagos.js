@@ -88,6 +88,7 @@ const pagoPost = async (req, res = response) => {
         const result = await pool.query(queries.insertPago, values);
 
         //Esta linea tengo que ver si todavía es util
+        //vamos a suspenderla por lo pronto
         await pool.query(`CALL pr_update_saldos_balance_after_pago(${credito_id},${monto},'${fecha}')`);
 
         await pool.query(`CALL pr_calcula_recargo_credito_test(${credito_id},'${fecha}')`);

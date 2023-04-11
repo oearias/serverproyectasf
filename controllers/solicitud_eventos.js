@@ -12,8 +12,6 @@ const eventosGet = async (req, res = response) => {
 
         const { rows } = await pool.query(queries.getEventosByCreditoId, values);
 
-        console.log(rows);
-
         res.status(200).json(
             rows
         );

@@ -143,6 +143,8 @@ const creditoPut = async (req, res = response) => {
 
     try {
 
+        console.log(req.body);
+
         const { id } = req.params;
 
         delete req.body.id;
@@ -162,6 +164,16 @@ const creditoPut = async (req, res = response) => {
 
         //AFTER update Solicitud
         await pool.query(`CALL pr_change_estatus_solicitud_credito_after(${id})`);
+
+        //Solo si creamos inversion positiva
+        if(req.body?.inversion_positiva){
+            //CALL ...
+        }
+
+        //Si quitamos inversion positiva
+        if(!req.body.inversion_positiva){
+            console.log('inversion negativa');
+        }
 
         res.status(200).json(
             `El crédito: ${result.rows[0]['num_contrato']} ha sido modificado correctamente.`
@@ -220,15 +232,10 @@ const setFechaCreditosMasivos = async (req, res = response) => {
         const creditos = req.body;
         const nullValue = null;
 
-        const creditosExitosos = [];
-        const creditosFallidos = [];
-
         const creditosConFechaEntrega = creditos.filter(credito => credito['fecha_entrega']);
 
-        for (const { credito_id, fecha_entrega, fecha_inicio,
+        for (const { credito_id, fecha_entrega, hora_entrega, fecha_inicio,
             num_cheque, entregado, no_entregado, motivo, num_semanas } of creditosConFechaEntrega) {
-
-                console.log(num_semanas);
 
 
             const fechaInicioAux = fecha_inicio ? `'${fecha_inicio}'` : nullValue;
@@ -238,7 +245,7 @@ const setFechaCreditosMasivos = async (req, res = response) => {
             const motivoAux = motivo ? `'${motivo}'` : nullValue;
 
             const procedimiento = `CALL pr_set_fecha_entrega_credito_preaprobado( 
-                ${credito_id},'${fecha_entrega}',
+                ${credito_id}, '${fecha_entrega}', '${hora_entrega}',
                 ${fechaInicioAux},${numChequeAux},
                 ${entregadoAux},${noEntregadoAux},
                 ${motivoAux},${num_semanas} 
@@ -710,8 +717,9 @@ const printEntregasCredito = async (req, res = response) => {
 
         //obtenemos la consult del contrato
         const result = await pool.query(queries.getCreditosPreaprobados, values);
+
         const resultado = await pool.query(`
-            SELECT '${fecha_entrega_prog}' as fecha_entrega_programada, 
+            SELECT '${fecha_entrega_prog}' as fecha_entrega_programada,
             TRIM(TO_CHAR(fu_get_monto_total_cn_r('${fecha_entrega_prog}','CN'),'999,999D99')) as monto_cn,
             TRIM(TO_CHAR(fu_get_monto_total_cn_r('${fecha_entrega_prog}','R'),'999,999D99')) as monto_r,
             fu_get_count_cn_r('${fecha_entrega_prog}') as count_cn_r,
@@ -733,6 +741,7 @@ const printEntregasCredito = async (req, res = response) => {
 
         const { 
             fecha_entrega_programada, 
+            hora_entrega,
             monto_total_creditos, 
             monto_cn, monto_r, 
             count_cn_r,
@@ -741,6 +750,7 @@ const printEntregasCredito = async (req, res = response) => {
 
         result['creditos'] = {
             fecha_entrega_programada,
+            hora_entrega,
             monto_total_creditos,
             monto_cn, monto_r,
             count_cn_r,
@@ -801,6 +811,42 @@ const printEntregasCredito = async (req, res = response) => {
 
 }
 
+const inversionPositivaDelete = async (req, res = response) => {
+
+    try {
+
+        const { id } = req.params;
+
+        //BEFORE update Solicitud
+        await pool.query(`UPDATE dbo.creditos SET inversion_positiva = false WHERE id = ${id}`);
+
+
+        res.status(200).json(
+            `La inversion positiva ha sido eliminada correctamente.`
+        );
+
+
+    } catch (error) {
+
+        console.log(error);
+
+        const errors = [{
+            msg: error.constraint,
+            param: error.detail
+        }]
+
+        if (errors)
+
+            return res.status(500).json({
+                errors
+            })
+
+        res.status(500).json({
+            msg: mensajes.errorInterno
+        });
+    }
+}
+
 
 module.exports = {
     creditoGet,
@@ -815,5 +861,6 @@ module.exports = {
     printAmortizacion,
     printTarjetaPagos,
     printAllDoc,
-    printEntregasCredito
+    printEntregasCredito,
+    inversionPositivaDelete
 } 

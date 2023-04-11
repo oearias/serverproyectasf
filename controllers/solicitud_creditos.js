@@ -223,6 +223,8 @@ const solicitudCreditoPut = async (req, res = response) => {
         delete req.body.usuario;
         delete req.body.fecha_creacion;
 
+        console.log(req.body.estatus_sol_id);
+
         let consulta = buildPatchQuery(id, table, req.body);
 
         const result = await pool.query(consulta);
@@ -246,16 +248,25 @@ const solicitudCreditoPut = async (req, res = response) => {
 
         if (req.body.observaciones && usuario) {
 
-            console.log('entra a la condicion');
-            console.log(usuario);
-
             // Obtén la fecha actual
             const currentDate = new Date();
 
             // Formatea la fecha para que sea compatible con PostgreSQL
             const fechaObservacion = moment(currentDate).format('YYYY-MM-DD HH:mm:ss');
 
-            const resultado = await pool.query(`INSERT INTO dbo.solicitud_eventos (solicitud_credito_id, observacion, fecha, usuario) VALUES(${id}, '${req.body.observaciones}','${fechaObservacion}','${usuario}')`)
+            let evento;
+            
+
+            if(req.body.estatus_sol_id === 2){
+                evento = 'SE CANCELA'
+            }else if(req.body.estatus_sol_id === 1){
+                evento = 'CAMBIOS REQUERIDOS'
+            }else{
+                evento = '-'
+            }
+
+            //Definamos un evento
+            await pool.query(`INSERT INTO dbo.solicitud_eventos (solicitud_credito_id, observacion, fecha, usuario, evento) VALUES(${id}, '${req.body.observaciones}','${fechaObservacion}','${usuario}', '${evento}')`)
         }
 
         res.status(200).json(
@@ -298,6 +309,8 @@ const solicitudCreditoDelete = async (req, res = response) => {
         );
 
     } catch (error) {
+
+        console.log(error);
 
         if (error.code == 23503) {
             return res.status(405).json({
@@ -359,6 +372,46 @@ const solicitudGetByCriteria = async (req, res = response) => {
 
                 break;
 
+            case 'apellido_paterno':
+
+                cadena_aux = palabra.toUpperCase();
+
+                sql = `SELECT a.id, 
+                a.estatus_sol_id,
+                a.cliente_id,
+                a.monto, a.tarifa_id,
+                b.apellido_paterno, b.apellido_materno, b.nombre, 
+                TRIM(b.apellido_paterno||' '||b.apellido_materno||' '||COALESCE(b.nombre,'')) as nombre_completo,
+                a.fecha_solicitud, c.nombre as estatus,
+                a.locked
+                FROM dbo.solicitud_credito a, dbo.clientes b, dbo.tipo_estatus_solicitud c 
+                WHERE a.cliente_id = b.id 
+                AND a.estatus_sol_id = c.id 
+                AND b.apellido_paterno like '%${cadena_aux}%'
+                ORDER BY a.id`;
+
+                break;
+
+            case 'apellido_materno':
+
+                cadena_aux = palabra.toUpperCase();
+
+                sql = `SELECT a.id, 
+                a.estatus_sol_id,
+                a.cliente_id,
+                a.monto, a.tarifa_id,
+                b.apellido_paterno, b.apellido_materno, b.nombre, 
+                TRIM(b.apellido_paterno||' '||b.apellido_materno||' '||COALESCE(b.nombre,'')) as nombre_completo,
+                a.fecha_solicitud, c.nombre as estatus,
+                a.locked
+                FROM dbo.solicitud_credito a, dbo.clientes b, dbo.tipo_estatus_solicitud c 
+                WHERE a.cliente_id = b.id 
+                AND a.estatus_sol_id = c.id 
+                AND b.apellido_materno like '%${cadena_aux}%'
+                ORDER BY a.id`;
+
+                break;
+
             case 'num_cliente':
 
                 sql = `SELECT a.id, 
@@ -407,8 +460,6 @@ const solicitudGetByCriteria = async (req, res = response) => {
         res.status(200).json(rows);
 
     } catch (error) {
-
-        console.log(error);
 
 
         res.status(500).json({
@@ -488,7 +539,7 @@ const createCreditosMasivos = async (req, res = response) => {
 
             const result = await pool.query(`CALL pr_crea_credito_preaprobado(${id})`);
 
-   
+
         }
 
 
