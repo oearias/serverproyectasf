@@ -17,6 +17,9 @@ const tipoCreditoGet = async (req, res = response) => {
         });
 
     } catch (error) {
+
+        console.log(error);
+
         res.status(500).json({
             msg: mensajes.errorInterno
         })
@@ -34,6 +37,8 @@ const tipoCreditosGet = async (req, res = response) => {
         );
  
     } catch (error) {
+
+        console.log(error);
 
         res.status(500).json({
             msg: mensajes.errorInterno,

@@ -8,11 +8,9 @@ const { handlebars } = require('hbs');
 const PDFDocument = require('pdf-lib').PDFDocument
 
 const { queries } = require('../database/queries');
-const { buildPatchQuery, buildPostQuery, buildPostQueryReturningId } = require('../database/build-query');
+const { buildPatchQuery, buildPostQueryReturningId } = require('../database/build-query');
 const mensajes = require('../helpers/messages');
-const path = require('path');
 const { generateAmortizacion } = require('../helpers/calculateAmortizacion');
-const { default: Stream } = require('pdf-lib/cjs/core/streams/Stream');
 
 const table = 'dbo.creditos'
 
@@ -224,6 +222,326 @@ const creditoDelete = async (req, res = response) => {
         });
     }
 }
+
+// const creditoGetByCriteria = async (req, res = response) => {
+
+//     const { criterio, palabra } = req.params;
+
+//     try {
+
+//         let sql;
+
+//         switch (criterio) {
+
+//             case 'nombre':
+
+//                 cadena_aux = palabra.toUpperCase();
+
+//                 sql = `SELECT 
+//                 a.id, 
+//                 a.cliente_id,
+//                 k.clave ||'-'||a.cliente_id as num_cliente,
+//                 a.solicitud_credito_id,
+//                 a.num_contrato, a.monto_otorgado, a.monto_total, 
+//                 TRIM(TO_CHAR(a.monto_otorgado,'999,999D99')) as monto_otorgado2, 
+//                 fu_numero_letras(a.monto_total) as monto_total_letras,
+//                 ROUND((a.monto_total / b.num_semanas),2) as monto_semanal,
+//                 a.fecha_creacion, a.fecha_inicio_prog, a.hora_entrega, a.fecha_fin_prog, a.fecha_entrega_prog,  
+//                 TO_CHAR(a.fecha_entrega_prog,'DD-MM-YYYY') as fecha_entrega_prog2, 
+//                 TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog2, 
+//                 a.fecha_inicio_real, a.fecha_fin_real, a.fecha_entrega_real,
+//                 h.id as fuente_financ_id, 
+//                 b.id tarifa_id, 
+//                 b.cociente, b.num_semanas, 
+//                 c.nombre, c.apellido_paterno, c.apellido_materno,
+//                 c.nombre||' '||c.apellido_paterno||' '||c.apellido_materno as nombre_completo,
+//                 j.nombre as zona, k.nombre as agencia,
+//                 l.calle, l.num_ext, UPPER(m.nombre) as colonia, m.cp, n.nombre as tipo_asentamiento, c.telefono, 
+//                 e.id as tipo_contrato_id, f.id as tipo_credito_id, 
+//                 g.nombre as estatus_credito,
+//                 a.num_cheque,
+//                 a.locked,
+//                 a.renovacion,
+//                 a.entregado,
+//                 a.preaprobado,
+//                 a.inversion_positiva
+//                 FROM  
+//                 dbo.creditos a 
+//                 LEFT JOIN  
+//                 dbo.tarifas b on a.tarifa_id=b.id 
+//                 LEFT JOIN 
+//                 dbo.clientes c on a.cliente_id = c.id 
+//                 LEFT JOIN 
+//                 dbo.tipo_contrato e 
+//                 on a.tipo_contrato_id = e.id 
+//                 LEFT JOIN 
+//                 dbo.tipo_credito f 
+//                 on a.tipo_credito_id = f.id 
+//                 LEFT JOIN  
+//                 dbo.tipo_estatus_credito g 
+//                 on a.estatus_credito_id = g.id 
+//                 LEFT JOIN 
+//                 dbo.tipo_fuente_financiamiento h 
+//                 on a.fuente_financ_id = h.id 
+//                 INNER JOIN
+//                 dbo.agencias i 
+//                 on c.agencia_id = i.id
+//                 INNER JOIN
+//                 dbo.zonas j on 
+//                 i.zona_id = j.id
+//                 INNER JOIN
+//                 dbo.sucursales k 
+//                 on j.sucursal_id = k.id
+//                 INNER JOIN
+//                 dbo.solicitud_credito l 
+//                 on a.solicitud_credito_id = l.id
+//                 INNER JOIN
+//                 dbo.colonias m
+//                 on m.id = l.colonia_id
+//                 INNER JOIN
+//                 dbo.tipo_asentamiento n
+//                 on m.tipo_asentamiento_id = n.id
+//                 WHERE c.nombre like  '%${cadena_aux}%'
+//                 ORDER BY a.id `;
+
+//                 break;
+
+//             case 'apellido_paterno':
+
+//                 cadena_aux = palabra.toUpperCase();
+
+//                 sql = `SELECT 
+//                 a.id, 
+//                 a.cliente_id,
+//                 k.clave ||'-'||a.cliente_id as num_cliente,
+//                 a.solicitud_credito_id,
+//                 a.num_contrato, a.monto_otorgado, a.monto_total, 
+//                 TRIM(TO_CHAR(a.monto_otorgado,'999,999D99')) as monto_otorgado2, 
+//                 fu_numero_letras(a.monto_total) as monto_total_letras,
+//                 ROUND((a.monto_total / b.num_semanas),2) as monto_semanal,
+//                 a.fecha_creacion, a.fecha_inicio_prog, a.hora_entrega, a.fecha_fin_prog, a.fecha_entrega_prog,  
+//                 TO_CHAR(a.fecha_entrega_prog,'DD-MM-YYYY') as fecha_entrega_prog2, 
+//                 TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog2, 
+//                 a.fecha_inicio_real, a.fecha_fin_real, a.fecha_entrega_real,
+//                 h.id as fuente_financ_id, 
+//                 b.id tarifa_id, 
+//                 b.cociente, b.num_semanas, 
+//                 c.nombre, c.apellido_paterno, c.apellido_materno,
+//                 c.nombre||' '||c.apellido_paterno||' '||c.apellido_materno as nombre_completo,
+//                 j.nombre as zona, k.nombre as agencia,
+//                 l.calle, l.num_ext, UPPER(m.nombre) as colonia, m.cp, n.nombre as tipo_asentamiento, c.telefono, 
+//                 e.id as tipo_contrato_id, f.id as tipo_credito_id, 
+//                 g.nombre as estatus_credito,
+//                 a.num_cheque,
+//                 a.locked,
+//                 a.renovacion,
+//                 a.entregado,
+//                 a.preaprobado,
+//                 a.inversion_positiva
+//                 FROM  
+//                 dbo.creditos a 
+//                 LEFT JOIN  
+//                 dbo.tarifas b on a.tarifa_id=b.id 
+//                 LEFT JOIN 
+//                 dbo.clientes c on a.cliente_id = c.id 
+//                 LEFT JOIN 
+//                 dbo.tipo_contrato e 
+//                 on a.tipo_contrato_id = e.id 
+//                 LEFT JOIN 
+//                 dbo.tipo_credito f 
+//                 on a.tipo_credito_id = f.id 
+//                 LEFT JOIN  
+//                 dbo.tipo_estatus_credito g 
+//                 on a.estatus_credito_id = g.id 
+//                 LEFT JOIN 
+//                 dbo.tipo_fuente_financiamiento h 
+//                 on a.fuente_financ_id = h.id 
+//                 INNER JOIN
+//                 dbo.agencias i 
+//                 on c.agencia_id = i.id
+//                 INNER JOIN
+//                 dbo.zonas j on 
+//                 i.zona_id = j.id
+//                 INNER JOIN
+//                 dbo.sucursales k 
+//                 on j.sucursal_id = k.id
+//                 INNER JOIN
+//                 dbo.solicitud_credito l 
+//                 on a.solicitud_credito_id = l.id
+//                 INNER JOIN
+//                 dbo.colonias m
+//                 on m.id = l.colonia_id
+//                 INNER JOIN
+//                 dbo.tipo_asentamiento n
+//                 on m.tipo_asentamiento_id = n.id
+//                 WHERE c.apellido_paterno like  '%${cadena_aux}%'
+//                 ORDER BY a.id `;
+
+//                 break;
+
+//             case 'apellido_materno':
+
+//                 cadena_aux = palabra.toUpperCase();
+
+//                 sql = `SELECT 
+//                 a.id, 
+//                 a.cliente_id,
+//                 k.clave ||'-'||a.cliente_id as num_cliente,
+//                 a.solicitud_credito_id,
+//                 a.num_contrato, a.monto_otorgado, a.monto_total, 
+//                 TRIM(TO_CHAR(a.monto_otorgado,'999,999D99')) as monto_otorgado2, 
+//                 fu_numero_letras(a.monto_total) as monto_total_letras,
+//                 ROUND((a.monto_total / b.num_semanas),2) as monto_semanal,
+//                 a.fecha_creacion, a.fecha_inicio_prog, a.hora_entrega, a.fecha_fin_prog, a.fecha_entrega_prog,  
+//                 TO_CHAR(a.fecha_entrega_prog,'DD-MM-YYYY') as fecha_entrega_prog2, 
+//                 TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog2, 
+//                 a.fecha_inicio_real, a.fecha_fin_real, a.fecha_entrega_real,
+//                 h.id as fuente_financ_id, 
+//                 b.id tarifa_id, 
+//                 b.cociente, b.num_semanas, 
+//                 c.nombre, c.apellido_paterno, c.apellido_materno,
+//                 c.nombre||' '||c.apellido_paterno||' '||c.apellido_materno as nombre_completo,
+//                 j.nombre as zona, k.nombre as agencia,
+//                 l.calle, l.num_ext, UPPER(m.nombre) as colonia, m.cp, n.nombre as tipo_asentamiento, c.telefono, 
+//                 e.id as tipo_contrato_id, f.id as tipo_credito_id, 
+//                 g.nombre as estatus_credito,
+//                 a.num_cheque,
+//                 a.locked,
+//                 a.renovacion,
+//                 a.entregado,
+//                 a.preaprobado,
+//                 a.inversion_positiva
+//                 FROM  
+//                 dbo.creditos a 
+//                 LEFT JOIN  
+//                 dbo.tarifas b on a.tarifa_id=b.id 
+//                 LEFT JOIN 
+//                 dbo.clientes c on a.cliente_id = c.id 
+//                 LEFT JOIN 
+//                 dbo.tipo_contrato e 
+//                 on a.tipo_contrato_id = e.id 
+//                 LEFT JOIN 
+//                 dbo.tipo_credito f 
+//                 on a.tipo_credito_id = f.id 
+//                 LEFT JOIN  
+//                 dbo.tipo_estatus_credito g 
+//                 on a.estatus_credito_id = g.id 
+//                 LEFT JOIN 
+//                 dbo.tipo_fuente_financiamiento h 
+//                 on a.fuente_financ_id = h.id 
+//                 INNER JOIN
+//                 dbo.agencias i 
+//                 on c.agencia_id = i.id
+//                 INNER JOIN
+//                 dbo.zonas j on 
+//                 i.zona_id = j.id
+//                 INNER JOIN
+//                 dbo.sucursales k 
+//                 on j.sucursal_id = k.id
+//                 INNER JOIN
+//                 dbo.solicitud_credito l 
+//                 on a.solicitud_credito_id = l.id
+//                 INNER JOIN
+//                 dbo.colonias m
+//                 on m.id = l.colonia_id
+//                 INNER JOIN
+//                 dbo.tipo_asentamiento n
+//                 on m.tipo_asentamiento_id = n.id
+//                 WHERE c.apellido_materno like  '%${cadena_aux}%'
+//                 ORDER BY a.id `;
+
+//                 break;
+
+//             case 'num_contrato':
+
+//                 sql = `SELECT 
+//                     a.id, 
+//                     a.cliente_id,
+//                     k.clave ||'-'||a.cliente_id as num_cliente,
+//                     a.solicitud_credito_id,
+//                     a.num_contrato, a.monto_otorgado, a.monto_total, 
+//                     TRIM(TO_CHAR(a.monto_otorgado,'999,999D99')) as monto_otorgado2, 
+//                     fu_numero_letras(a.monto_total) as monto_total_letras,
+//                     ROUND((a.monto_total / b.num_semanas),2) as monto_semanal,
+//                     a.fecha_creacion, a.fecha_inicio_prog, a.hora_entrega, a.fecha_fin_prog, a.fecha_entrega_prog,  
+//                     TO_CHAR(a.fecha_entrega_prog,'DD-MM-YYYY') as fecha_entrega_prog2, 
+//                     TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog2, 
+//                     a.fecha_inicio_real, a.fecha_fin_real, a.fecha_entrega_real,
+//                     h.id as fuente_financ_id, 
+//                     b.id tarifa_id, 
+//                     b.cociente, b.num_semanas, 
+//                     c.nombre, c.apellido_paterno, c.apellido_materno,
+//                     c.nombre||' '||c.apellido_paterno||' '||c.apellido_materno as nombre_completo,
+//                     j.nombre as zona, k.nombre as agencia,
+//                     l.calle, l.num_ext, UPPER(m.nombre) as colonia, m.cp, n.nombre as tipo_asentamiento, c.telefono, 
+//                     e.id as tipo_contrato_id, f.id as tipo_credito_id, 
+//                     g.nombre as estatus_credito,
+//                     a.num_cheque,
+//                     a.locked,
+//                     a.renovacion,
+//                     a.entregado,
+//                     a.preaprobado,
+//                     a.inversion_positiva
+//                     FROM  
+//                     dbo.creditos a 
+//                     LEFT JOIN  
+//                     dbo.tarifas b on a.tarifa_id=b.id 
+//                     LEFT JOIN 
+//                     dbo.clientes c on a.cliente_id = c.id 
+//                     LEFT JOIN 
+//                     dbo.tipo_contrato e 
+//                     on a.tipo_contrato_id = e.id 
+//                     LEFT JOIN 
+//                     dbo.tipo_credito f 
+//                     on a.tipo_credito_id = f.id 
+//                     LEFT JOIN  
+//                     dbo.tipo_estatus_credito g 
+//                     on a.estatus_credito_id = g.id 
+//                     LEFT JOIN 
+//                     dbo.tipo_fuente_financiamiento h 
+//                     on a.fuente_financ_id = h.id 
+//                     INNER JOIN
+//                     dbo.agencias i 
+//                     on c.agencia_id = i.id
+//                     INNER JOIN
+//                     dbo.zonas j on 
+//                     i.zona_id = j.id
+//                     INNER JOIN
+//                     dbo.sucursales k 
+//                     on j.sucursal_id = k.id
+//                     INNER JOIN
+//                     dbo.solicitud_credito l 
+//                     on a.solicitud_credito_id = l.id
+//                     INNER JOIN
+//                     dbo.colonias m
+//                     on m.id = l.colonia_id
+//                     INNER JOIN
+//                     dbo.tipo_asentamiento n
+//                     on m.tipo_asentamiento_id = n.id
+//                     WHERE a.num_contrato = ${palabra}
+//                     ORDER BY a.id `;
+
+//                 break;
+
+//         }
+
+
+//         const { rows } = await pool.query(sql);
+
+//         console.log(rows);
+
+//         res.status(200).json(rows);
+
+//     } catch (error) {
+
+//         console.log(error);
+
+
+//         res.status(500).json({
+//             msg: mensajes.errorInterno,
+//         })
+//     }
+// }
 
 const setFechaCreditosMasivos = async (req, res = response) => {
 

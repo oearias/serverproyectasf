@@ -1,8 +1,8 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
-const { rotateRadians } = require('pdf-lib');
 const { creditoGet, creditosGet, creditoPost, creditoPut, creditoDelete, 
-        amortizacionGet, printContrato, printAmortizacion, printAllDoc, printTarjetaPagos, amortizacionPost, setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete } = require('../controllers/creditos');
+        amortizacionGet, printContrato, printAmortizacion, printAllDoc, printTarjetaPagos, amortizacionPost, 
+        setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete} = require('../controllers/creditos');
 const { createCreditosMasivos } = require('../controllers/solicitud_creditos');
 const { validarCampos } = require('../middlewares/validar-campos');
 
@@ -45,6 +45,8 @@ router.put('/:id', [
 ],creditoPut);
 
 router.delete('/:id', creditoDelete);
+
+//router.get('/:criterio/:palabra', creditoGetByCriteria);
 
 router.get('/amortizacion/:id', amortizacionGet);
 

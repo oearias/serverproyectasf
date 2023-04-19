@@ -91,7 +91,7 @@ const pagoPost = async (req, res = response) => {
         //vamos a suspenderla por lo pronto
         await pool.query(`CALL pr_update_saldos_balance_after_pago(${credito_id},${monto},'${fecha}')`);
 
-        await pool.query(`CALL pr_calcula_recargo_credito_test(${credito_id},'${fecha}')`);
+        await pool.query(`CALL pr_calcula_recargo_credito_test3(${credito_id},'${fecha}')`);
 
         res.status(201).json(
             `El pago ha sido añadido correctamente.`
