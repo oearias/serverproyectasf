@@ -17,7 +17,13 @@ class Server {
 
     middlewares() {
 
-        this.app.use(cors());
+        //this.app.use(cors());
+
+        this.app.use(cors({
+            methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE'], // Permitir los métodos HTTP que necesites
+            credentials: true, // Permitir enviar y recibir cookies en las solicitudes CORS
+            origin: true // Permitir solicitudes desde cualquier origen (puedes configurarlo para que solo permita solicitudes desde un dominio específico si lo deseas)
+        }));
 
         this.app.use(express.json());
 
