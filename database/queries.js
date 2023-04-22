@@ -590,6 +590,7 @@ const queries = {
                         h.nombre as agencia,
                         e.nombre as tipo_contrato, 
                         f.nombre as tipo_credito, 
+                        g.id as estatus_credito_id,
                         g.nombre as estatus_credito,
                         k.nombre as estatus_contrato,
                         a.locked,
@@ -599,7 +600,8 @@ const queries = {
                         a.no_entregado,
                         a.num_cheque,
                         a.motivo,
-                        a.inversion_positiva
+                        a.inversion_positiva,
+                        fu_calcula_dias_penalizaciones(a.id) as dias_penalizaciones
                         FROM  
                         dbo.creditos a 
                         LEFT JOIN  
@@ -780,7 +782,7 @@ const queries = {
     updateTipoIdentif:  'UPDATE dbo.tipo_identificacion set nombre = $1 WHERE id = $2 RETURNING *',
     deleteTipoIdentif:  'DELETE FROM dbo.tipo_identificacion WHERE id = $1 RETURNING *',
 
-    getTipoEstatusCreditos:             'SELECT * FROM dbo.tipo_estatus_credito order by nombre',
+    getTipoEstatusCreditos:             'SELECT id, nombre FROM dbo.tipo_estatus_credito order by nombre',
     getTipoEstatusCredito:              'SELECT * FROM dbo.tipo_estatus_credito WHERE id = $1',
     insertTipoEstatusCredito:           'INSERT INTO dbo.tipo_estatus_credito (nombre) VALUES($1) RETURNING *',
     updateTipoEstatusCredito:           'UPDATE dbo.tipo_estatus_credito set nombre = $1 WHERE id = $2 RETURNING *',
@@ -962,7 +964,91 @@ const queries = {
                                         WHERE solicitud_credito_id = $1 ORDER BY fecha DESC`,
                                 
     resetPassword:                      `UPDATE dbo.usuarios 
-                                        SET password = $1 WHERE id = $2;`
+                                        SET password = $1 WHERE id = $2;`,
+
+    getCreditoQueryGenerica:            `SELECT 
+                                        a.id, 
+                                        a.cliente_id,
+                                        k.clave ||'-'||a.cliente_id as num_cliente,
+                                        a.solicitud_credito_id,
+                                        a.num_contrato, a.monto_otorgado, a.monto_total, 
+                                        TRIM(TO_CHAR(a.monto_otorgado,'999,999D99')) as monto_otorgado2, 
+                                        fu_numero_letras(a.monto_total) as monto_total_letras,
+                                        ROUND((a.monto_total / b.num_semanas),2) as monto_semanal,
+                                        a.fecha_creacion, a.fecha_inicio_prog, a.hora_entrega, a.fecha_fin_prog, a.fecha_entrega_prog,  
+                                        TO_CHAR(a.fecha_entrega_prog,'DD-MM-YYYY') as fecha_entrega_prog2, 
+                                        TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog2, 
+                                        a.fecha_inicio_real, a.fecha_fin_real, a.fecha_entrega_real,
+                                        h.id as fuente_financ_id, 
+                                        b.id tarifa_id, 
+                                        b.cociente, b.num_semanas, 
+                                        c.nombre, c.apellido_paterno, c.apellido_materno,
+                                        c.nombre||' '||c.apellido_paterno||' '||c.apellido_materno as nombre_completo,
+                                        j.nombre as zona, k.nombre as agencia,
+                                        l.calle, l.num_ext, UPPER(m.nombre) as colonia, m.cp, n.nombre as tipo_asentamiento, c.telefono, 
+                                        e.id as tipo_contrato_id, f.id as tipo_credito_id, 
+                                        g.nombre as estatus_credito,
+                                        a.num_cheque,
+                                        a.locked,
+                                        a.renovacion,
+                                        a.entregado,
+                                        a.preaprobado,
+                                        a.inversion_positiva
+                                        FROM  
+                                        dbo.creditos a 
+                                        LEFT JOIN  
+                                        dbo.tarifas b on a.tarifa_id=b.id 
+                                        LEFT JOIN 
+                                        dbo.clientes c on a.cliente_id = c.id 
+                                        LEFT JOIN 
+                                        dbo.tipo_contrato e 
+                                        on a.tipo_contrato_id = e.id 
+                                        LEFT JOIN 
+                                        dbo.tipo_credito f 
+                                        on a.tipo_credito_id = f.id 
+                                        LEFT JOIN  
+                                        dbo.tipo_estatus_credito g 
+                                        on a.estatus_credito_id = g.id 
+                                        LEFT JOIN 
+                                        dbo.tipo_fuente_financiamiento h 
+                                        on a.fuente_financ_id = h.id 
+                                        INNER JOIN
+                                        dbo.agencias i 
+                                        on c.agencia_id = i.id
+                                        INNER JOIN
+                                        dbo.zonas j on 
+                                        i.zona_id = j.id
+                                        INNER JOIN
+                                        dbo.sucursales k 
+                                        on j.sucursal_id = k.id
+                                        INNER JOIN
+                                        dbo.solicitud_credito l 
+                                        on a.solicitud_credito_id = l.id
+                                        INNER JOIN
+                                        dbo.colonias m
+                                        on m.id = l.colonia_id
+                                        INNER JOIN
+                                        dbo.tipo_asentamiento n
+                                        on m.tipo_asentamiento_id = n.id`,
+
+    getClienteQueryGenerica:            `SELECT 
+                                        a.id, a.num_cliente, 
+                                        d.clave||'-'||a.num_cliente as num_cliente2, 
+                                        a.nombre||' '||a.apellido_paterno||' '||a.apellido_materno as nombre_completo, 
+                                        a.nombre, a.apellido_paterno, a.apellido_materno, 
+                                        a.telefono, a.curp, a.rfc, a.fecha_nacimiento, a.sexo, a.email,
+                                        b.nombre as agencia, c.nombre as zona
+                                        FROM 
+                                        dbo.clientes a
+                                        INNER JOIN
+                                        dbo.agencias b
+                                        on a.agencia_id = b.id
+                                        INNER JOIN
+                                        dbo.zonas c
+                                        on b.zona_id = c.id
+                                        INNER JOIN
+                                        dbo.sucursales d
+                                        on c.sucursal_id = d.id`
 }
 
 module.exports = {

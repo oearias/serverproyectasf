@@ -38,6 +38,7 @@ const tipoCreditosGet = async (req, res = response) => {
  
     } catch (error) {
 
+        console.log('localizado');
         console.log(error);
 
         res.status(500).json({

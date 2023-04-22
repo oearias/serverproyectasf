@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { creditoGet, creditosGet, creditoPost, creditoPut, creditoDelete, 
         amortizacionGet, printContrato, printAmortizacion, printAllDoc, printTarjetaPagos, amortizacionPost, 
-        setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete} = require('../controllers/creditos');
+        setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete, creditoGetByCriteria} = require('../controllers/creditos');
 const { createCreditosMasivos } = require('../controllers/solicitud_creditos');
 const { validarCampos } = require('../middlewares/validar-campos');
 
@@ -46,7 +46,7 @@ router.put('/:id', [
 
 router.delete('/:id', creditoDelete);
 
-//router.get('/:criterio/:palabra', creditoGetByCriteria);
+router.get('/search/:criterio/:palabra', creditoGetByCriteria);
 
 router.get('/amortizacion/:id', amortizacionGet);
 

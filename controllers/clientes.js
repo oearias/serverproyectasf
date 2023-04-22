@@ -168,64 +168,54 @@ const clientesGetByCriteria = async (req, res = response) => {
 
     try {
 
-        let sql;
+        let sql = '';
+        let cadena_aux = palabra.toUpperCase();
 
-        if (criterio != 'num_cliente') {
+        let select_query = queries.getClienteQueryGenerica;
 
-            sql = `SELECT 
-            a.id, a.num_cliente, d.clave||'-'||a.num_cliente as num_cliente2, 
-            a.nombre||' '||a.apellido_paterno||' '||a.apellido_materno as nombre_completo, 
-            a.nombre, a.apellido_paterno, a.apellido_materno, 
-            a.telefono, a.curp, a.rfc, a.fecha_nacimiento, a.sexo, a.email,
-            b.nombre as agencia, c.nombre as zona
-            FROM 
-            dbo.clientes a
-			INNER JOIN
-			dbo.agencias b
-			on a.agencia_id = b.id
-			INNER JOIN
-			dbo.zonas c
-			on b.zona_id = c.id
-			INNER JOIN
-            dbo.sucursales d
-			on c.sucursal_id = d.id
-            WHERE a.${criterio} like '%${palabra}%' 
-            ORDER BY a.apellido_paterno, a.apellido_materno, a.nombre`;
+        let clausula_where = '';
+        let order_by = 'ORDER BY a.apellido_paterno, a.apellido_materno, a.nombre';
 
-        } else {
+        switch (criterio) {
 
-            // sql = `SELECT 
-            // a.id, a.num_cliente, b.clave||'-'||a.num_cliente as num_cliente2, 
-            // a.nombre, a.apellido_paterno, a.apellido_materno, 
-            // a.telefono, a.curp, a.rfc, a.fecha_nacimiento, a.sexo, a.email 
-            // FROM dbo.clientes a, dbo.sucursales b 
-            // WHERE a.sucursal_id = b.id AND a.${criterio} = ${palabra} ORDER BY a.apellido_paterno, a.apellido_materno, a.nombre`;
+            case 'num_cliente':
 
-            sql = `SELECT 
-            a.id, a.num_cliente, 
-            d.clave||'-'||a.num_cliente as num_cliente2, 
-            a.nombre||' '||a.apellido_paterno||' '||a.apellido_materno as nombre_completo, 
-            a.nombre, a.apellido_paterno, a.apellido_materno, 
-            a.telefono, a.curp, a.rfc, a.fecha_nacimiento, a.sexo, a.email,
-            b.nombre as agencia, c.nombre as zona
-            FROM 
-            dbo.clientes a
-			INNER JOIN
-			dbo.agencias b
-			on a.agencia_id = b.id
-			INNER JOIN
-			dbo.zonas c
-			on b.zona_id = c.id
-			INNER JOIN
-            dbo.sucursales d
-			on c.sucursal_id = d.id
-            WHERE a.num_cliente = '${palabra}' 
-            ORDER BY a.apellido_paterno, a.apellido_materno, a.nombre`;
+                clausula_where = `WHERE a.num_cliente = ${cadena_aux}`;
+
+                break;
+
+            case 'nombre_completo':
+
+                clausula_where = `WHERE a.nombre||' '||a.apellido_paterno||' '||a.apellido_materno like  '%${cadena_aux}%' `;
+
+                break;
+
+            case 'zona':
+
+                clausula_where = `WHERE c.nombre like '${cadena_aux}' `;
+
+                break;
+
+            case 'agencia':
+
+                clausula_where = `WHERE b.nombre like '${cadena_aux}' `;
+
+                break;
+
+
+                default: 
+                clausula_where = '1 != 0';
+                break;
+
 
         }
 
-        console.log(sql);
+        console.log(clausula_where);
 
+        sql = `${select_query} ${clausula_where}
+                ${order_by}`;
+
+                console.log(sql);
 
         const { rows } = await pool.query(sql);
 
