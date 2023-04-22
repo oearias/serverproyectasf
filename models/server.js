@@ -20,9 +20,11 @@ class Server {
         //this.app.use(cors());
 
         this.app.use(cors({
-            methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE'], // Permitir los métodos HTTP que necesites
-            credentials: true, // Permitir enviar y recibir cookies en las solicitudes CORS
-            origin: true // Permitir solicitudes desde cualquier origen (puedes configurarlo para que solo permita solicitudes desde un dominio específico si lo deseas)
+            origin: 'https://system-proyectasfweb.com', // Reemplaza esto con el dominio de tu aplicación Angular
+            methods: 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+            allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
+            credentials: true,
+            //origin: true // Permitir solicitudes desde cualquier origen (puedes configurarlo para que solo permita solicitudes desde un dominio específico si lo deseas)
         }));
 
         this.app.use(express.json());
