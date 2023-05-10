@@ -330,136 +330,64 @@ const solicitudGetByCriteria = async (req, res = response) => {
 
     try {
 
-        let sql;
+        let sql = '';
+        let cadena_aux = palabra.toUpperCase();
+
+        let select_query = queries.getSolCreditoQueryGenerica;
+
+        let clausula_where = '';
+        let order_by = 'ORDER BY a.id'
 
         switch (criterio) {
 
             case 'estatus_id':
 
-                sql = `SELECT a.id, 
-                a.estatus_sol_id,
-                a.cliente_id,
-                a.monto, a.tarifa_id,
-                b.apellido_paterno, b.apellido_materno, b.nombre, 
-                TRIM(b.apellido_paterno||' '||b.apellido_materno||' '||COALESCE(b.nombre,'')) as nombre_completo,
-                a.fecha_solicitud, c.nombre as estatus,
-                a.locked
-                FROM dbo.solicitud_credito a, dbo.clientes b, dbo.tipo_estatus_solicitud c 
-                WHERE a.cliente_id = b.id 
-                AND a.estatus_sol_id = c.id 
-                AND a.estatus_sol_id = ${palabra}
-                ORDER BY a.id`;
+                clausula_where = `WHERE a.estatus_sol_id = ${palabra}`;
 
                 break;
 
             case 'nombre':
 
-                cadena_aux = palabra.toUpperCase();
-
-                sql = `SELECT a.id, 
-                a.estatus_sol_id,
-                a.cliente_id,
-                a.monto, a.tarifa_id,
-                b.apellido_paterno, b.apellido_materno, b.nombre, 
-                TRIM(b.apellido_paterno||' '||b.apellido_materno||' '||COALESCE(b.nombre,'')) as nombre_completo,
-                a.fecha_solicitud, c.nombre as estatus,
-                a.locked
-                FROM dbo.solicitud_credito a, dbo.clientes b, dbo.tipo_estatus_solicitud c 
-                WHERE a.cliente_id = b.id 
-                AND a.estatus_sol_id = c.id 
-                AND b.nombre like '%${cadena_aux}%'
-                ORDER BY a.id`;
+                clausula_where = `WHERE b.nombre like '%${cadena_aux}%' `
 
                 break;
 
             case 'apellido_paterno':
 
-                cadena_aux = palabra.toUpperCase();
-
-                sql = `SELECT a.id, 
-                a.estatus_sol_id,
-                a.cliente_id,
-                a.monto, a.tarifa_id,
-                b.apellido_paterno, b.apellido_materno, b.nombre, 
-                TRIM(b.apellido_paterno||' '||b.apellido_materno||' '||COALESCE(b.nombre,'')) as nombre_completo,
-                a.fecha_solicitud, c.nombre as estatus,
-                a.locked
-                FROM dbo.solicitud_credito a, dbo.clientes b, dbo.tipo_estatus_solicitud c 
-                WHERE a.cliente_id = b.id 
-                AND a.estatus_sol_id = c.id 
-                AND b.apellido_paterno like '%${cadena_aux}%'
-                ORDER BY a.id`;
+                clausula_where = `WHERE b.apellido_paterno like '%${cadena_aux}%'`;
 
                 break;
 
             case 'apellido_materno':
 
-                cadena_aux = palabra.toUpperCase();
-
-                sql = `SELECT a.id, 
-                a.estatus_sol_id,
-                a.cliente_id,
-                a.monto, a.tarifa_id,
-                b.apellido_paterno, b.apellido_materno, b.nombre, 
-                TRIM(b.apellido_paterno||' '||b.apellido_materno||' '||COALESCE(b.nombre,'')) as nombre_completo,
-                a.fecha_solicitud, c.nombre as estatus,
-                a.locked
-                FROM dbo.solicitud_credito a, dbo.clientes b, dbo.tipo_estatus_solicitud c 
-                WHERE a.cliente_id = b.id 
-                AND a.estatus_sol_id = c.id 
-                AND b.apellido_materno like '%${cadena_aux}%'
-                ORDER BY a.id`;
+            clausula_where = `WHERE b.apellido_materno like '%${cadena_aux}%' `
 
                 break;
 
             case 'num_cliente':
 
-                sql = `SELECT a.id, 
-                    a.estatus_sol_id,
-                    a.cliente_id,
-                    a.monto, a.tarifa_id,
-                    b.apellido_paterno, b.apellido_materno, b.nombre, 
-                    TRIM(b.apellido_paterno||' '||b.apellido_materno||' '||COALESCE(b.nombre,'')) as nombre_completo,
-                    a.fecha_solicitud, c.nombre as estatus,
-                    a.locked
-                    FROM dbo.solicitud_credito a, 
-                    dbo.clientes b, dbo.tipo_estatus_solicitud c 
-                    WHERE a.cliente_id = b.id 
-                    AND a.estatus_sol_id = c.id 
-                    AND b.num_cliente = ${palabra}
-                    ORDER BY a.id`;
+                clausula_where = `WHERE b.num_cliente = ${palabra} `;
 
                 break;
 
             case 'sol_id':
 
-                sql = `SELECT a.id, 
-                        a.estatus_sol_id,
-                        a.cliente_id,
-                        a.monto, a.tarifa_id,
-                        b.apellido_paterno, b.apellido_materno, b.nombre, 
-                        TRIM(b.apellido_paterno||' '||b.apellido_materno||' '||COALESCE(b.nombre,'')) as nombre_completo,
-                        a.fecha_solicitud, c.nombre as estatus,
-                        a.locked
-                        FROM dbo.solicitud_credito a, 
-                        dbo.clientes b, dbo.tipo_estatus_solicitud c 
-                        WHERE a.cliente_id = b.id 
-                        AND a.estatus_sol_id = c.id 
-                        AND a.id = ${palabra}
-                        ORDER BY a.id`;
+                clausula_where = `WHERE a.id = ${palabra}`;
 
                 break;
 
         }
 
+        sql = `${select_query} ${clausula_where}
+                ${order_by}`;
 
         const { rows } = await pool.query(sql);
-
-        console.log(rows);
 
         res.status(200).json(rows);
 
     } catch (error) {
+
+        console.log(error);
 
 
         res.status(500).json({

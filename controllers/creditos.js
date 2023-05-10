@@ -5,12 +5,16 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const { handlebars } = require('hbs');
 
+const merger = require('easy-pdf-merge');
+const path = require('path');
+
 const PDFDocument = require('pdf-lib').PDFDocument
 
 const { queries } = require('../database/queries');
 const { buildPatchQuery, buildPostQueryReturningId } = require('../database/build-query');
 const mensajes = require('../helpers/messages');
 const { generateAmortizacion } = require('../helpers/calculateAmortizacion');
+
 
 const table = 'dbo.creditos'
 
@@ -165,12 +169,12 @@ const creditoPut = async (req, res = response) => {
         await pool.query(`CALL pr_change_estatus_solicitud_credito_after(${id})`);
 
         //Solo si creamos inversion positiva
-        if(req.body?.inversion_positiva){
+        if (req.body?.inversion_positiva) {
             //CALL ...
         }
 
         //Si quitamos inversion positiva
-        if(!req.body.inversion_positiva){
+        if (!req.body.inversion_positiva) {
             console.log('inversion negativa');
         }
 
@@ -266,14 +270,20 @@ const creditoGetByCriteria = async (req, res = response) => {
 
             case 'num_contrato':
 
-                    clausula_where = `WHERE a.num_contrato = ${palabra} `;
+                clausula_where = `WHERE a.num_contrato = ${palabra} `;
 
+                break;
+
+            case 'fecha_inicio_prog':
+                clausula_where = `WHERE a.fecha_inicio_prog = '${palabra}' `;
                 break;
 
         }
 
         sql = `${select_query} ${clausula_where}
                 ${order_by}`;
+
+        console.log(sql);
 
         const { rows } = await pool.query(sql);
 
@@ -309,6 +319,10 @@ const setFechaCreditosMasivos = async (req, res = response) => {
             const noEntregadoAux = no_entregado ? no_entregado : nullValue;
             const motivoAux = motivo ? `'${motivo}'` : nullValue;
 
+            if (!hora_entrega) {
+                return res.status(500).json('Hora de entrega no valida');
+            }
+
             const procedimiento = `CALL pr_set_fecha_entrega_credito_preaprobado( 
                 ${credito_id}, '${fecha_entrega}', '${hora_entrega}',
                 ${fechaInicioAux},${numChequeAux},
@@ -335,6 +349,204 @@ const setFechaCreditosMasivos = async (req, res = response) => {
         });
     }
 }
+
+const printContratosMasivos = async (req, res = response) => {
+    try {
+
+        const creditosLista = req.body;
+
+        const creditos = creditosLista.filter(credito => credito['printSelected']);
+
+        // Configuración de Puppeteer
+        const browser = await puppeteer.launch({
+            'args': [
+                '--no-sandbox',
+                '--disable-setuid-sandbox'
+            ]
+        });
+
+        const page = await browser.newPage();
+        const page2 = await browser.newPage();
+
+        //Iniciamos leyendo la plantilla del contrato
+        const template = fs.readFileSync('./views/template_documentation.hbs', 'utf-8');
+        //Plantilla de la amortizacion
+        const template2 = fs.readFileSync('./views/template_tarjeta_pagos.hbs', 'utf-8');
+
+        const DOC = handlebars.compile(template);
+        const DOC2 = handlebars.compile(template2);
+
+        const outputDirectory = path.resolve(__dirname, '..', 'pdfs');
+        fs.mkdirSync(outputDirectory, { recursive: true }); // se crea el directorio si no existe
+
+        const pdfsToMerge = [];
+
+        for (const { credito_id } of creditos) {
+            const values = [credito_id];
+
+            const { rows } = await pool.query(queries.queryPrintContrato, values);
+
+            // Consulta amortizacion
+            const result = await pool.query(queries.queryPrintAmorti, values);
+
+            const resultado = await pool.query(queries.getCredito, values);
+
+            const { num_contrato, num_cliente, monto_otorgado, monto_otorgado2, monto_total, monto_semanal,
+                nombre, apellido_paterno, apellido_materno, monto_total_letras,
+                telefono, calle, num_ext, colonia, cp, tipo_asentamiento, zona, agencia, fecha_inicio_prog,
+                fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2 } = resultado.rows[0];
+
+            result['contrato'] = {
+                rows
+            }
+
+            result['credito'] = {
+                num_contrato, num_cliente, monto_otorgado, monto_total, monto_otorgado2, monto_total_letras,
+                monto_semanal, fecha_inicio_prog, fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2,
+                nombre, apellido_paterno, apellido_materno, telefono, calle, num_ext, tipo_asentamiento, colonia, cp,
+                zona, agencia
+            };
+
+
+            // Rellenamos la plantilla con los datos de cada crédito
+            const html = DOC({ ...result, credito_id });
+
+            const html2 = DOC2(result);
+
+            // Generamos el PDF
+            await page.setContent(html, { waitUntil: 'networkidle0' });
+
+            await page2.setContent(html2, { waitUntil: 'networkidle0' });
+
+            const pdf = await page.pdf({
+                format: 'Letter',
+                margin: {
+                    top: '1cm',
+                    bottom: '1cm'
+                },
+                printBackground: true,
+            });
+
+            const pdf2 = await page2.pdf({
+                format: 'Letter',
+                margin: {
+                    top: '1cm',
+                    bottom: '1cm'
+                },
+                printBackground: true,
+            });
+
+            // Guardamos el PDF generado en el servidor
+            const filename = `credito_${credito_id}.pdf`;
+            fs.writeFileSync(`${outputDirectory}/${filename}`, pdf);
+
+            const filename2 = `amortizacion_${credito_id}.pdf`;
+            fs.writeFileSync(`${outputDirectory}/${filename2}`, pdf2);
+
+            const pdfBuffer = fs.readFileSync(`${outputDirectory}/${filename}`);
+            const pdfBuffer2 = fs.readFileSync(`${outputDirectory}/${filename2}`);
+
+            pdfsToMerge.push(pdfBuffer);
+            pdfsToMerge.push(pdfBuffer2);
+        }
+
+        const mergedPdf = await PDFDocument.create();
+        for (const pdfBytes of pdfsToMerge) {
+            const pdf = await PDFDocument.load(pdfBytes);
+            const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+            copiedPages.forEach((page) => {
+                mergedPdf.addPage(page);
+            });
+        }
+
+        const buf = await mergedPdf.save(); // Uint8Array
+
+        await browser.close();
+
+        const buffer = Buffer.from(buf);
+
+        let namePDF = "contratos";
+        res.setHeader('Content-type', 'application/pdf');
+        res.setHeader('Content-Length', buffer.byteLength);
+        res.setHeader('Content-Description', `File Transfer`);
+        res.setHeader('Content-Transfer-Encoding', `binary`);
+
+        res.setHeader('Content-Disposition', `attachment; filename="${namePDF}.pdf"`);
+
+        res.send(buffer);
+
+        // Borramos los archivos generados del servidor
+        for (const { credito_id } of creditos) {
+            const filename = `credito_${credito_id}.pdf`;
+            const filename2 = `amortizacion_${credito_id}.pdf`;
+
+            fs.unlinkSync(`${outputDirectory}/${filename}`);
+            fs.unlinkSync(`${outputDirectory}/${filename2}`);
+        }
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).send('Ocurrió un error al generar el archivo PDF.');
+    }
+}
+
+
+// const printContratosMasivos = async (req, res = response) => {
+//     try {
+//         const creditos = req.body;
+
+//         // Configuración de Puppeteer
+//         const browser = await puppeteer.launch();
+//         const page = await browser.newPage();
+//         const container = '#pdf-container';
+
+//         //Iniciamos leyendo la plantilla del contrato
+//         const template = fs.readFileSync('./views/template_contrato.hbs', 'utf-8');
+//         const DOC = handlebars.compile(template);
+
+//         const outputDirectory = path.resolve(__dirname, '..', 'pdfs');
+
+//         console.log(creditos);
+
+//         for (const { credito_id } of creditos) {
+//             const values = [credito_id];
+
+//             const { rows: [creditoData] } = await pool.query(queries.queryPrintContrato, values);
+
+//             // Rellenamos la plantilla con los datos de cada crédito
+//             const html = DOC({ ...creditoData, credito_id: creditos.credito_id });
+
+//             // Generamos el PDF
+//             await page.setContent(html, { waitUntil: 'networkidle0' });
+//             const pdf = await page.pdf({ format: 'Letter' });
+//             await page.setContent(container);
+
+//             // Guardamos el PDF generado en el servidor
+//             const filename = `credito_${credito_id}.pdf`;
+//             require('fs').writeFileSync(`${outputDirectory}/${filename}`, pdf);
+//         }
+
+//         // Cerramos el navegador
+//         await browser.close();
+
+//         const filenames = creditos.map((credito) => `${outputDirectory}/credito_${credito.credito_id}.pdf`);
+//         merger(filenames, `${outputDirectory}/creditos.pdf`, (err) => {
+//             if (err) console.log(err);
+//             console.log('Archivos PDF fusionados correctamente.');
+//         });
+
+//         // Enviar el archivo PDF como respuesta a la solicitud HTTP
+//         res.setHeader('Content-Type', 'application/pdf');
+//         res.setHeader('Content-Disposition', `attachment; filename=creditos.pdf`);
+//         res.sendFile(`${outputDirectory}/creditos.pdf`);
+
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).send('Ocurrió un error al generar el archivo PDF.');
+//     }
+// }
 
 const amortizacionGet = async (req, res = response) => {
 
@@ -634,25 +846,106 @@ const printTarjetaPagos = async (req, res = response) => {
 
 }
 
+const printCreditos = async (req, res = response) => {
+
+    try {
+
+        const { fecha_inicio } = req.body;
+
+        const template = fs.readFileSync('./views/template_lista_creditos.hbs','utf-8');
+
+        let consultaSql = queries.getCreditosGenerica;
+        let clausulaWhere = `WHERE a.fecha_inicio_prog = '${fecha_inicio}' `;
+        let clausulaOrder = `ORDER BY a.id`;
+
+        if(fecha_inicio){
+            consultaSql = consultaSql + clausulaWhere + clausulaOrder
+        }else{
+            consultaSql = queries.getCreditos;
+        }
+
+        const resultado = await pool.query(consultaSql);
+
+        //Helpers
+        handlebars.registerHelper('ifCond', function (v1, v2, options) {
+            if (v1 === v2) {
+                return options.fn(this);
+            }
+            return options.inverse(this);
+        });
+
+        const DOC = handlebars.compile(template);
+
+        const html = DOC(resultado);
+
+        const browser = await puppeteer.launch({
+            'args': [
+                '--no-sandbox',
+                '--disable-setuid-sandbox'
+            ]
+        });
+
+        const page = await browser.newPage();
+        // Configurar el tiempo de espera de la navegación
+        await page.setDefaultNavigationTimeout(0);
+
+        await page.setContent(html);
+
+        const pdf = await page.pdf({
+            margin: {
+                top: '1cm',
+                bottom: '1cm',
+                left: '1cm',
+                right: '1cm'
+            },
+            format: 'letter',
+            //landscape: true,
+            printBackground: true
+        });
+
+        await browser.close();
+
+        const buffer = Buffer.from(pdf);
+        //const bufferStream = new Stream.PassThrough();
+
+        let namePDF = "amortizacion_";
+        res.setHeader('Content-type', 'application/pdf');
+        res.setHeader('Content-Length', buffer.byteLength);
+        res.setHeader('Content-Description', `File Transfer`);
+        res.setHeader('Content-Transfer-Encoding', `binary`);
+
+        res.setHeader('Content-Disposition', `filename="${namePDF}.pdf"`);
+        //bufferStream.end(buffer);
+
+        return res.send(buffer);
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.json(error.message);
+    }
+
+}
+
 const printAllDoc = async (req, res = response) => {
 
     try {
 
-        console.log('se imprime la documentacion');
-
         const { id } = req.params;
         const values = [id];
 
-        //Iniciamos leyendo la plantilla del contrato
+        // Iniciamos leyendo la plantilla del contrato
         const template = fs.readFileSync('./views/template_documentation.hbs', 'utf-8');
         const template2 = fs.readFileSync('./views/template_tarjeta_pagos.hbs', 'utf-8');
 
-        //obtenemos la consult del contrato
+        // Obtenemos la consulta del contrato
         const { rows } = await pool.query(queries.queryPrintContrato, values);
 
-        //Consulta amortización
+        // Consulta amortización
         const result = await pool.query(queries.queryPrintAmorti, values);
-        //Consulta encabezado amortizacion
+
+        // Consulta encabezado amortizacion
         const resultado = await pool.query(queries.getCredito, values);
 
         const DOC = handlebars.compile(template);
@@ -777,6 +1070,8 @@ const printEntregasCredito = async (req, res = response) => {
 
         const values = [fecha_entrega_prog];
 
+        console.log(fecha_entrega_prog);
+
         //Iniciamos leyendo la plantilla del contrato
         const template = fs.readFileSync('./views/template_entrega_creditos.hbs', 'utf-8');
 
@@ -793,22 +1088,22 @@ const printEntregasCredito = async (req, res = response) => {
             TRIM(TO_CHAR(fu_get_monto_total_creditos_preaprobados($1),'999,999D99')) as monto_total_creditos`, values);
 
         //Helpers
-        handlebars.registerHelper('ifCond', function(v1, v2, options) {
-            if(v1 === v2) {
-              return options.fn(this);
+        handlebars.registerHelper('ifCond', function (v1, v2, options) {
+            if (v1 === v2) {
+                return options.fn(this);
             }
             return options.inverse(this);
-          });
+        });
 
         const DOC = handlebars.compile(template);
 
         console.log(result.rows[0]);
 
-        const { 
-            fecha_entrega_programada, 
+        const {
+            fecha_entrega_programada,
             hora_entrega,
-            monto_total_creditos, 
-            monto_cn, monto_r, 
+            monto_total_creditos,
+            monto_cn, monto_r,
             count_cn_r,
             count_cn, count_r
         } = resultado.rows[0];
@@ -851,7 +1146,7 @@ const printEntregasCredito = async (req, res = response) => {
             },
             printBackground: true
         })
-        
+
 
         await browser.close();
 
@@ -920,9 +1215,11 @@ module.exports = {
     creditoPut,
     creditoDelete,
     setFechaCreditosMasivos,
+    printContratosMasivos,
     amortizacionGet,
     amortizacionPost,
     printContrato,
+    printCreditos,
     printAmortizacion,
     printTarjetaPagos,
     printAllDoc,

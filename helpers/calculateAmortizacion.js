@@ -440,7 +440,7 @@ const generateAmortizacion = async (result = []) => {
                     rows.push({
                         weekyear: num_semana,
                         bonificacion:true,
-                        concepto: '-50% dto. inversion positiva',
+                        concepto: '-50% dto. inversión positiva',
                         monto_pagado: descuento
                     });
                 }else if(cliente_cumplido){

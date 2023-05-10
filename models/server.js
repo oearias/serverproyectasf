@@ -19,12 +19,13 @@ class Server {
 
         //this.app.use(cors());
 
+        //Configuración CORS
         this.app.use(cors({
-            origin: 'https://system-proyectasfweb.com', // Reemplaza esto con el dominio de tu aplicación Angular
+            //origin: 'https://system-proyectasfweb.com', 
+            origin: 'http://192.168.0.20:4200', //TODO: Este se tiene que quitar despues de las pruebas
             methods: 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
             allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
             credentials: true,
-            //origin: true // Permitir solicitudes desde cualquier origen (puedes configurarlo para que solo permita solicitudes desde un dominio específico si lo deseas)
         }));
 
         this.app.use(express.json());

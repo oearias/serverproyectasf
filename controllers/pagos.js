@@ -82,6 +82,8 @@ const pagoPost = async (req, res = response) => {
         const agencia = resultado.rows[0]['agencia'];
         const zona = resultado.rows[0]['zona'];
         const serie = `${zona}-${agencia}-${folio}`;
+
+        console.log(credito_id, fecha, monto, weekyear, folio, serie);
         
 
         const values = [ credito_id, fecha, monto, weekyear, folio, serie];
