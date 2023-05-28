@@ -506,8 +506,6 @@ const generateAmortizacion = async (result = []) => {
 
             //Hay que hacer un push por cada pago a destiempo mediante el for
 
-            
-
 
             for(i=0; i< consulta_pagos_tardios.rows.length; i++){
 
@@ -526,6 +524,10 @@ const generateAmortizacion = async (result = []) => {
                     penalizacion_semanal: 0,
                     adeudo_semanal: 0 - consulta_pagos_tardios.rows[i]['monto_pagado'],
                 }
+
+                console.log('smpg', nuevaSemana.suma_monto_pagado);
+
+                pagado_total = pagado_total + Number(nuevaSemana.suma_monto_pagado);
     
                 semanas.push(nuevaSemana);
                 

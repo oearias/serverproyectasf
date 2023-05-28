@@ -136,9 +136,15 @@ const pagoPut = async (req, res = response) => {
         //Se restan los pagos cancelados (como si se estuviese eliminando)
         await pool.query(`CALL pr_update_saldos_balance_delete_pago(${id})`);
 
+        console.log('credito_id', credito_id);
+        console.log('fecha', fecha);
+
+        await pool.query(`CALL pr_calcula_recargo_credito_test3(${credito_id},'${fecha}')`);
+
         res.status(200).json(
             `El pago ha sido cancelado correctamente.`
         );
+        
     } catch (error) {
 
         console.log(error);

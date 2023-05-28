@@ -461,6 +461,19 @@ const printContratosMasivos = async (req, res = response) => {
 
         const buf = await mergedPdf.save(); // Uint8Array
 
+
+
+        const fontElementSelector = '#miContrato'; // Reemplaza con el selector del elemento que utiliza la fuente
+        const fontFamily = await page.$eval(fontElementSelector, (element) => {
+            return window.getComputedStyle(element).fontFamily;
+        });
+
+        console.log(`La tipografía utilizada es: ${fontFamily}`);
+
+
+
+
+
         await browser.close();
 
         const buffer = Buffer.from(buf);
@@ -852,15 +865,15 @@ const printCreditos = async (req, res = response) => {
 
         const { fecha_inicio } = req.body;
 
-        const template = fs.readFileSync('./views/template_lista_creditos.hbs','utf-8');
+        const template = fs.readFileSync('./views/template_lista_creditos.hbs', 'utf-8');
 
         let consultaSql = queries.getCreditosGenerica;
         let clausulaWhere = `WHERE a.fecha_inicio_prog = '${fecha_inicio}' `;
         let clausulaOrder = `ORDER BY a.id`;
 
-        if(fecha_inicio){
+        if (fecha_inicio) {
             consultaSql = consultaSql + clausulaWhere + clausulaOrder
-        }else{
+        } else {
             consultaSql = queries.getCreditos;
         }
 

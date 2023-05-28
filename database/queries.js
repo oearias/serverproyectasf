@@ -80,7 +80,13 @@ const queries = {
 
     getCliente:             `SELECT
                             a.id, a.num_cliente, d.clave||'-'||a.num_cliente as num_cliente2, 
-                            c.sucursal_id, b.zona_id, a.agencia_id, a.nombre, a.apellido_paterno, a.apellido_materno, 
+                            c.sucursal_id, 
+                            b.zona_id, 
+                            c.nombre as zona,
+                            a.agencia_id, 
+                            b.nombre as agencia,
+                            a.nombre, a.apellido_paterno, a.apellido_materno, 
+                            a.nombre||' '||a.apellido_paterno||' '||a.apellido_materno as nombre_completo, 
                             a.telefono, a.curp, a.rfc, a.fecha_nacimiento, a.sexo, a.email,
                             a.calle, a.num_ext, a.num_int, a.cruzamientos, a.referencia, a.municipio, a.localidad, a.estado,
                             a.colonia_id, e.cp
@@ -104,7 +110,8 @@ const queries = {
                             a.calle, a.num_ext, a.num_int, a.localidad, 
                             a.municipio, a.estado, a.cruzamientos, a.referencia, 
                             a.colonia_id, e.cp, 
-                            a.agencia_id, b.zona_id, c.sucursal_id
+                            a.agencia_id, b.zona_id, c.sucursal_id,
+                            fu_calcula_num_creditos_by_cliente(a.id) as num_creditos
                             FROM dbo.clientes a
                             INNER JOIN
                             dbo.agencias b
@@ -122,7 +129,8 @@ const queries = {
     getClientesByCriteria:  `SELECT 
                             a.id, a.num_cliente, b.clave||'-'||a.num_cliente as num_cliente2, 
                             a.nombre, a.apellido_paterno, a.apellido_materno, 
-                            a.telefono, a.curp, a.rfc, a.fecha_nacimiento, a.sexo, a.email 
+                            a.telefono, a.curp, a.rfc, a.fecha_nacimiento, a.sexo, a.email,
+                            fu_calcula_num_creditos_by_cliente(a.id) as num_creditos
                             FROM dbo.clientes a, dbo.sucursales b 
                             WHERE a.sucursal_id = b.id AND $1 = $2 ORDER BY a.apellido_paterno, a.apellido_materno, a.nombre`,
 
@@ -1139,7 +1147,8 @@ const queries = {
                                         a.nombre||' '||a.apellido_paterno||' '||a.apellido_materno as nombre_completo, 
                                         a.nombre, a.apellido_paterno, a.apellido_materno, 
                                         a.telefono, a.curp, a.rfc, a.fecha_nacimiento, a.sexo, a.email,
-                                        b.nombre as agencia, c.nombre as zona
+                                        b.nombre as agencia, c.nombre as zona,
+                                        fu_calcula_num_creditos_by_cliente(a.id) as num_creditos
                                         FROM 
                                         dbo.clientes a
                                         INNER JOIN
