@@ -463,12 +463,12 @@ const printContratosMasivos = async (req, res = response) => {
 
 
 
-        const fontElementSelector = '#miContrato'; // Reemplaza con el selector del elemento que utiliza la fuente
-        const fontFamily = await page.$eval(fontElementSelector, (element) => {
-            return window.getComputedStyle(element).fontFamily;
-        });
+        // const fontElementSelector = '#miContrato'; // Reemplaza con el selector del elemento que utiliza la fuente
+        // const fontFamily = await page.$eval(fontElementSelector, (element) => {
+        //     return window.getComputedStyle(element).fontFamily;
+        // });
 
-        console.log(`La tipografía utilizada es: ${fontFamily}`);
+        // console.log(`La tipografía utilizada es: ${fontFamily}`);
 
 
 
