@@ -373,6 +373,38 @@ const printContratosMasivos = async (req, res = response) => {
         //Plantilla de la amortizacion
         const template2 = fs.readFileSync('./views/template_tarjeta_pagos.hbs', 'utf-8');
 
+        //Helpers Menor que
+        handlebars.registerHelper('ifCond', function (v1, v2, options) {
+            if (v1 < v2) {
+                return options.fn(this);
+            }
+            return options.inverse(this);
+        });
+
+        //Mayor que
+        handlebars.registerHelper('ifCondMayor', function (v1, v2, options) {
+            if (v1 > v2) {
+                return options.fn(this);
+            }
+            return options.inverse(this);
+        });
+
+        //Helpers Igual que
+        handlebars.registerHelper('ifEqualsTo', function (v1, v2, options) {
+            if (v1 === v2) {
+                return options.fn(this);
+            }
+            return options.inverse(this);
+        });
+
+        //n veces
+        handlebars.registerHelper('times', function (n, block) {
+            var accum = '';
+            for (var i = 0; i < n; ++i)
+                accum += block.fn(i);
+            return accum;
+        });
+
         const DOC = handlebars.compile(template);
         const DOC2 = handlebars.compile(template2);
 
@@ -391,10 +423,19 @@ const printContratosMasivos = async (req, res = response) => {
 
             const resultado = await pool.query(queries.getCredito, values);
 
+
+            //dif_num_semanas es la diferencia entre el numero de semanas y el maximo numero de semanas
+            // que pueden aparecer en la tarjeta de pagos.
+            //esto se establece en la query GetCredito.
+
             const { num_contrato, num_cliente, monto_otorgado, monto_otorgado2, monto_total, monto_semanal,
+                num_semanas, dif_num_semanas,
                 nombre, apellido_paterno, apellido_materno, monto_total_letras,
                 telefono, calle, num_ext, colonia, cp, tipo_asentamiento, zona, agencia, fecha_inicio_prog,
                 fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2 } = resultado.rows[0];
+
+                console.log(dif_num_semanas);
+                console.log('num_semanas:',num_semanas);
 
             result['contrato'] = {
                 rows
@@ -402,7 +443,9 @@ const printContratosMasivos = async (req, res = response) => {
 
             result['credito'] = {
                 num_contrato, num_cliente, monto_otorgado, monto_total, monto_otorgado2, monto_total_letras,
-                monto_semanal, fecha_inicio_prog, fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2,
+                monto_semanal, 
+                num_semanas, dif_num_semanas,
+                fecha_inicio_prog, fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2,
                 nombre, apellido_paterno, apellido_materno, telefono, calle, num_ext, tipo_asentamiento, colonia, cp,
                 zona, agencia
             };
@@ -429,6 +472,7 @@ const printContratosMasivos = async (req, res = response) => {
 
             const pdf2 = await page2.pdf({
                 format: 'Letter',
+                landscape: true,
                 margin: {
                     top: '1cm',
                     bottom: '1cm'

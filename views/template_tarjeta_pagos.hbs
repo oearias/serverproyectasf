@@ -2,7 +2,7 @@
 <html lang="es">
 
 <head>
-    <title>Amortizacion</title>
+    <title>Tarjeta de pagos</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
@@ -20,14 +20,31 @@
     }
 
     .page {
-        height: 981px;
+        height: 740px;
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+
+    .page2 {
+        height: 730px;
         padding-left: 50px;
         padding-right: 50px;
     }
 
     .hoja {
         border-radius: 7px 0 7px 0;
-        height: 30px;
+        height: 20px;
+    }
+
+    .hoja2 {
+        border-radius: 7px 0 7px 0;
+        padding-left: 5px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    .letter-small {
+        font-size: 6px;
     }
 
     .punteado {
@@ -38,336 +55,770 @@
 
 <body>
 
-    <div class="page">
+    {{!-- Aqui tenemos que preguntar de cuantas semanas es el crédito y 
+    en base a eso elegimos que formato imprimimos --}}
 
-        <div class="row">
+    {{!-- 16 SEMANAS  --}}
+    {{#ifCond credito.num_semanas 17}}
 
-            <div class="col">
-                <div style="margin-left: -20px;">
-                    <img style="height: 60px; " src="https://system-proyectasfweb.com//assets/images/proyecta_logo_gris.png" alt="">
-                </div>
-            </div>
-            <div class="col d-flex justify-content-end">
-                <table>
-                    <tr>
-                        <td class="text-end">
-                            TARJETA DE PAGOS
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="fw-bold text-danger text-end">
-                            {{credito.num_contrato}}
-                        </td>
-                    </tr>
-                </table>
-            </div>
+        {{!-- Pagina 1 - 16 SEMANAS --}}
+        <div class="page">
 
-        </div>
 
-        <div class="row mt-2 mb-1">
+            <div class="row" style="height: 680px;">
 
-            <div style="width: 52%; border-radius: 5px;" class="punteado">
+                <div class="col">
 
-                <table style="font-size: 10px;">
-                    <thead>
-                        <tr>
-                            <th colspan="3">DATOS DEL CLIENTE</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                    <div class="row">
+                        <div class="col">
+                            <div style="margin-left: -20px;">
+                                <img style="height: 40px; "
+                                    src="https://system-proyectasfweb.com//assets/images/proyecta_logo_gris.png" alt="">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td class="text-end">
+                                        TARJETA DE PAGOS
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-end">
+                                        Folio <span class="fw-bold text-danger">{{credito.num_contrato}}</span> 
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
 
-                        <tr>
-                            <td>
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 140px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content:center; align-items:center; margin-left: auto; margin-right:auto; height: 30px; align-items:center;">
-                                        {{credito.num_cliente}}
+                    <div class="row">
+
+                        <div class="col punteado" style="border-radius: 5px;">
+
+                            <div style="font-size: 8px; ">
+                                <div class="row">
+                                    <span class="letter-small" style="padding-left: 4px; font-weight: bold;">DATOS DEL
+                                        CLIENTE</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6" style="padding-left: 4px; padding-right: 2px">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.num_cliente}}
+                                        </div>
+                                    </div>
+                                    <div class="col-3" style="padding-left: 2px; padding-right: 2px;">
+                                        <div class="bg-encabezado hoja2 text-center">
+                                            {{credito.zona}}
+                                        </div>
+                                    </div>
+                                    <div class="col-3" style="padding-left: 2px; padding-right: 2px;">
+                                        <div class="bg-encabezado hoja2 text-center">
+                                            {{credito.agencia}}
+                                        </div>
                                     </div>
                                 </div>
-                            </td>
-                            <td>
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 90px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content:center; align-items:center; margin-left: auto; margin-right:auto; height: 30px; align-items:center;">
-                                        {{credito.zona}}
+                                <div class="row">
+                                    <div style="padding-left: 4px;" class="col-6 text-left letter-small">No. de cliente
+                                    </div>
+                                    <div class="col-3 text-left letter-small">Zona</div>
+                                    <div class="col-3 text-left letter-small">Agencia</div>
+                                </div>
+                                <div class="row">
+                                    <div style="padding-left: 4px; padding-right: 2px" class="col">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.nombre}}
+                                        </div>
                                     </div>
                                 </div>
-                            </td>
-                            <td>
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 90px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content:center; align-items:center; margin-left: auto; margin-right:auto; height: 30px; align-items:center;">
-                                        {{credito.agencia}}
+                                <div class="row">
+                                    <div style="padding-left: 4px;" class="col letter-small">
+                                        Nombre(s)
                                     </div>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr style="font-size: 8px;">
-                            <td style="padding-left: 10px;">No. de Cliente</td>
-                            <td style="padding-left: 10px;">Zona</td>
-                            <td style="padding-left: 10px;">Agencia</td>
-                        </tr>
-
-                        <tr>
-                            <td colspan="3">
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 344px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; padding-left:10px; margin-left: auto; margin-right:auto; height: 30px; align-items:center;">
-                                        {{credito.nombre}}
+                                <div class="row">
+                                    <div style="padding-left: 4px; padding-right: 2px;" class="col">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.apellido_paterno}} {{credito.apellido_materno}}
+                                        </div>
                                     </div>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr style="font-size: 8px;">
-                            <td colspan="3" style="padding-left: 10px;">Nombre(s)</td>
-                        </tr>
-
-                        <tr>
-                            <td colspan="3">
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 344px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; padding-left:10px; align-items:center; margin-left: auto; margin-right:auto; height: 30px;">
-                                        {{credito.apellido_paterno}} {{credito.apellido_materno}}
+                                <div class="row mb-1">
+                                    <div style="padding-left: 4px;" class="col letter-small">
+                                        Apellidos
                                     </div>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr style="font-size: 8px;">
-                            <td colspan="3" style="padding-left: 10px;">Apellidos</td>
-                        </tr>
+                            </div>
 
-                    </tbody>
-                </table>
+                        </div>
 
-            </div>
-
-            <div style="width: 47%; border-radius: 5px; margin-left:4px" class="punteado">
-                <table style="font-size: 10px;">
-                    <thead>
-                        <tr>
-                            <th colspan="3">DATOS DEL CRÉDITO</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                        <tr>
-                            <td colspan="2">
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 320px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content: end; padding-right:10px; align-items:center; padding-left:10px; margin-left: auto; margin-right:auto; height: 30px;">
-                                        $ {{credito.monto_otorgado2}} 
+                        <div class="col punteado" style="border-radius: 5px; margin-left: 5px;">
+                            <div style="font-size: 8px; ">
+                                <div class="row">
+                                    <span class="letter-small" style="padding-left: 4px; font-weight: bold;">DATOS DEL
+                                        CRÉDITO</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col" style="padding-left: 4px; padding-right: 2px">
+                                        <div class="bg-encabezado hoja2 text-end">
+                                            <span style="margin-right: 10px;">
+                                                $ {{credito.monto_otorgado2}}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr style="font-size: 8px;">
-                            <td colspan="3" style="padding-left: 10px;">Préstamo autorizado</td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 152px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content:center; align-items:center; margin-left: auto; margin-right:auto; height: 30px;">
-                                        {{credito.fecha_entrega_prog2}} 
+                                <div class="row">
+                                    <div style="padding-left: 4px;" class="col text-left letter-small">Préstamo autorizado
                                     </div>
                                 </div>
-                            </td>
-                            <td>
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 152px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content:center; align-items:center; margin-left: auto; margin-right:auto; height: 30px;">
-                                        {{credito.fecha_fin_prog2}} 
+                                <div class="row">
+                                    <div style="padding-left: 4px; padding-right: 2px" class="col">
+                                        <div class="bg-encabezado hoja2 text-center">
+                                            {{credito.fecha_entrega_prog2}}
+                                        </div>
+                                    </div>
+
+                                    <div style="padding-left: 2px; padding-right: 2px" class="col">
+                                        <div class="bg-encabezado hoja2 text-center">
+                                            {{credito.fecha_fin_prog2}}
+                                        </div>
                                     </div>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr style="font-size: 8px;">
-                            <td style="padding-left: 10px;">Fecha de entrega:</td>
-                            <td style="padding-left: 10px;">Fecha de término</td>
-                        </tr>
-
-                        <tr>
-                            <td colspan="3">
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 320px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content: end; padding-right:10px; align-items:center; margin-left: auto; margin-right:auto; height: 30px; ">
-                                        {{credito.telefono}} 
+                                <div class="row">
+                                    <div style="padding-left: 4px;" class="col letter-small">
+                                        Fecha de entrega
+                                    </div>
+                                    <div class="col letter-small">
+                                        Fecha de término
                                     </div>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr style="font-size: 8px;">
-                            <td colspan="3" style="padding-left: 10px;">No. Telefónico</td>
-                        </tr>
+                                <div class="row">
+                                    <div style="padding-left: 4px; padding-right: 2px;" class="col">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.telefono}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div style="padding-left: 4px;" class="col letter-small">
+                                        No. Telefónico
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    </tbody>
-                </table>
-            </div>
 
-        </div>
+                    </div>
 
-        <div class="row mb-1">
+                    <div class="row punteado mt-1" style="border-radius: 5px;">
+                        <div class="row">
+                            <div class="col letter-small">
+                                <span style="font-weight: bold;">CALENDARIO DE PAGOS</span>
+                            </div>
+                        </div>
 
-            <div class="punteado" style="border-radius: 10px; padding-bottom: 3px;">
-                <table class="mt-1" style="font-size: 10px;">
-                    <thead style="height: 10px;">
-                        <tr>
-                            <th colspan="6" class="fw-bold">CALENDARIO DE PAGOS</th>
-                        </tr>
-                        <tr style="height: 5px;">
-                            <th class="text-center"></th>
-                            <th>Fecha de pago:</th>
-                            <th>Fecha de pago:</th>
-                            <th class="text-center">Importe:</th>
-                            <th class="text-center">Folio:</th>
-                            <th class="text-center">Firma Cliente:</th>
-                            <th class="text-center">Firma Agente:</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                        <div class="row letter-small" style="padding-left: 5px;">
+                            <div class="col"></div>
+                            <div class="col-2">Fecha de pago:</div>
+                            <div class="col-2">Fecha de pago:</div>
+                            <div class="col-2">Importe</div>
+                            <div class="col">Folio:</div>
+                            <div class="col-2">Firma Cliente:</div>
+                            <div class="col-2">Firma Agente:</div>
+                        </div>
+
                         {{#each rows}}
-                        <tr>
-                            <td style="width: 50px;">
 
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 40px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="font-size: 12px; display: flex; justify-content:center; align-items:center; margin-left: auto; margin-right:auto; height: 30px; align-items:center;">
-                                        {{this.num_semana}}
+                            {{#ifCond this.num_semana 17}}
+                                <div class="row"
+                                    style="font-size:10px; height:24px; padding-left: 5px; margin-top:2px; margin-bottom:2px; padding-right: 0;">
+                                    
+                                    <div class="col-1" style="padding-right: 1px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            {{this.num_semana}}
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 2px; padding-right: 2px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            {{this.dia_pago}} / {{this.mes_pago}} / {{this.año_pago}}
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right:1px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            &nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="bg-encabezado hoja2 d-flex align-items-center" style="height: 100%;">
+                                            $
+                                        </div>
+                                    </div>
+                                    <div class="col" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 0;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
                                     </div>
                                 </div>
+                            {{else}}
+
+                            {{/ifCond}}
 
 
-                            </td>
-                            <td style="width: 120px;">
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 120px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content:center; align-items:center; margin-left: auto; margin-right:auto; height: 30px; align-items:center;">
-                                        {{this.dia_pago}} / {{this.mes_pago}} / {{this.año_pago}}
-                                    </div>
-                                </div>
-                            </td>
-
-                            <td style="width: 130px;">
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 130px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content:center; align-items:center; margin-left: auto; margin-right:auto; height: 30px; align-items:center;">
-                                        &nbsp;/ <span style="width: 40px;">&nbsp;</span> /&nbsp;
-                                    </div>
-                                </div>
-                            </td>
-
-                            <td style="width: 100px;">
-                                <div class="hoja bg-encabezado"
-                                    style="padding-top: 0px, height: 30px; width: 100px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="font-size: 12px; padding-left:10px; display: flex; justify-content:start; align-items:center; margin-left: auto; margin-right:auto; height: 30px; align-items:center;">
-                                        $
-                                    </div>
-                                </div>
-                            </td>
-
-                            <td>
-                                <div class="punteado"
-                                    style="border-radius:5px; padding-top: 0px, height: 30px; width: 80px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content:center; align-items:center; margin-left: auto; margin-right:auto; height: 30px; align-items:center;">
-                                        &nbsp;
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="punteado"
-                                    style="border-radius:5px; padding-top: 0px, height: 30px; width: 80px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content:center; align-items:center; margin-left: auto; margin-right:auto; height: 30px; align-items:center;">
-                                        &nbsp;
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="punteado"
-                                    style="border-radius:5px; padding-top: 0px, height: 30px; width: 80px; margin-left: 5px; margin-right: 5px;">
-                                    <div class="text-center"
-                                        style="display: flex; justify-content:center; align-items:center; margin-left: auto; margin-right:auto; height: 30px; align-items:center;">
-                                        &nbsp;
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
                         {{/each}}
-                    </tbody>
-                </table>
-            </div>
 
-        </div>
+                    </div>
 
-        <div class="row mb-1">
+                    {{!-- Pie de página --}}
 
-            <div style="width: 100%; border-radius: 5px; padding-bottom: 3px" class="punteado">
+                    <div class="row mt-1">
 
-                <table style="font-size: 8px; width: 100%">
-                    <tbody>
-                        <tr>
-                            <td style="width: 35%;" colspan="2"><b>VALIDACIÓN DE TÉRMINO DE CICLO</b> </td>
-                            <td style="width: 30%; height: 25px; padding-left:10px">inversión positiva:</td>
-                            <td style="width: 35%; height: 95px;" rowspan="3">
-                                <div class="bg-encabezado hoja"
-                                    style="text-align:center; line-height:150px; height: 90px; margin-left:5px; ">Nombre
-                                    y firma del representante de Proyecta</div>
-                            </td>
-                        </tr>
+                        <div class="col punteado" style="border-radius: 5px;">
 
+                            <div style="font-size: 8px; margin-bottom: 2px;">
 
-                        <tr>
-                            <td style="width:10%">
-                                Total pagado
-                                durante el ciclo:
-                            </td>
-                            <td class="text-start">
-                                <div class="bg-encabezado hoja"
-                                    style="line-height:30px; margin-left:5px; margin-right:5px; padding-left:10px; font-size:12px">
-                                    $</div>
-                            </td>
-                            <td rowspan="2">
-                                <div class="bg-encabezado hoja"
-                                    style="line-height:20px; height: 68px; padding-left:10px;">Firma administrativa
+                                <div class="row">
+
+                                    <div class="col-5" style="padding-left: 4px;">
+
+                                        <div class="row">
+                                            <div class="col">
+                                                <span style="font-size: 8px; padding-left: 2px; font-weight: bold;">
+                                                    VALIDACIÓN DE TÉRMINO DE CICLO
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">Total pagado <br> durante el ciclo:</div>
+                                            <div class="col">
+                                                <div class="hoja2 bg-encabezado d-flex align-items-center" style="height: 24px;">$</div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="hoja2 bg-encabezado" style="margin-top: 2px; height: 30px;">
+                                                    Nombre y firma del cliente
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="col" style="padding-left: 1px; padding-right: 4px;">
+                                        <div class="row">
+                                            Inversión Positiva:
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4" style="padding-left: 1px; padding-right: 1px;">
+                                                <div style="height: 10px;"></div>
+                                                <div class="hoja2 bg-encabezado" style="height: 45px;">Firma administrativo</div>
+                                            </div>
+                                            <div class="col" style="padding-left: 1px;;">
+                                                <div class="hoja2 bg-encabezado d-flex justify-content-center align-items-center" style="height: 55px; font-size: 7px;">
+                                                    Nombre y firma del representante de Proyecta
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
-                            </td>
-                        </tr>
+                                {{!-- <div class="row">
 
-                        <tr>
-                            <td colspan="2">
-                                <div class="bg-encabezado hoja"
-                                    style="line-height:20px; margin-right:5px; padding-left:10px">Nombre y firma del
-                                    cliente</div>
-                            </td>
-                        </tr>
+                                    <div class="col-5">
 
-                    </tbody>
-                </table>
+                                        <div class="row">
 
+                                            <div class="col-6">
+                                                <div>
+                                                    Total pagado <br> 
+                                                    durante el ciclo:
+                                                </div>
+                                            </div>
+
+                                            <div class="col" style="padding-left: 2px; padding-right: 2px;">
+                                                <div class="bg-encabezado hoja2 d-flex align-items-center" style="height: 24px; font-size: 10px;">
+                                                    $ &nbsp;
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="col-5">
+                                                <div class="bg-encabezado hoja2" style="height: 50px;">
+                                                    Firma administrativo
+                                                </div>
+                                            </div>
+                                            <div class="col">Nombre y Firma</div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="row mt-1 mb-1">
+                                    <div class="col-5" style="padding-right: 2px">
+                                        <div class="bg-encabezado hoja2" style="height: 30px;">
+                                            Nombre y firma del cliente
+                                        </div>
+                                    </div>
+                                </div> --}}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+                {{!-- Mitad de Hoja --}}
+                <div class="col"></div>
             </div>
 
         </div>
 
-        {{!-- {{#times 19 }}
-        <span>Hola</span><br>
-        {{/times}} --}}
+    {{else}}
 
-    </div>
+        {{!-- 26 SEMANAS --}}
+        {{!-- Página 1 - 26 SEMANAS --}}
+        <div class="page">
+
+            <div class="row" style="height: 680px;">
+
+                <div class="col">
+
+                    <div class="row">
+                        <div class="col">
+                            <div style="margin-left: -20px;">
+                                <img style="height: 40px; "
+                                    src="https://system-proyectasfweb.com//assets/images/proyecta_logo_gris.png" alt="">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td class="text-end">
+                                        TARJETA DE PAGOS
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-end">
+                                        Folio <span class="fw-bold text-danger">{{credito.num_contrato}}</span> 
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col punteado" style="border-radius: 5px;">
+
+                            <div style="font-size: 8px; ">
+                                <div class="row">
+                                    <span class="letter-small" style="padding-left: 4px; font-weight: bold;">DATOS DEL
+                                        CLIENTE</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6" style="padding-left: 4px; padding-right: 2px">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.num_cliente}}
+                                        </div>
+                                    </div>
+                                    <div class="col-3" style="padding-left: 2px; padding-right: 2px;">
+                                        <div class="bg-encabezado hoja2 text-center">
+                                            {{credito.zona}}
+                                        </div>
+                                    </div>
+                                    <div class="col-3" style="padding-left: 2px; padding-right: 2px;">
+                                        <div class="bg-encabezado hoja2 text-center">
+                                            {{credito.agencia}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div style="padding-left: 4px;" class="col-6 text-left letter-small">No. de cliente
+                                    </div>
+                                    <div class="col-3 text-left letter-small">Zona</div>
+                                    <div class="col-3 text-left letter-small">Agencia</div>
+                                </div>
+                                <div class="row">
+                                    <div style="padding-left: 4px; padding-right: 2px" class="col">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.nombre}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div style="padding-left: 4px;" class="col letter-small">
+                                        Nombre(s)
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div style="padding-left: 4px; padding-right: 2px;" class="col">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.apellido_paterno}} {{credito.apellido_materno}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div style="padding-left: 4px;" class="col letter-small">
+                                        Apellidos
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col punteado" style="border-radius: 5px; margin-left: 5px;">
+                            <div style="font-size: 8px; ">
+                                <div class="row">
+                                    <span class="letter-small" style="padding-left: 4px; font-weight: bold;">DATOS DEL
+                                        CRÉDITO</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col" style="padding-left: 4px; padding-right: 2px">
+                                        <div class="bg-encabezado hoja2 text-end">
+                                            <span style="margin-right: 10px;">
+                                                $ {{credito.monto_otorgado2}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div style="padding-left: 4px;" class="col text-left letter-small">Préstamo autorizado
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div style="padding-left: 4px; padding-right: 2px" class="col">
+                                        <div class="bg-encabezado hoja2 text-center">
+                                            {{credito.fecha_entrega_prog2}}
+                                        </div>
+                                    </div>
+
+                                    <div style="padding-left: 2px; padding-right: 2px" class="col">
+                                        <div class="bg-encabezado hoja2 text-center">
+                                            {{credito.fecha_fin_prog2}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div style="padding-left: 4px;" class="col letter-small">
+                                        Fecha de entrega
+                                    </div>
+                                    <div class="col letter-small">
+                                        Fecha de término
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div style="padding-left: 4px; padding-right: 2px;" class="col">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.telefono}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div style="padding-left: 4px;" class="col letter-small">
+                                        No. Telefónico
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <div class="row punteado mt-1" style="border-radius: 5px;">
+                        <div class="row">
+                            <div class="col letter-small">
+                                <span style="font-weight: bold;">CALENDARIO DE PAGOS</span>
+                            </div>
+                        </div>
+
+                        <div class="row letter-small" style="padding-left: 5px;">
+                            <div class="col"></div>
+                            <div class="col-2">Fecha de pago:</div>
+                            <div class="col-2">Fecha de pago:</div>
+                            <div class="col-2">Importe</div>
+                            <div class="col">Folio:</div>
+                            <div class="col-2">Firma Cliente:</div>
+                            <div class="col-2">Firma Agente:</div>
+                        </div>
+
+                        {{#each rows}}
+
+                            {{#ifCond this.num_semana 18}}
+                                <div class="row"
+                                    style="font-size:10px; height:28px; padding-left: 5px; margin-top:2px; margin-bottom:2px; padding-right: 0;">
+                                    
+                                    <div class="col-1" style="padding-right: 1px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            {{this.num_semana}}
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 2px; padding-right: 2px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            {{this.dia_pago}} / {{this.mes_pago}} / {{this.año_pago}}
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right:1px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            &nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="bg-encabezado hoja2 d-flex align-items-center" style="height: 100%;">
+                                            $
+                                        </div>
+                                    </div>
+                                    <div class="col" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 0;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
+                                    </div>
+                                </div>
+                            {{else}}
+
+                            {{/ifCond}}
+
+
+                        {{/each}}
+
+                    </div>
+
+
+                </div>
+                {{!-- Mitad de Hoja --}}
+                <div class="col"></div>
+            </div>
+
+
+        </div>
+
+        {{!-- Pagina 2 - 26 SEMANAS --}}
+        <div class="page2">
+
+            <div class="row" style="height: 680px;">
+
+                <div class="col">
+
+                    <div class="row punteado mt-1" style="border-radius: 5px;">
+
+                        {{#each rows}}
+
+                            {{#ifCondMayor this.num_semana 17}}
+                                <div class="row"
+                                    style="font-size:10px; height:28px; padding-left: 5px; margin-top:2px; margin-bottom:2px; padding-right: 0;">
+                                    
+                                    <div class="col-1" style="padding-right: 1px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            {{this.num_semana}}
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 2px; padding-right: 2px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            {{this.dia_pago}} / {{this.mes_pago}} / {{this.año_pago}}
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right:1px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            &nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="bg-encabezado hoja2 d-flex align-items-center" style="height: 100%;">
+                                            $
+                                        </div>
+                                    </div>
+                                    <div class="col" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 0;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
+                                    </div>
+                                </div>
+                            {{else}}
+
+                            {{/ifCondMayor}}
+
+
+                        {{/each}}
+
+                        {{#times credito.dif_num_semanas }}
+                            <div class="row"
+                                    style="font-size:10px; height:28px; padding-left: 5px; margin-top:2px; margin-bottom:2px; padding-right: 0;">
+                                    
+                                    <div class="col-1" style="padding-right: 1px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            &nbsp;
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 2px; padding-right: 2px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            &nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right:1px;">
+                                        <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
+                                            style="height: 100%;">
+                                            &nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="bg-encabezado hoja2 d-flex align-items-center" style="height: 100%;">
+                                            $
+                                        </div>
+                                    </div>
+                                    <div class="col" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 1px;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
+                                    </div>
+                                    <div class="col-2" style="padding-left: 1px; padding-right: 0;">
+                                        <div class="punteado" style="height:100%; border-radius: 5px;">&nbsp;</div>
+                                    </div>
+                                </div>
+                        {{/times}}
+                        
+
+
+
+                    </div>
+
+                    {{!-- Pie de página --}}
+
+                    <div class="row mt-1">
+
+                        <div class="col punteado" style="border-radius: 5px;">
+
+                            <div style="font-size: 8px; margin-bottom: 2px;">
+
+                                <div class="row">
+
+                                    <div class="col-5" style="padding-left: 4px;">
+
+                                        <div class="row">
+                                            <div class="col">
+                                                <span style="font-size: 8px; padding-left: 2px; font-weight: bold;">
+                                                    VALIDACIÓN DE TÉRMINO DE CICLO
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">Total pagado <br> durante el ciclo:</div>
+                                            <div class="col">
+                                                <div class="hoja2 bg-encabezado d-flex align-items-center" style="height: 24px;">$</div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="hoja2 bg-encabezado" style="margin-top: 2px; height: 30px;">
+                                                    Nombre y firma del cliente
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="col" style="padding-left: 1px; padding-right: 4px;">
+                                        <div class="row">
+                                            Inversión Positiva:
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4" style="padding-left: 1px; padding-right: 1px;">
+                                                <div style="height: 10px;"></div>
+                                                <div class="hoja2 bg-encabezado" style="height: 45px;">Firma administrativo</div>
+                                            </div>
+                                            <div class="col" style="padding-left: 1px;;">
+                                                <div class="hoja2 bg-encabezado d-flex justify-content-center align-items-center" style="height: 55px; font-size: 7px;">
+                                                    Nombre y firma del representante de Proyecta
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                {{!-- <div class="row">
+
+                                    <div class="col-5">
+
+                                        <div class="row">
+
+                                            <div class="col-6">
+                                                <div>
+                                                    Total pagado <br> 
+                                                    durante el ciclo:
+                                                </div>
+                                            </div>
+
+                                            <div class="col" style="padding-left: 2px; padding-right: 2px;">
+                                                <div class="bg-encabezado hoja2 d-flex align-items-center" style="height: 24px; font-size: 10px;">
+                                                    $ &nbsp;
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="col-5">
+                                                <div class="bg-encabezado hoja2" style="height: 50px;">
+                                                    Firma administrativo
+                                                </div>
+                                            </div>
+                                            <div class="col">Nombre y Firma</div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="row mt-1 mb-1">
+                                    <div class="col-5" style="padding-right: 2px">
+                                        <div class="bg-encabezado hoja2" style="height: 30px;">
+                                            Nombre y firma del cliente
+                                        </div>
+                                    </div>
+                                </div> --}}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {{!-- Mitad de Hoja --}}
+                <div class="col"></div>
+            </div>
+
+        </div>
+
+    {{/ifCond}}
 
 </body>
 
