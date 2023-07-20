@@ -58,6 +58,40 @@ const creditosGet = async (req, res = response) => {
             rows[0].cliente = result.rows[0];
         }
 
+        console.log(rows);
+
+        res.status(200).json(
+            rows
+        );
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
+const creditosGetOptimized = async (req, res = response) => {
+
+    try {
+
+        const { rows } = await pool.query(queries.getCreditosOptimized);
+
+        const cliente_id = rows[0]?.cliente_id;
+
+        const values = [cliente_id]
+
+        const result = await pool.query(queries.getCliente, values);
+
+        if (result.rows[0]) {
+            rows[0].cliente = result.rows[0];
+        }
+
+        console.log(rows);
+
         res.status(200).json(
             rows
         );
@@ -505,14 +539,6 @@ const printContratosMasivos = async (req, res = response) => {
 
         const buf = await mergedPdf.save(); // Uint8Array
 
-
-
-        // const fontElementSelector = '#miContrato'; // Reemplaza con el selector del elemento que utiliza la fuente
-        // const fontFamily = await page.$eval(fontElementSelector, (element) => {
-        //     return window.getComputedStyle(element).fontFamily;
-        // });
-
-        // console.log(`La tipografía utilizada es: ${fontFamily}`);
 
 
 
@@ -996,6 +1022,38 @@ const printAllDoc = async (req, res = response) => {
         const template = fs.readFileSync('./views/template_documentation.hbs', 'utf-8');
         const template2 = fs.readFileSync('./views/template_tarjeta_pagos.hbs', 'utf-8');
 
+        //Helpers Menor que
+        handlebars.registerHelper('ifCond', function (v1, v2, options) {
+            if (v1 < v2) {
+                return options.fn(this);
+            }
+            return options.inverse(this);
+        });
+
+        //Mayor que
+        handlebars.registerHelper('ifCondMayor', function (v1, v2, options) {
+            if (v1 > v2) {
+                return options.fn(this);
+            }
+            return options.inverse(this);
+        });
+
+        //Helpers Igual que
+        handlebars.registerHelper('ifEqualsTo', function (v1, v2, options) {
+            if (v1 === v2) {
+                return options.fn(this);
+            }
+            return options.inverse(this);
+        });
+
+        //n veces
+        handlebars.registerHelper('times', function (n, block) {
+            var accum = '';
+            for (var i = 0; i < n; ++i)
+                accum += block.fn(i);
+            return accum;
+        });
+
         // Obtenemos la consulta del contrato
         const { rows } = await pool.query(queries.queryPrintContrato, values);
 
@@ -1268,6 +1326,7 @@ const inversionPositivaDelete = async (req, res = response) => {
 module.exports = {
     creditoGet,
     creditosGet,
+    creditosGetOptimized,
     creditoPost,
     creditoPut,
     creditoDelete,

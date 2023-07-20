@@ -653,6 +653,82 @@ const queries = {
                         on m.colonia_id = l.id
                         ORDER BY a.no_entregado, a.id`,
 
+    getCreditosOptimized:        
+                        `SELECT 
+                        a.id, 
+                        j.clave ||'-'|| a.cliente_id as num_cliente,
+                        a.solicitud_credito_id,
+                        a.cliente_id, 
+                        a.num_contrato, 
+                        a.monto_otorgado, 
+                        a.fecha_creacion, 
+                        a.fecha_entrega_prog,
+                        (a.fecha_entrega_prog,'') as fecha_entrega_prog2,
+                        a.hora_entrega,
+                        a.fecha_inicio_prog,
+                        a.fecha_entrega_real,
+                        a.fecha_inicio_real,
+                        a.tarifa_id,
+                        b.nombre as tarifa,
+                        TRIM(TO_CHAR((a.monto_total / b.num_semanas),'999,999D99')) as monto_semanal,
+                        TRIM(TO_CHAR((a.monto_otorgado),'999,999D99')) as monto_otorgado2,
+                        TRIM(TO_CHAR((a.fecha_inicio_prog),'dd/MM/yyyy')) as fecha_inicio_prog3,
+                        b.num_semanas, 
+                        c.nombre, c.apellido_paterno, c.apellido_materno, 
+                        c.calle, c.num_ext, l.nombre as colonia, c.telefono,
+                        c.nombre||' '||c.apellido_paterno||' '||c.apellido_materno as nombre_completo,
+                        i.nombre as zona,  
+                        h.nombre as agencia,
+                        e.nombre as tipo_contrato, 
+                        f.nombre as tipo_credito, 
+                        g.id as estatus_credito_id,
+                        g.nombre as estatus_credito,
+                        k.nombre as estatus_contrato,
+                        a.locked,
+                        a.renovacion,
+                        a.preaprobado,
+                        a.entregado,
+                        a.no_entregado,
+                        a.num_cheque,
+                        a.motivo,
+                        a.inversion_positiva
+                        FROM  
+                        dbo.creditos a 
+                        LEFT JOIN  
+                        dbo.tarifas b 
+                        on a.tarifa_id=b.id 
+                        LEFT JOIN 
+                        dbo.clientes c 
+                        on a.cliente_id = c.id 
+                        LEFT JOIN 
+                        dbo.tipo_contrato e 
+                        on a.tipo_contrato_id = e.id 
+                        LEFT JOIN 
+                        dbo.tipo_credito f 
+                        on a.tipo_credito_id = f.id 
+                        LEFT JOIN  
+                        dbo.tipo_estatus_credito g 
+                        on a.estatus_credito_id = g.id 
+                        LEFT JOIN
+                        dbo.tipo_estatus_contrato k
+                        on a.estatus_contrato_id = k.id
+                        INNER JOIN 
+                        dbo.agencias h 
+                        on c.agencia_id = h.id 
+                        INNER JOIN 
+                        dbo.zonas i 
+                        on h.zona_id = i.id 
+                        INNER JOIN 
+                        dbo.sucursales j 
+                        on i.sucursal_id = j.id 
+                        INNER JOIN
+                        dbo.solicitud_credito m
+                        on a.solicitud_credito_id = m.id
+                        INNER JOIN
+                        dbo.colonias l
+                        on m.colonia_id = l.id
+                        ORDER BY a.no_entregado, a.id`,
+
     getCreditosGenerica:   `SELECT 
                             a.id, 
                             j.clave ||'-'|| a.cliente_id as num_cliente,

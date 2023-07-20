@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { creditoGet, creditosGet, creditoPost, creditoPut, creditoDelete, 
         amortizacionGet, printContrato, printAmortizacion, printAllDoc, printTarjetaPagos, amortizacionPost, 
-        setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete, creditoGetByCriteria, printContratosMasivos, printCreditos} = require('../controllers/creditos');
+        setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete, creditoGetByCriteria, printContratosMasivos, printCreditos, creditosGetOptimized} = require('../controllers/creditos');
 const { createCreditosMasivos } = require('../controllers/solicitud_creditos');
 const { validarCampos } = require('../middlewares/validar-campos');
 
@@ -10,7 +10,7 @@ const router = Router();
 
 router.get('/:id', creditoGet);
 
-router.get('/', creditosGet);
+router.get('/', creditosGetOptimized);
 
 router.post('/', [
         check('cliente_id', 'El campo es obligatorio').not().isEmpty(),
@@ -60,11 +60,11 @@ router.post('/print/amortizacion/:id', printAmortizacion);
 
 router.post('/print/tarjeta/:id', printTarjetaPagos);
 
-router.post('/print/allDoc/:id', printAllDoc);
+router.post('/print/allDoc/:id', printAllDoc); //COMPARE
 
 router.patch('/creditosMasivos', createCreditosMasivos);
 
-router.patch('/print/contratosMasivos', printContratosMasivos);
+router.patch('/print/contratosMasivos', printContratosMasivos); //COMPARE
 
 router.patch('/items', setFechaCreditosMasivos);
 
