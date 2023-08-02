@@ -58,10 +58,28 @@ const creditosGet = async (req, res = response) => {
             rows[0].cliente = result.rows[0];
         }
 
-        console.log(rows);
-
         res.status(200).json(
             rows
+        );
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
+const creditosGetTotal = async (req, res = response) => {
+
+    try {
+
+        const { rows } = await pool.query(queries.getCreditosTotales);
+
+        res.status(200).json(
+            rows[0]
         );
 
     } catch (error) {
@@ -89,8 +107,6 @@ const creditosGetOptimized = async (req, res = response) => {
         if (result.rows[0]) {
             rows[0].cliente = result.rows[0];
         }
-
-        console.log(rows);
 
         res.status(200).json(
             rows
@@ -179,8 +195,6 @@ const creditoPost = async (req, res = response) => {
 const creditoPut = async (req, res = response) => {
 
     try {
-
-        console.log(req.body);
 
         const { id } = req.params;
 
@@ -317,7 +331,6 @@ const creditoGetByCriteria = async (req, res = response) => {
         sql = `${select_query} ${clausula_where}
                 ${order_by}`;
 
-        console.log(sql);
 
         const { rows } = await pool.query(sql);
 
@@ -1341,5 +1354,6 @@ module.exports = {
     printAllDoc,
     printEntregasCredito,
     inversionPositivaDelete,
-    creditoGetByCriteria
+    creditoGetByCriteria,
+    creditosGetTotal
 } 

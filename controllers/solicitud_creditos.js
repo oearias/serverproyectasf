@@ -68,6 +68,24 @@ const solicitudCreditosGet = async (req, res = response) => {
     }
 }
 
+const solicitudCreditosGetTotal = async (req, res = response) => {
+
+    try {
+
+        const { rows } = await pool.query(queries.getSolCreditosTotales);
+
+        res.status(200).json(rows[0]);
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
 const solicitudCreditoPost = async (req, res = response) => {
 
     try {
@@ -493,5 +511,6 @@ module.exports = {
     solicitudGetByCriteria,
     solicitudCreditoGetByClienteId,
     solChangeEstatusAprobadaToDelivery,
-    createCreditosMasivos
+    createCreditosMasivos,
+    solicitudCreditosGetTotal
 }

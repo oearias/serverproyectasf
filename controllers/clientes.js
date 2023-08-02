@@ -47,6 +47,26 @@ const clientesGet = async (req, res = response) => {
     }
 }
 
+const clientesGetTotal = async (req, res = response) => {
+
+    try {
+
+        const resultado = await pool.query(queries.getClientesTotal);
+
+        res.status(200).json(
+            resultado.rows[0].total_clientes
+        );
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
 const clientePost = async (req, res = response) => {
 
     try {
@@ -237,6 +257,7 @@ const clientesGetByCriteria = async (req, res = response) => {
 module.exports = {
     clienteGet,
     clientesGet,
+    clientesGetTotal,
     clientePost,
     clientePut,
     clienteDelete,

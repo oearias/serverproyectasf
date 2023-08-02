@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { creditoGet, creditosGet, creditoPost, creditoPut, creditoDelete, 
         amortizacionGet, printContrato, printAmortizacion, printAllDoc, printTarjetaPagos, amortizacionPost, 
-        setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete, creditoGetByCriteria, printContratosMasivos, printCreditos, creditosGetOptimized} = require('../controllers/creditos');
+        setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete, creditoGetByCriteria, printContratosMasivos, printCreditos, creditosGetOptimized, creditosGetTotal} = require('../controllers/creditos');
 const { createCreditosMasivos } = require('../controllers/solicitud_creditos');
 const { validarCampos } = require('../middlewares/validar-campos');
 
@@ -11,6 +11,8 @@ const router = Router();
 router.get('/:id', creditoGet);
 
 router.get('/', creditosGetOptimized);
+
+router.get('/total/total', creditosGetTotal);
 
 router.post('/', [
         check('cliente_id', 'El campo es obligatorio').not().isEmpty(),

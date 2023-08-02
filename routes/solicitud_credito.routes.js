@@ -1,12 +1,14 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { solicitudCreditoGet, solicitudCreditosGet,
-        solicitudCreditoPost, solicitudCreditoDelete, solicitudCreditoPut, solicitudCreditoGetException, solicitudGetByCriteria, solicitudCreditoGetByClienteId, solChangeEstatusAprobadaToDelivery } = require('../controllers/solicitud_creditos');
+        solicitudCreditoPost, solicitudCreditoDelete, solicitudCreditoPut, solicitudCreditoGetException, solicitudGetByCriteria, solicitudCreditoGetByClienteId, solChangeEstatusAprobadaToDelivery, solicitudCreditosGetTotal } = require('../controllers/solicitud_creditos');
 const { validarCampos } = require('../middlewares/validar-campos');
 
 const router = Router();
 
 router.get('/:id', solicitudCreditoGet);
+
+router.get('/total/total', solicitudCreditosGetTotal);
 
 router.get('/exception/:id', solicitudCreditoGetException);
 

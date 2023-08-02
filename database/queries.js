@@ -50,6 +50,7 @@ const queries = {
     updatePago:             `UPDATE dbo.pagos 
                             SET observaciones = $1, cancelado = 1 
                             WHERE id = $2 RETURNING *`,
+
     deletePago:             `DELETE FROM dbo.pagos WHERE id = $1 RETURNING *`,
 
     getSeriePago:           `SELECT c.nombre as agencia, d.nombre as zona
@@ -125,6 +126,8 @@ const queries = {
                             INNER JOIN dbo.colonias e
                             on a.colonia_id = e.id
                             ORDER BY a.apellido_paterno, a.apellido_materno, a.nombre`,
+
+    getClientesTotal:       `SELECT count(*) as total_clientes FROM dbo.clientes`,
 
     getClientesByCriteria:  `SELECT 
                             a.id, a.num_cliente, b.clave||'-'||a.num_cliente as num_cliente2, 
@@ -371,6 +374,35 @@ const queries = {
                             on e.sucursal_id = f.id
                             ORDER BY a.id`,
 
+    getSolCreditosTotales:  `SELECT
+                                    a.sol_creditos_count AS total_solicitudes,
+                                    b.solicitudes_revisar_count AS total_solicitudes_revisar,
+                                    c.solicitudes_presupuesto_count as total_solicitudes_presupuesto,
+                                    d.solicitudes_aprobadas_entrega_count as total_solicitudes_aprobadas,
+                                    e.solicitudes_rechazadas_count as total_solicitudes_rechazadas
+                                FROM
+                                    (SELECT COUNT(scred.id) AS sol_creditos_count FROM dbo.solicitud_credito scred ) AS a
+                                JOIN
+                                    (	SELECT COUNT(scred.id) AS solicitudes_revisar_count
+                                            FROM dbo.solicitud_credito scred 
+                                            WHERE scred.estatus_sol_id = 3 ) as b
+                                ON 1=1
+                                JOIN
+                                    (	SELECT COUNT(scred.id) AS solicitudes_presupuesto_count 
+                                            FROM dbo.solicitud_credito scred 
+                                            WHERE scred.estatus_sol_id = 6 ) as c
+                                ON 1=1
+                                JOIN
+                                    (	SELECT COUNT(scred.id) AS solicitudes_aprobadas_entrega_count 
+                                            FROM dbo.solicitud_credito scred 
+                                            WHERE scred.estatus_sol_id = 7 ) as d
+                                ON 1=1
+                                JOIN
+                                    (	SELECT COUNT(scred.id) AS solicitudes_rechazadas_count 
+                                            FROM dbo.solicitud_credito scred 
+                                            WHERE scred.estatus_sol_id = 2 ) as e
+                                ON 1=1`,
+
     deleteSolCredito:       'DELETE FROM dbo.solicitud_credito WHERE id = $1 RETURNING *',
     
     getZonas:               `SELECT a.id, a.nombre, a.sucursal_id, b.nombre as sucursal 
@@ -521,60 +553,61 @@ const queries = {
                         WHERE a.usuario_id = b. id 
                         AND a.role_id = c.id order by b.id, c.id`,
 
-    getUserRole:        'SELECT '+
-                        'a.id, '+
-                        'b.nombre, b.apellido_paterno, b.apellido_materno, '+
-                        'c.nombre as role '+
-                        'FROM '+
-                        'dbo.user_role a, '+
-                        'dbo.usuarios b, '+
-                        'dbo.roles c '+
-                        'WHERE a.usuario_id = b. id '+
-                        'AND a.role_id = c.id AND b.id = $1',
+    getUserRole:        `SELECT 
+                        a.id, 
+                        b.nombre, b.apellido_paterno, b.apellido_materno, 
+                        c.nombre as role 
+                        FROM 
+                        dbo.user_role a, 
+                        dbo.usuarios b, 
+                        dbo.roles c 
+                        WHERE a.usuario_id = b.id 
+                        AND a.role_id = c.id AND b.id = $1`,
 
-    getUserGroups:      'SELECT '+
-                        'a.id, '+
-                        'b.nombre, b.apellido_paterno, b.apellido_materno, '+
-                        'c.nombre as role '+
-                        'FROM '+
-                        'dbo.user_group a, '+
-                        'dbo.usuarios b, '+
-                        'dbo.group c '+
-                        'WHERE a.usuario_id = b. id '+
-                        'AND a.group_id = c.id order by c.nombre, b.id',
+    getUserGroups:      `SELECT 
+                        a.id, 
+                        b.nombre, b.apellido_paterno, b.apellido_materno, 
+                        c.nombre as role 
+                        FROM 
+                        dbo.user_group a, 
+                        dbo.usuarios b, 
+                        dbo.group c 
+                        WHERE a.usuario_id = b. id 
+                        AND a.group_id = c.id order by c.nombre, b.id`,
 
-    getGroupRoles:      'SELECT '+
-                        'a.id, '+
-                        'b.nombre as group, '+
-                        'c.nombre as role '+
-                        'FROM '+
-                        'dbo.group_role a, '+
-                        'dbo.group b, '+
-                        'dbo.roles c '+
-                        'WHERE a.group_id = b. id '+
-                        'AND a.role_id = c.id order by b.nombre, c.nombre',
+    getGroupRoles:      `SELECT 
+                        a.id, 
+                        b.nombre as group, 
+                        c.nombre as role 
+                        FROM 
+                        dbo.group_role a, 
+                        dbo.group b, 
+                        dbo.roles c 
+                        WHERE a.group_id = b. id 
+                        AND a.role_id = c.id 
+                        ORDER BY b.nombre, c.nombre`,
 
-    getRolesByUserId:   'SELECT '+
-                        'e.nombre as role '+
-                        'FROM dbo.usuarios a '+
-                        'LEFT JOIN dbo.user_group b '+
-                        'on a.id = b.usuario_id '+
-                        'LEFT JOIN dbo.group c '+
-                        'on b.group_id = c.id '+
-                        'LEFT JOIN dbo.group_role d '+
-                        'on d.group_id = c.id '+
-                        'INNER JOIN dbo.roles e '+
-                        'on e.id = d.role_id '+
-                        'WHERE a.id = $1 '+
-                        'UNION '+
-                        'SELECT '+
-                        'c.nombre as role '+
-                        'FROM dbo.usuarios a '+
-                        'LEFT JOIN dbo.user_role b '+
-                        'on a.id = b.usuario_id '+
-                        'INNER JOIN dbo.roles c '+
-                        'on  b.role_id = c.id '+
-                        'WHERE a.id = $1',
+    getRolesByUserId:   `SELECT 
+                        e.nombre as role 
+                        FROM dbo.usuarios a 
+                        LEFT JOIN dbo.user_group b 
+                        on a.id = b.usuario_id 
+                        LEFT JOIN dbo.group c 
+                        on b.group_id = c.id 
+                        LEFT JOIN dbo.group_role d 
+                        on d.group_id = c.id 
+                        INNER JOIN dbo.roles e 
+                        on e.id = d.role_id 
+                        WHERE a.id = $1 
+                        UNION 
+                        SELECT 
+                        c.nombre as role 
+                        FROM dbo.usuarios a 
+                        LEFT JOIN dbo.user_role b 
+                        on a.id = b.usuario_id 
+                        INNER JOIN dbo.roles c 
+                        on  b.role_id = c.id 
+                        WHERE a.id = $1`,
 
     getCreditos:        `SELECT 
                         a.id, 
@@ -652,6 +685,31 @@ const queries = {
                         dbo.colonias l
                         on m.colonia_id = l.id
                         ORDER BY a.no_entregado, a.id`,
+
+    getCreditosTotales:   `SELECT
+                                a.creditos_count AS total_creditos,
+                                b.creditos_prog_entrega_count AS total_creditos_prog_entrega,
+                                c.creditos_entregados_count as total_creditos_entregados,
+                                d.creditos_no_entregados_count as total_creditos_no_entregados
+                            FROM
+                                (SELECT COUNT(cred.id) AS creditos_count FROM dbo.creditos cred ) AS a
+                            JOIN
+                                (	SELECT COUNT(cred.id) AS creditos_prog_entrega_count 
+                                        FROM dbo.creditos cred 
+                                        WHERE cred.preaprobado = 1 
+                                        AND cred.entregado is not null 
+                                        AND cred.no_entregado IS NULL ) as b
+                            ON 1=1
+                            JOIN
+                                (	SELECT COUNT(cred.id) AS creditos_entregados_count 
+                                        FROM dbo.creditos cred 
+                                        WHERE cred.entregado = 1 ) as c
+                            ON 1=1
+                            JOIN
+                                (	SELECT COUNT(cred.id) AS creditos_no_entregados_count 
+                                        FROM dbo.creditos cred 
+                                        WHERE cred.no_entregado =1 ) as d
+                            ON 1=1`,
 
     getCreditosOptimized:        
                         `SELECT 
@@ -1012,15 +1070,15 @@ const queries = {
 
     deleteBlackListByUserId:            "DELETE FROM dbo.blacklist WHERE cliente_id = $1 RETURNING*",
 
-    getParentelaByClienteId:            "SELECT a.id, a.nombre, c.nombre as parentesco, to_char(a.fecha_nacimiento,'dd-MM-yyyy') as fecha_nacimiento "+
-                                        "FROM dbo.cliente_parentela a "+
-                                        "INNER JOIN "+
-                                        "dbo.clientes b "+
-                                        "on a.cliente_id= b.id "+
-                                        "INNER JOIN "+
-                                        "dbo.tipo_parentesco c "+
-                                        "on a.tipo_parentesco_id = c.id "+
-                                        "WHERE a.cliente_id = $1",
+    getParentelaByClienteId:            `SELECT a.id, a.nombre, c.nombre as parentesco, to_char(a.fecha_nacimiento,'dd-MM-yyyy') as fecha_nacimiento 
+                                        FROM dbo.cliente_parentela a 
+                                        INNER JOIN 
+                                        dbo.clientes b 
+                                        on a.cliente_id= b.id 
+                                        INNER JOIN "+
+                                        dbo.tipo_parentesco c 
+                                        on a.tipo_parentesco_id = c.id 
+                                        WHERE a.cliente_id = $1`,
 
     insertParentela:                    `INSERT INTO dbo.cliente_parentela 
                                         (cliente_id, nombre, tipo_parentesco_id, fecha_nacimiento) 
@@ -1236,7 +1294,9 @@ const queries = {
                                         on b.zona_id = c.id
                                         INNER JOIN
                                         dbo.sucursales d
-                                        on c.sucursal_id = d.id`
+                                        on c.sucursal_id = d.id`,
+
+    getDashboardCounters: ``
 }
 
 module.exports = {
