@@ -1,8 +1,17 @@
 const { response } = require('express');
 const pool = require('../database/connection');
 const { queries } = require('../database/queries');
+
+const Cliente = require('../models/cliente');
+
+const { Op, Sequelize } = require('sequelize');
+
 const { buildPatchQuery, buildPostQuery, buildGetQuery, buildGetQueryById, buildDeleteQueryById } = require('../database/build-query');
 const mensajes = require('../helpers/messages');
+const Agencia = require('../models/agencia');
+const Zona = require('../models/zona');
+const Sucursal = require('../models/sucursal');
+const Credito = require('../models/credito');
 
 const table = 'dbo.clientes';
 
@@ -46,6 +55,84 @@ const clientesGet = async (req, res = response) => {
         })
     }
 }
+
+const getClientesPaginados = async (req, res = response) => {
+    
+    try {
+        const { page, limit, searchTerm } = req.query;
+
+        const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
+        const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
+
+        const offset = (pageNumber - 1) * limitPerPage;
+
+        const { count, rows } = await Cliente.findAndCountAll({
+            include: [
+                {
+                    model: Agencia,
+                    as: 'agencia',
+                    include: {
+                        model: Zona,
+                        as: 'zona',
+                        include: {
+                            model: Sucursal,
+                            as: 'sucursal'
+                        }
+                    }
+                }
+            ],
+            where: {
+                [Op.or]: [
+                    Sequelize.literal(`LOWER(CONCAT("Cliente"."nombre", ' ', "Cliente"."apellido_paterno", ' ', "Cliente"."apellido_materno")) LIKE LOWER(:searchTerm)`),
+                    Sequelize.literal(`LOWER(CONCAT("agencia->zona->sucursal"."clave", '-', "Cliente"."id")) LIKE LOWER(:searchTerm)`),
+                ]
+            },
+            replacements: { searchTerm: `%${searchTerm}%` },
+            offset,
+            limit: limitPerPage,
+            order: [['nombre', 'ASC']]
+        });
+
+        // Consulta para obtener la cantidad de créditos por cliente
+        const clientesIds = rows.map((cliente) => cliente.id);
+        const creditosCounts = await Credito.findAll({
+            attributes: [
+                'cliente_id',
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'creditos_count']
+            ],
+            where: {
+                cliente_id: clientesIds
+            },
+            group: ['cliente_id']
+        });
+
+        // Mapear la información de los clientes y agregar la cantidad de créditos
+        const clientesJSON = rows.map((cliente) => {
+            const creditosCount = creditosCounts.find((count) => count.cliente_id === cliente.id);
+            return {
+                id: cliente.id,
+                num_cliente: `${cliente.agencia.zona.sucursal.clave}-${cliente.id}`,
+                nombre_completo: cliente.getNombreCompleto(),
+                agencia: cliente.agencia,
+                num_creditos: creditosCount ? creditosCount.dataValues.creditos_count : 0
+            };
+        });
+
+        const totalElements = count;
+        const totalPages = Math.ceil(totalElements / limitPerPage);
+
+        res.status(200).json({
+            clientesJSON,
+            totalPages,
+            currentPage: pageNumber
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        });
+    }
+};
 
 const clientesGetTotal = async (req, res = response) => {
 
@@ -255,6 +342,7 @@ const clientesGetByCriteria = async (req, res = response) => {
 }
 
 module.exports = {
+    getClientesPaginados,
     clienteGet,
     clientesGet,
     clientesGetTotal,

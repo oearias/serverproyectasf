@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const sequelize = require('../database/config');
 const paths = require('../routes/paths.routes');
 const path = require('path')
 
@@ -27,6 +28,14 @@ class Server {
             allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
             credentials: true,
         }));
+
+        sequelize.authenticate()
+            .then(()=> {
+                console.log('Base de datos conectada');
+            })
+            .catch( error => {
+                console.log(error);
+            })
 
         this.app.use(express.json());
 

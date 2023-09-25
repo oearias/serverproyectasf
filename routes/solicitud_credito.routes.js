@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { solicitudCreditoGet, solicitudCreditosGet,
-        solicitudCreditoPost, solicitudCreditoDelete, solicitudCreditoPut, solicitudCreditoGetException, solicitudGetByCriteria, solicitudCreditoGetByClienteId, solChangeEstatusAprobadaToDelivery, solicitudCreditosGetTotal } = require('../controllers/solicitud_creditos');
+        solicitudCreditoPost, solicitudCreditoDelete, solicitudCreditoPut, solicitudCreditoGetException, solicitudGetByCriteria, solicitudCreditoGetByClienteId, solChangeEstatusAprobadaToDelivery, solicitudCreditosGetTotal, getSolicitudesCreditoPaginados } = require('../controllers/solicitud_creditos');
 const { validarCampos } = require('../middlewares/validar-campos');
 
 const router = Router();
@@ -17,6 +17,8 @@ router.get('/cliente/:id', solicitudCreditoGetByClienteId);
 router.get('/:criterio/:palabra', solicitudGetByCriteria);
 
 router.get('/', solicitudCreditosGet);
+
+router.post('/solicitudes_credito_list', getSolicitudesCreditoPaginados);
 
 router.post('/', [
         //check('cliente_id', 'El campo es obligatorio').not().isEmpty(),

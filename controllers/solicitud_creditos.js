@@ -1,9 +1,17 @@
 const { response } = require('express');
 const pool = require('../database/connection');
 const moment = require('moment');
+
+const { Op, Sequelize } = require('sequelize');
+
 const { queries } = require('../database/queries');
 const { buildPatchQuery, buildPostQuery, buildDeleteQueryById } = require('../database/build-query');
 const mensajes = require('../helpers/messages');
+const SolicitudCredito = require('../models/solicitud_credito');
+const Cliente = require('../models/cliente');
+const Agencia = require('../models/agencia');
+const Zona = require('../models/zona');
+const TipoEstatusSolicitud = require('../models/tipo_estatus_solicitud');
 
 const table = 'dbo.solicitud_credito';
 const tableUSer = 'dbo.clientes';
@@ -61,6 +69,85 @@ const solicitudCreditosGet = async (req, res = response) => {
     } catch (error) {
 
         console.log(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
+const getSolicitudesCreditoPaginados = async (req, res = response) => {
+
+    try {
+
+        const { page, limit, searchTerm } = req.query;
+
+        const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
+        const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
+
+        const offset = (pageNumber - 1) * limitPerPage;
+
+        // const searchTermLower = searchTerm.toLowerCase();
+
+        const {count, rows} = await SolicitudCredito.findAndCountAll({
+
+            include:[
+                {
+                    model: Cliente,
+                    as: 'cliente'
+                },
+                {
+                    model: Agencia,
+                    as: 'agencia',
+                    include: {
+                        model: Zona,
+                        as: 'zona'
+                    }
+                },
+                {
+                    model: TipoEstatusSolicitud,
+                    as: 'tipoEstatusSolicitud'
+                }
+            ],
+            where:{
+                [Op.or]: [
+                    Sequelize.literal(`LOWER("cliente"."nombre") LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`LOWER("cliente"."apellido_paterno") LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`LOWER("cliente"."apellido_materno") LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`LOWER(CONCAT("cliente"."nombre", ' ', "cliente"."apellido_paterno", ' ', "cliente"."apellido_materno")) LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`LOWER("SolicitudCredito"."id"::TEXT) LIKE LOWER('%${searchTerm}%')`)
+                  ]
+            },
+            offset,
+            limit: limitPerPage,
+            order: [['id', 'ASC']]
+        });
+
+        const totalElements = count;
+        const totalPages = Math.ceil(totalElements / limitPerPage);
+
+        const solicitudesJSON = rows.map((solicitud) => {
+            return {
+                id: solicitud.id,
+                fecha_solicitud: solicitud.fecha_solicitud,
+                nombre_completo: solicitud.cliente.getNombreCompleto(),
+                zona: solicitud.agencia.zona.nombre,
+                agencia: solicitud.agencia.nombre,
+                monto: solicitud.monto,
+                estatus: solicitud.tipoEstatusSolicitud.nombre
+            }
+        });
+
+
+        res.status(200).json({
+            solicitudesJSON,
+            totalPages,
+            currentPage: pageNumber
+        });
+
+    } catch (error) {
+
+        console.error(error);
 
         res.status(500).json({
             msg: mensajes.errorInterno,
@@ -502,6 +589,7 @@ const createCreditosMasivos = async (req, res = response) => {
 }
 
 module.exports = {
+    getSolicitudesCreditoPaginados,
     solicitudCreditoGet,
     solicitudCreditosGet,
     solicitudCreditoGetException,

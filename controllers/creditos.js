@@ -10,10 +10,27 @@ const path = require('path');
 
 const PDFDocument = require('pdf-lib').PDFDocument
 
+const { Op, Sequelize } = require('sequelize');
+
+
 const { queries } = require('../database/queries');
 const { buildPatchQuery, buildPostQueryReturningId } = require('../database/build-query');
 const mensajes = require('../helpers/messages');
 const { generateAmortizacion } = require('../helpers/calculateAmortizacion');
+const Credito = require('../models/credito');
+const Tarifa = require('../models/tarifa');
+const Colonia = require('../models/colonia');
+const Cliente = require('../models/cliente');
+const SolicitudCredito = require('../models/solicitud_credito');
+const Agencia = require('../models/agencia');
+const Zona = require('../models/zona');
+const TipoEstatusContrato = require('../models/tipo_estatus_contrato');
+const TipoEstatusCredito = require('../models/tipo_estatus_credito');
+const TipoCredito = require('../models/tipo_credito');
+const BalanceSemanal = require('../models/balance_semanal');
+const Semana = require('../models/semana');
+
+
 
 
 const table = 'dbo.creditos'
@@ -92,9 +109,541 @@ const creditosGetTotal = async (req, res = response) => {
     }
 }
 
+const getCreditoOptimizado = async (req, res = response) => {
+
+    try {
+
+        const { credito_id } = req.body;
+
+
+        const credito = await Credito.findOne({
+
+            include: [
+                {
+                    model: Cliente,
+                    as: 'cliente',
+                    include: {
+                        model: Agencia,
+                        as: 'agencia',
+                        include: {
+                            model: Zona,
+                            as: 'zona'
+                        }
+                    }
+                },
+                {
+                    model: Tarifa,
+                    as: 'tarifa'
+                },
+                {
+                    model: TipoEstatusContrato,
+                    as: 'tipoEstatusContrato'
+                },
+                {
+                    model: TipoEstatusCredito,
+                    as: 'tipoEstatusCredito'
+                },
+                {
+                    model: TipoCredito,
+                    as: 'tipoCredito'
+                }
+            ],
+            where: {
+                id: credito_id,
+            },
+            order: [['id', 'ASC']],
+        });
+
+        if (credito) {
+            credito.tarifa_id = credito.tarifa.tarifa_id
+            credito.tipoCredito = credito.tipoCredito
+            credito.monto_semanal = (credito.monto_total / credito.tarifa.num_semanas)
+            credito.cliente.dataValues.nombre_completo = `${credito.cliente.nombre} ${credito.cliente.apellido_paterno} ${credito.cliente.apellido_materno}`
+        }
+
+        console.log(credito.cliente.dataValues);
+
+
+        // const creditosJSON = creditos.map((credito) => {
+        //     return {
+        //         id: credito.id,
+        //         num_contrato: credito.num_contrato,
+        //         nombre: `${credito.num_contrato} | ${credito.cliente.num_cliente} | ${credito.cliente.getNombreCompleto()}`,
+        //         nombre_completo: credito.cliente.getNombreCompleto(),
+        //         zona: credito.cliente.agencia.zona.nombre,
+        //         agencia: credito.cliente.agencia.nombre,
+        //         monto_otorgado: credito.monto_otorgado,
+        //         estatus_contrato: credito.tipoEstatusContrato.nombre,
+        //         estatus_credito: credito.tipoEstatusCredito.nombre,
+        //         entregado: credito.entregado,
+        //         no_entregado: credito.no_entregado,
+        //         num_cheque: credito.num_cheque
+        //     }
+        // })
+
+
+        res.status(200).json(
+            credito
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
+const getCreditosPaginados = async (req, res = response) => {
+
+    try {
+
+        const { page, limit, searchTerm } = req.query;
+
+        const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
+        const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
+
+        const offset = (pageNumber - 1) * limitPerPage;
+
+        // const searchTermLower = searchTerm.toLowerCase();
+
+        const { count, rows } = await Credito.findAndCountAll({
+
+            include: [
+                {
+                    model: Cliente,
+                    as: 'cliente',
+                    include: {
+                        model: Agencia,
+                        as: 'agencia',
+                        include: {
+                            model: Zona,
+                            as: 'zona'
+                        }
+                    }
+                },
+                {
+                    model: TipoEstatusContrato,
+                    as: 'tipoEstatusContrato'
+                },
+                {
+                    model: TipoEstatusCredito,
+                    as: 'tipoEstatusCredito'
+                }
+            ],
+            where: {
+                [Op.or]: [
+                    Sequelize.literal(`LOWER("cliente"."nombre") LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`LOWER("cliente"."apellido_paterno") LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`LOWER("cliente"."apellido_materno") LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`LOWER(CONCAT("cliente"."nombre", ' ', "cliente"."apellido_paterno", ' ', "cliente"."apellido_materno")) LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`"num_contrato"::TEXT LIKE '%${searchTerm}%'`),
+                ]
+            },
+            offset,
+            limit: limitPerPage,
+            order: [['id', 'ASC']]
+        });
+
+        const totalElements = count;
+        const totalPages = Math.ceil(totalElements / limitPerPage);
+
+        const creditosJSON = rows.map((credito) => {
+            return {
+                id: credito.id,
+                num_contrato: credito.num_contrato,
+                nombre_completo: credito.cliente.getNombreCompleto(),
+                zona: credito.cliente.agencia.zona.nombre,
+                agencia: credito.cliente.agencia.nombre,
+                monto_otorgado: credito.monto_otorgado,
+                estatus_contrato: credito.tipoEstatusContrato.nombre,
+                estatus_credito: credito.tipoEstatusCredito.nombre,
+                entregado: credito.entregado,
+                no_entregado: credito.no_entregado,
+                num_cheque: credito.num_cheque
+            }
+        })
+
+
+        res.status(200).json({
+            creditosJSON,
+            totalPages,
+            currentPage: pageNumber
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
+const getCreditosInversionPositivaPaginados = async (req, res = response) => {
+
+    try {
+
+        const { page, limit, searchTerm } = req.query;
+
+        const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
+        const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
+
+        const offset = (pageNumber - 1) * limitPerPage;
+
+        // const searchTermLower = searchTerm.toLowerCase();
+
+        const { count, rows } = await Credito.findAndCountAll({
+
+            include: [
+                {
+                    model: Cliente,
+                    as: 'cliente',
+                    include: {
+                        model: Agencia,
+                        as: 'agencia',
+                        include: {
+                            model: Zona,
+                            as: 'zona'
+                        }
+                    }
+                },
+                {
+                    model: TipoEstatusContrato,
+                    as: 'tipoEstatusContrato'
+                },
+                {
+                    model: TipoEstatusCredito,
+                    as: 'tipoEstatusCredito'
+                }
+            ],
+            where: {
+                [Op.and]: [
+                    {
+                        [Op.or]: [
+                            Sequelize.literal(`LOWER("cliente"."nombre") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER("cliente"."apellido_paterno") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER("cliente"."apellido_materno") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER(CONCAT("cliente"."nombre", ' ', "cliente"."apellido_paterno", ' ', "cliente"."apellido_materno")) LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`"num_contrato"::TEXT LIKE '%${searchTerm}%'`),
+                        ]
+                    },
+                    {
+                        inversion_positiva: true
+                    }
+                ]
+            },
+            offset,
+            limit: limitPerPage,
+            order: [['id', 'ASC']]
+        });
+
+        const totalElements = count;
+        const totalPages = Math.ceil(totalElements / limitPerPage);
+
+        const creditosJSON = rows.map((credito) => {
+            return {
+                id: credito.id,
+                num_contrato: credito.num_contrato,
+                nombre_completo: credito.cliente.getNombreCompleto(),
+                zona: credito.cliente.agencia.zona.nombre,
+                agencia: credito.cliente.agencia.nombre,
+                monto_otorgado: credito.monto_otorgado,
+                estatus_contrato: credito.tipoEstatusContrato.nombre,
+                estatus_credito: credito.tipoEstatusCredito.nombre,
+                entregado: credito.entregado,
+                no_entregado: credito.no_entregado,
+                num_cheque: credito.num_cheque
+            }
+        })
+
+
+        res.status(200).json({
+            creditosJSON,
+            totalPages,
+            currentPage: pageNumber
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
+const getCreditosByClienteId = async (req, res = response) => {
+
+    try {
+
+        const { cliente_id } = req.body
+        const { page, limit, searchTerm } = req.query;
+
+        const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
+        const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
+
+        const offset = (pageNumber - 1) * limitPerPage;
+
+        // const searchTermLower = searchTerm.toLowerCase();
+
+        const { count, rows } = await Credito.findAndCountAll({
+
+            include: [
+                {
+                    model: Cliente,
+                    as: 'cliente',
+                    include: {
+                        model: Agencia,
+                        as: 'agencia',
+                        include: {
+                            model: Zona,
+                            as: 'zona'
+                        }
+                    }
+                },
+                {
+                    model: TipoEstatusContrato,
+                    as: 'tipoEstatusContrato'
+                },
+                {
+                    model: TipoEstatusCredito,
+                    as: 'tipoEstatusCredito'
+                }
+            ],
+            where: {
+                cliente_id: cliente_id
+            },
+            offset,
+            limit: limitPerPage,
+            order: [['id', 'ASC']]
+        });
+
+
+        const totalElements = count;
+        const totalPages = Math.ceil(totalElements / limitPerPage);
+
+
+
+        const creditosJSON = rows.map((credito) => {
+            return {
+                id: credito.id,
+                num_contrato: credito.num_contrato,
+                nombre_completo: credito.cliente.getNombreCompleto(),
+                zona: credito.cliente.agencia.zona.nombre,
+                agencia: credito.cliente.agencia.nombre,
+                monto_otorgado: credito.monto_otorgado,
+                estatus_contrato: credito.tipoEstatusContrato.nombre,
+                estatus_credito: credito.tipoEstatusCredito.nombre,
+                entregado: credito.entregado,
+                no_entregado: credito.no_entregado,
+                num_cheque: credito.num_cheque
+            }
+        });
+
+        console.log(creditosJSON);
+
+
+        res.status(200).json({
+            creditosJSON,
+            totalPages,
+            currentPage: pageNumber
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
+const getCreditosLimitados = async (req, res = response) => {
+
+    try {
+
+        const { searchTerm } = req.query;
+
+
+        const creditos = await Credito.findAll({
+
+            include: [
+                {
+                    model: Cliente,
+                    as: 'cliente',
+                    include: {
+                        model: Agencia,
+                        as: 'agencia',
+                        include: {
+                            model: Zona,
+                            as: 'zona'
+                        }
+                    }
+                },
+                {
+                    model: TipoEstatusContrato,
+                    as: 'tipoEstatusContrato'
+                },
+                {
+                    model: TipoEstatusCredito,
+                    as: 'tipoEstatusCredito'
+                }
+            ],
+            where: {
+                entregado: 1,
+                estatus_credito_id: {
+                    [Op.ne]: 1 // Op.ne significa "no igual a"
+                },
+                [Op.or]: [ // Utiliza Op.or para definir la cláusula OR
+                    Sequelize.literal(`LOWER("cliente"."nombre") LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`LOWER("cliente"."apellido_paterno") LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`LOWER("cliente"."apellido_materno") LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`LOWER(CONCAT("cliente"."nombre", ' ', "cliente"."apellido_paterno", ' ', "cliente"."apellido_materno")) LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`"num_contrato"::TEXT LIKE '%${searchTerm}%'`),
+                ]
+            },
+            limit: 25,
+            order: [['id', 'ASC']]
+        });
+
+
+        const creditosJSON = creditos.map((credito) => {
+            return {
+                id: credito.id,
+                num_contrato: credito.num_contrato,
+                nombre: `${credito.num_contrato} | ${credito.cliente.num_cliente} | ${credito.cliente.getNombreCompleto()}`,
+                nombre_completo: credito.cliente.getNombreCompleto(),
+                zona: credito.cliente.agencia.zona.nombre,
+                agencia: credito.cliente.agencia.nombre,
+                monto_otorgado: credito.monto_otorgado,
+                estatus_contrato: credito.tipoEstatusContrato.nombre,
+                estatus_credito: credito.tipoEstatusCredito.nombre,
+                entregado: credito.entregado,
+                no_entregado: credito.no_entregado,
+                num_cheque: credito.num_cheque
+            }
+        });
+
+        console.log(creditosJSON);
+
+
+        res.status(200).json({
+            creditosJSON
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
+const getCreditosLimitadosInversionPositiva = async (req, res = response) => {
+
+    try {
+
+        const { searchTerm } = req.query;
+
+        const today = new Date();
+
+        const creditos = await Credito.findAll({
+
+            include: [
+                {
+                    model: Cliente,
+                    as: 'cliente',
+                    include: {
+                        model: Agencia,
+                        as: 'agencia',
+                        include: {
+                            model: Zona,
+                            as: 'zona'
+                        }
+                    }
+                },
+                {
+                    model: TipoEstatusContrato,
+                    as: 'tipoEstatusContrato'
+                },
+                {
+                    model: TipoEstatusCredito,
+                    as: 'tipoEstatusCredito'
+                }
+            ],
+            where: {
+                [Op.and]: [
+                    {
+                        entregado: 1,
+                        inversion_positiva: {
+                            [Op.not]: true // Op.not significa "no igual a true"
+                        },
+                        estatus_credito_id: {
+                            [Op.not]: 1 // Op.not significa "no igual a 1"
+                        },
+                        [Op.or]: [
+                            Sequelize.literal(`LOWER("cliente"."nombre") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER("cliente"."apellido_paterno") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER("cliente"."apellido_materno") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER(CONCAT("cliente"."nombre", ' ', "cliente"."apellido_paterno", ' ', "cliente"."apellido_materno")) LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`"num_contrato"::TEXT LIKE '%${searchTerm}%'`),
+                        ]
+                    },
+                    Sequelize.literal(`DATE("fecha_inicio_real" + INTERVAL '1 day') = DATE(:today)`), // Compara con la fecha de inicio + 1 día
+                ],
+            },
+            replacements: { today },
+            limit: 25,
+            order: [['id', 'ASC']]
+        });
+
+
+        const creditosJSON = creditos.map((credito) => {
+            return {
+                id: credito.id,
+                num_contrato: credito.num_contrato,
+                nombre: `${credito.num_contrato} | ${credito.cliente.num_cliente} | ${credito.cliente.getNombreCompleto()}`,
+                nombre_completo: credito.cliente.getNombreCompleto(),
+                zona: credito.cliente.agencia.zona.nombre,
+                agencia: credito.cliente.agencia.nombre,
+                monto_otorgado: credito.monto_otorgado,
+                estatus_contrato: credito.tipoEstatusContrato.nombre,
+                estatus_credito: credito.tipoEstatusCredito.nombre,
+                entregado: credito.entregado,
+                no_entregado: credito.no_entregado,
+                num_cheque: credito.num_cheque
+            }
+        });
+
+        console.log(creditosJSON);
+
+
+        res.status(200).json({
+            creditosJSON
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
 const creditosGetOptimized = async (req, res = response) => {
 
     try {
+
 
         const { rows } = await pool.query(queries.getCreditosOptimized);
 
@@ -278,6 +827,8 @@ const creditoDelete = async (req, res = response) => {
 
 const creditoGetByCriteria = async (req, res = response) => {
 
+    console.log('entramos al criteria');
+
     const { criterio, palabra } = req.params;
 
     try {
@@ -330,6 +881,8 @@ const creditoGetByCriteria = async (req, res = response) => {
 
         sql = `${select_query} ${clausula_where}
                 ${order_by}`;
+
+        console.log(sql);
 
 
         const { rows } = await pool.query(sql);
@@ -481,8 +1034,8 @@ const printContratosMasivos = async (req, res = response) => {
                 telefono, calle, num_ext, colonia, cp, tipo_asentamiento, zona, agencia, fecha_inicio_prog,
                 fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2 } = resultado.rows[0];
 
-                console.log(dif_num_semanas);
-                console.log('num_semanas:',num_semanas);
+            console.log(dif_num_semanas);
+            console.log('num_semanas:', num_semanas);
 
             result['contrato'] = {
                 rows
@@ -490,7 +1043,7 @@ const printContratosMasivos = async (req, res = response) => {
 
             result['credito'] = {
                 num_contrato, num_cliente, monto_otorgado, monto_total, monto_otorgado2, monto_total_letras,
-                monto_semanal, 
+                monto_semanal,
                 num_semanas, dif_num_semanas,
                 fecha_inicio_prog, fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2,
                 nombre, apellido_paterno, apellido_materno, telefono, calle, num_ext, tipo_asentamiento, colonia, cp,
@@ -648,13 +1201,10 @@ const amortizacionGet = async (req, res = response) => {
 
     try {
 
-        console.log(req.params);
-
         const { id } = req.params;
         const values = [id];
 
         const { rows } = await pool.query(queries.getAmortizacion, values);
-
 
         //necesitamos saber datos generales del credito, tarifa num de semanas, monto semanal y monto total.
         const resultado = await generateAmortizacion(rows);
@@ -1024,6 +1574,221 @@ const printCreditos = async (req, res = response) => {
 
 }
 
+const printReporteCartas = async (req, res = response) => {
+
+    try {
+
+        const { semana_id } = req.params;
+
+        console.log(semana_id);
+
+        const values = [semana_id];
+
+        //Iniciamos leyendo la plantilla del contrato
+        const template = fs.readFileSync('./views/template_reporte_cartas.hbs', 'utf-8');
+
+        // const creditos = await Credito.findAll({
+        //     include: [
+        //         {
+        //             model: Cliente,
+        //             as: 'cliente',
+        //             include: {
+        //                 model: Agencia,
+        //                 as: 'agencia',
+        //                 include: {
+        //                     model: Zona,
+        //                     as: 'zona'
+        //                 }
+        //             }
+        //         },
+        //         {
+        //             model: Tarifa,
+        //             as: 'tarifa'
+        //         },
+        //         {
+        //             model: TipoEstatusCredito,
+        //             as: 'tipoEstatusCredito'
+        //         }
+        //     ],
+        //     where: {
+        //         estatus_credito_id: {
+        //             [Op.not]: [1]
+        //         }
+        //     },
+        //     order: [
+        //         [Sequelize.literal('"cliente.agencia.zona.nombre"'), 'ASC'],
+        //         [Sequelize.literal('"cliente.agencia.nombre"'), 'ASC']
+        //     ],
+        //     limit: 200
+        // });
+
+        const { rows } = await pool.query(queries.getReporteCartas, values);
+
+        console.log(rows);
+
+        const creditosJSON = rows.map((credito) => {
+
+            //TODO: Validar si existe num_contrato_historico
+
+            return {
+                num_contrato: credito.num_contrato,
+                zona: credito.zona,
+                agencia: credito.agencia,
+                nombre: credito.nombre_completo,
+                monto_otorgado: credito.monto_otorgado,
+                monto_semanal: credito.monto_semanal,
+                estatus: credito.estatus,
+                total_pagado: credito.total_pagado,
+                total_penalizaciones: credito.total_penalizaciones,
+                monto_total: credito.monto_total,
+                total_liquidar: credito.total_liquidar
+            }
+
+        });
+
+        console.log(creditosJSON);
+
+        // const creditosJSON = rows.map((credito) => {
+
+        //     //TODO: Validar si existe num_contrato_historico
+
+        //     return {
+        //         credito_id: credito.id,
+        //         num_contrato: credito.num_contrato,
+        //         zona: credito.cliente.agencia.zona.nombre,
+        //         agencia: credito.cliente.agencia.nombre,
+        //         nombre: credito.cliente.getNombreCompleto(),
+        //         monto_otorgado: credito.monto_otorgado,
+        //         monto_semanal: ( credito.monto_total / credito.tarifa.num_semanas).toFixed(2),
+        //         estatus: credito.tipoEstatusCredito.nombre
+        //     }
+
+        // });
+
+        const DOC = handlebars.compile(template);
+
+
+        //Aqui pasamos data al template hbs
+        const html = DOC({ creditosJSON });
+
+        const browser = await puppeteer.launch({
+            'args': [
+                '--no-sandbox',
+                '--disable-setuid-sandbox'
+            ]
+        });
+
+        const page = await browser.newPage();
+
+        // Configurar el tiempo de espera de la navegación
+        await page.setDefaultNavigationTimeout(0);
+        await page.setContent(html);
+
+        const pdf = await page.pdf({
+            format: 'letter',
+            margin: {
+                top: '1cm',
+                bottom: '1cm',
+                left: '1cm',
+                right: '1cm'
+            },
+            printBackground: true,
+        });
+
+        await browser.close();
+
+        const buffer = Buffer.from(pdf);
+
+        let namePDF = "contrato_";
+        res.setHeader('Content-disposition', "inline; filename*=UTF-8''" + namePDF + ".pdf");
+        res.setHeader('Content-type', 'application/pdf');
+
+        return res.send(buffer);
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.json(error.message);
+    }
+
+}
+
+// const printCreditos = async (req, res = response) => {
+
+//     console.log('entramos al controller');
+
+//     try {
+
+//         const { fecha_inicio } = req.body;
+
+//         let consultaSql = fecha_inicio 
+//             ? queries.getCreditosGenericaOptimizada + `WHERE a.fecha_inicio_prog = '${fecha_inicio}' ORDER BY a.id` 
+//             : queries.getCreditos;
+
+//         const resultado = await pool.query(consultaSql);
+//         const templatePath = './views/template_lista_creditos.hbs';
+//         const html = generateHTML(resultado, templatePath);
+//         const pdf = await generatePDF(html);
+
+//         setResponseHeaders(res, pdf);
+//         return res.send(pdf);
+
+//     } catch (error) {
+//         console.error(error);
+//         res.json(error.message);
+//     }
+// }
+
+//Se optimiza el codigo de printCreditos
+
+const generateHTML = (resultado, templatePath) => {
+
+    const template = fs.readFileSync(templatePath, 'utf-8');
+    const DOC = handlebars.compile(template);
+    return DOC(resultado);
+
+}
+
+const generatePDF = async (html) => {
+
+    const browser = await puppeteer.launch({
+        'args': [
+            '--no-sandbox',
+            '--disable-setuid-sandbox'
+        ]
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html);
+
+    const pdf = await page.pdf({
+        margin: {
+            top: '1cm',
+            bottom: '1cm',
+            left: '1cm',
+            right: '1cm'
+        },
+        format: 'letter',
+        printBackground: true
+    });
+
+    await browser.close();
+
+    return pdf;
+}
+
+const setResponseHeaders = (res, buffer) => {
+    const namePDF = "amortizacion_.pdf";
+    res.setHeader('Content-type', 'application/pdf');
+    res.setHeader('Content-Length', buffer.byteLength);
+    res.setHeader('Content-Description', 'File Transfer');
+    res.setHeader('Content-Transfer-Encoding', 'binary');
+    res.setHeader('Content-Disposition', `filename="${namePDF}"`);
+}
+
+//
+
 const printAllDoc = async (req, res = response) => {
 
     try {
@@ -1340,6 +2105,12 @@ module.exports = {
     creditoGet,
     creditosGet,
     creditosGetOptimized,
+    getCreditoOptimizado,
+    getCreditosPaginados,
+    getCreditosLimitados,
+    getCreditosLimitadosInversionPositiva,
+    getCreditosByClienteId,
+    getCreditosInversionPositivaPaginados,
     creditoPost,
     creditoPut,
     creditoDelete,
@@ -1355,5 +2126,6 @@ module.exports = {
     printEntregasCredito,
     inversionPositivaDelete,
     creditoGetByCriteria,
-    creditosGetTotal
+    creditosGetTotal,
+    printReporteCartas
 } 

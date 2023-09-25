@@ -687,29 +687,40 @@ const queries = {
                         ORDER BY a.no_entregado, a.id`,
 
     getCreditosTotales:   `SELECT
-                                a.creditos_count AS total_creditos,
-                                b.creditos_prog_entrega_count AS total_creditos_prog_entrega,
-                                c.creditos_entregados_count as total_creditos_entregados,
-                                d.creditos_no_entregados_count as total_creditos_no_entregados
-                            FROM
-                                (SELECT COUNT(cred.id) AS creditos_count FROM dbo.creditos cred ) AS a
-                            JOIN
-                                (	SELECT COUNT(cred.id) AS creditos_prog_entrega_count 
-                                        FROM dbo.creditos cred 
-                                        WHERE cred.preaprobado = 1 
-                                        AND cred.entregado is not null 
-                                        AND cred.no_entregado IS NULL ) as b
-                            ON 1=1
-                            JOIN
-                                (	SELECT COUNT(cred.id) AS creditos_entregados_count 
-                                        FROM dbo.creditos cred 
-                                        WHERE cred.entregado = 1 ) as c
-                            ON 1=1
-                            JOIN
-                                (	SELECT COUNT(cred.id) AS creditos_no_entregados_count 
-                                        FROM dbo.creditos cred 
-                                        WHERE cred.no_entregado =1 ) as d
-                            ON 1=1`,
+                                    a.creditos_count AS total_creditos,
+                                    b.creditos_prog_entrega_count AS total_creditos_prog_entrega,
+                                    c.creditos_marcar_entrega_count AS total_creditos_marcar_entrega,
+                                    d.creditos_entregados_count as total_creditos_entregados,
+                                    e.creditos_no_entregados_count as total_creditos_no_entregados
+                                FROM
+                                    (SELECT COUNT(cred.id) AS creditos_count FROM dbo.creditos cred ) AS a
+                                JOIN
+                                    (	SELECT COUNT(cred.id) AS creditos_prog_entrega_count 
+                                            FROM dbo.creditos cred 
+                                            WHERE cred.preaprobado = 1 
+                                            AND cred.entregado is null 
+                                            AND cred.no_entregado IS NULL ) as b
+                                ON 1=1
+                                JOIN
+                                    (	SELECT COUNT(cred.id) AS creditos_marcar_entrega_count 
+                                            FROM dbo.creditos cred 
+                                            WHERE cred.preaprobado = 1 
+                                            AND cred.entregado is null 
+                                            AND cred.fecha_entrega_prog IS NOT NULL
+                                            AND cred.no_entregado IS NULL ) as c
+                                ON 1=1
+                                JOIN
+                                    (	SELECT COUNT(cred.id) AS creditos_entregados_count 
+                                            FROM dbo.creditos cred 
+                                            WHERE cred.entregado = 1 ) as d
+                                ON 1=1
+                                JOIN
+                                    (	SELECT COUNT(cred.id) AS creditos_no_entregados_count 
+                                            FROM dbo.creditos cred 
+                                            WHERE 
+                                            cred.no_entregado = 1 OR (cred.preaprobado = 1 AND cred.no_entregado is null)
+                                    ) as e
+                                ON 1=1`,
 
     getCreditosOptimized:        
                         `SELECT 
@@ -787,6 +798,81 @@ const queries = {
                         on m.colonia_id = l.id
                         ORDER BY a.no_entregado, a.id`,
 
+    //Esta consulta no devueve dias de penalizaciones
+    getCreditosGenericaOptimizada:   `SELECT 
+                            a.id, 
+                            j.clave ||'-'|| a.cliente_id as num_cliente,
+                            a.solicitud_credito_id,
+                            a.cliente_id, 
+                            a.num_contrato, 
+                            a.monto_otorgado, 
+                            a.fecha_creacion, 
+                            a.fecha_entrega_prog,
+                            a.hora_entrega,
+                            a.fecha_inicio_prog,
+                            a.fecha_entrega_real,
+                            a.fecha_inicio_real,
+                            a.tarifa_id,
+                            b.nombre as tarifa,
+                            TRIM(TO_CHAR((a.monto_total / b.num_semanas),'999,999D99')) as monto_semanal,
+                            TRIM(TO_CHAR((a.monto_otorgado),'999,999D99')) as monto_otorgado2,
+                            TRIM(TO_CHAR((a.fecha_inicio_prog),'dd/MM/yyyy')) as fecha_inicio_prog3,
+                            fu_get_cn_renovacion(a.id) as cn_r,
+                            b.num_semanas, 
+                            c.nombre, c.apellido_paterno, c.apellido_materno, 
+                            c.calle, c.num_ext, l.nombre as colonia, c.telefono,
+                            c.nombre||' '||c.apellido_paterno||' '||c.apellido_materno as nombre_completo,
+                            i.nombre as zona,  
+                            h.nombre as agencia,
+                            e.nombre as tipo_contrato, 
+                            f.nombre as tipo_credito, 
+                            g.id as estatus_credito_id,
+                            g.nombre as estatus_credito,
+                            k.nombre as estatus_contrato,
+                            a.locked,
+                            a.renovacion,
+                            a.preaprobado,
+                            a.entregado,
+                            a.no_entregado,
+                            a.num_cheque,
+                            a.motivo,
+                            a.inversion_positiva
+                            FROM  
+                            dbo.creditos a 
+                            LEFT JOIN  
+                            dbo.tarifas b 
+                            on a.tarifa_id=b.id 
+                            LEFT JOIN 
+                            dbo.clientes c 
+                            on a.cliente_id = c.id 
+                            LEFT JOIN 
+                            dbo.tipo_contrato e 
+                            on a.tipo_contrato_id = e.id 
+                            LEFT JOIN 
+                            dbo.tipo_credito f 
+                            on a.tipo_credito_id = f.id 
+                            LEFT JOIN  
+                            dbo.tipo_estatus_credito g 
+                            on a.estatus_credito_id = g.id 
+                            LEFT JOIN
+                            dbo.tipo_estatus_contrato k
+                            on a.estatus_contrato_id = k.id
+                            INNER JOIN 
+                            dbo.agencias h 
+                            on c.agencia_id = h.id 
+                            INNER JOIN 
+                            dbo.zonas i 
+                            on h.zona_id = i.id 
+                            INNER JOIN 
+                            dbo.sucursales j 
+                            on i.sucursal_id = j.id 
+                            INNER JOIN
+                            dbo.solicitud_credito m
+                            on a.solicitud_credito_id = m.id
+                            INNER JOIN 
+                            dbo.colonias l
+                            on m.colonia_id = l.id `,
+
     getCreditosGenerica:   `SELECT 
                             a.id, 
                             j.clave ||'-'|| a.cliente_id as num_cliente,
@@ -824,8 +910,7 @@ const queries = {
                             a.no_entregado,
                             a.num_cheque,
                             a.motivo,
-                            a.inversion_positiva,
-                            fu_calcula_dias_penalizaciones(a.id) as dias_penalizaciones
+                            a.inversion_positiva 
                             FROM  
                             dbo.creditos a 
                             LEFT JOIN  
@@ -861,6 +946,81 @@ const queries = {
                             INNER JOIN 
                             dbo.colonias l
                             on m.colonia_id = l.id `,
+
+    // getCreditosGenerica:   `SELECT 
+    //                         a.id, 
+    //                         j.clave ||'-'|| a.cliente_id as num_cliente,
+    //                         a.solicitud_credito_id,
+    //                         a.cliente_id, 
+    //                         a.num_contrato, 
+    //                         a.monto_otorgado, 
+    //                         a.fecha_creacion, 
+    //                         a.fecha_entrega_prog,
+    //                         a.hora_entrega,
+    //                         a.fecha_inicio_prog,
+    //                         a.fecha_entrega_real,
+    //                         a.fecha_inicio_real,
+    //                         a.tarifa_id,
+    //                         b.nombre as tarifa,
+    //                         TRIM(TO_CHAR((a.monto_total / b.num_semanas),'999,999D99')) as monto_semanal,
+    //                         TRIM(TO_CHAR((a.monto_otorgado),'999,999D99')) as monto_otorgado2,
+    //                         TRIM(TO_CHAR((a.fecha_inicio_prog),'dd/MM/yyyy')) as fecha_inicio_prog3,
+    //                         fu_get_cn_renovacion(a.id) as cn_r,
+    //                         b.num_semanas, 
+    //                         c.nombre, c.apellido_paterno, c.apellido_materno, 
+    //                         c.calle, c.num_ext, l.nombre as colonia, c.telefono,
+    //                         c.nombre||' '||c.apellido_paterno||' '||c.apellido_materno as nombre_completo,
+    //                         i.nombre as zona,  
+    //                         h.nombre as agencia,
+    //                         e.nombre as tipo_contrato, 
+    //                         f.nombre as tipo_credito, 
+    //                         g.id as estatus_credito_id,
+    //                         g.nombre as estatus_credito,
+    //                         k.nombre as estatus_contrato,
+    //                         a.locked,
+    //                         a.renovacion,
+    //                         a.preaprobado,
+    //                         a.entregado,
+    //                         a.no_entregado,
+    //                         a.num_cheque,
+    //                         a.motivo,
+    //                         a.inversion_positiva,
+    //                         fu_calcula_dias_penalizaciones(a.id) as dias_penalizaciones
+    //                         FROM  
+    //                         dbo.creditos a 
+    //                         LEFT JOIN  
+    //                         dbo.tarifas b 
+    //                         on a.tarifa_id=b.id 
+    //                         LEFT JOIN 
+    //                         dbo.clientes c 
+    //                         on a.cliente_id = c.id 
+    //                         LEFT JOIN 
+    //                         dbo.tipo_contrato e 
+    //                         on a.tipo_contrato_id = e.id 
+    //                         LEFT JOIN 
+    //                         dbo.tipo_credito f 
+    //                         on a.tipo_credito_id = f.id 
+    //                         LEFT JOIN  
+    //                         dbo.tipo_estatus_credito g 
+    //                         on a.estatus_credito_id = g.id 
+    //                         LEFT JOIN
+    //                         dbo.tipo_estatus_contrato k
+    //                         on a.estatus_contrato_id = k.id
+    //                         INNER JOIN 
+    //                         dbo.agencias h 
+    //                         on c.agencia_id = h.id 
+    //                         INNER JOIN 
+    //                         dbo.zonas i 
+    //                         on h.zona_id = i.id 
+    //                         INNER JOIN 
+    //                         dbo.sucursales j 
+    //                         on i.sucursal_id = j.id 
+    //                         INNER JOIN
+    //                         dbo.solicitud_credito m
+    //                         on a.solicitud_credito_id = m.id
+    //                         INNER JOIN 
+    //                         dbo.colonias l
+    //                         on m.colonia_id = l.id `,
 
     getCreditosPreaprobados:    
         
@@ -1233,6 +1393,7 @@ const queries = {
                                         l.calle, l.num_ext, UPPER(m.nombre) as colonia, m.cp, n.nombre as tipo_asentamiento, c.telefono, 
                                         e.id as tipo_contrato_id, f.id as tipo_credito_id, 
                                         g.nombre as estatus_credito,
+                                        o.nombre as estatus_contrato,
                                         a.num_cheque,
                                         a.locked,
                                         a.renovacion,
@@ -1274,7 +1435,10 @@ const queries = {
                                         on m.id = l.colonia_id
                                         INNER JOIN
                                         dbo.tipo_asentamiento n
-                                        on m.tipo_asentamiento_id = n.id`,
+                                        on m.tipo_asentamiento_id = n.id
+                                        LEFT JOIN 
+                                        dbo.tipo_estatus_contrato o
+                                        on a.estatus_contrato_id = o.id`,
 
     getClienteQueryGenerica:            `SELECT 
                                         a.id, a.num_cliente, 
@@ -1296,7 +1460,45 @@ const queries = {
                                         dbo.sucursales d
                                         on c.sucursal_id = d.id`,
 
-    getDashboardCounters: ``
+    getDashboardCounters: ``,
+
+    getReporteCartas:                   `
+                                SELECT 
+                                e.nombre as agencia,
+                                f.nombre as zona,
+                                c.num_contrato, 
+                                TRIM(TO_CHAR(( c.monto_total / g.num_semanas),'999,999D99')) as monto_semanal,
+                                TRIM(TO_CHAR(c.monto_otorgado,'999,999D99')) as monto_otorgado, 
+                                h.nombre as estatus,
+                                d.nombre || ' ' || d.apellido_paterno || ' ' || d.apellido_materno as nombre_completo,
+                                c.monto_total as monto_total,
+                                fu_calcula_total_penalizaciones(c.id) as total_penalizaciones,
+                                fu_calcula_suma_total_pagado_by_credito_id(c.id) as total_pagado,
+                                TRIM(TO_CHAR(((fu_calcula_total_penalizaciones(c.id) + c.monto_total ) - fu_calcula_suma_total_pagado_by_credito_id(c.id) ),'999,999D99')) as total_liquidar
+                                FROM 
+                                dbo.semanas a
+                                inner join 
+                                dbo.balance_semanal b
+                                on a.fecha_inicio = b.fecha_inicio AND a.fecha_fin = b.fecha_fin and a.weekyear = b.weekyear
+                                inner join 
+                                dbo.creditos c
+                                on c.id = b.credito_id
+                                inner join dbo.clientes d
+                                on d.id = c.cliente_id
+                                INNER JOIN
+                                dbo.agencias e
+                                on e.id = d.agencia_id
+                                INNER JOIN
+                                dbo.zonas f
+                                on f.id = e.id
+                                INNER JOIN 
+                                dbo.tarifas g
+                                on g.id = c.tarifa_id
+                                INNER JOIN
+                                dbo.tipo_estatus_credito h 
+                                on h.id = c.tipo_credito_id AND h.id != 1 
+                                WHERE a.id = $1
+                                ORDER BY f.id ASC, e.id ASC`
 }
 
 module.exports = {

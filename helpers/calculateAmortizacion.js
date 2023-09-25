@@ -45,7 +45,7 @@ const generateAmortizacion = async (result = []) => {
             //fechaToCompare = new Date(rows[0]['fecha_finalizacion']);
             fechaToCompare = new Date();
         } else {
-            console.log('trabalo, el man no ha terminado de pagar!!!');
+            console.log('no ha terminado pagar!!');
 
             fechaToCompare = new Date();
         }
@@ -59,6 +59,8 @@ const generateAmortizacion = async (result = []) => {
         ////En este bloque calculamos la semana del año, para eso tomamos la fecha inicial y un dia deespues para que solo delimite una semana del resultado de la query
         //Esto evita que se traslapen las fechas
         let fechaWeekyear = new Date(fecha_inicial);
+
+        console.log('FEcha de la semana:',fechaWeekyear);
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
         fechaFormateada = fechaWeekyear.toISOString('es-ES', options).replace(/\//g, '-').slice(0, 10);
@@ -162,6 +164,42 @@ const generateAmortizacion = async (result = []) => {
             console.log('fecha2:',fecha2);
 
 
+            //SIN TABLA PARTICIONADA
+            // let { rows } = await pool.query(`
+            //     SELECT 
+            //         a.credito_id,
+            //         b.weekyear,
+            //         b.num_semana,
+            //         a.folio,
+            //         a.monto as monto_pagado,
+            //                 (SELECT 
+            //                     SUM(z.monto) as suma_monto_pagado
+            //                     FROM dbo.pagos z
+            //                     INNER JOIN 
+            //                     dbo.balance_semanal x 
+            //                     ON z.credito_id = x.credito_id 
+            //                     AND z.cancelado IS NULL
+            //                     AND z.fecha >= x.fecha_inicio AND z.fecha <= x.fecha_fin
+            //                     AND z.fecha BETWEEN  '${fecha}' AND '${fecha2}'
+            //                     AND z.weekyear = x.weekyear
+            //                     AND z.weekyear = ${semana_weekyear}
+            //                     AND z.credito_id = ${credito_id}
+            //                 ) as suma_monto_pagado,
+            //                 a.fecha as fecha_pago
+            //     FROM dbo.pagos a
+            //     INNER JOIN dbo.balance_semanal b 
+            //     ON a.credito_id = b.credito_id 
+            //     AND a.fecha BETWEEN  '${fecha}' AND '${fecha2}'
+            //     AND a.fecha >= b.fecha_inicio AND a.fecha <= b.fecha_fin 
+            //     AND a.credito_id = ${credito_id}
+            //     AND a.cancelado IS NULL
+            //     AND a.weekyear = b.weekyear
+            //     AND a.weekyear = ${semana_weekyear}
+            //     GROUP BY b.num_semana, a.id, b.id
+            //     ORDER BY a.credito_id, b.num_semana;
+            // `);
+
+            //CON TABLA PARTICIONADA
             let { rows } = await pool.query(`
                 SELECT 
                     a.credito_id,
@@ -192,7 +230,7 @@ const generateAmortizacion = async (result = []) => {
                 AND a.cancelado IS NULL
                 AND a.weekyear = b.weekyear
                 AND a.weekyear = ${semana_weekyear}
-                GROUP BY b.num_semana, a.id, b.id
+                GROUP BY b.num_semana, a.id, b.id, a.credito_id, a.folio, a.monto, a.fecha
                 ORDER BY a.credito_id, b.num_semana;
             `);
 
