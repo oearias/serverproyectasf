@@ -22,11 +22,12 @@ class Server {
 
         //Configuración CORS
         this.app.use(cors({
-            //origin: 'https://system-proyectasfweb.com', 
+            origin: 'https://system-proyectasfweb.com', 
             //origin: 'http://192.168.0.20:4200', //TODO: Este se tiene que quitar despues de las pruebas
             methods: 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
             allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
             credentials: true,
+            
         }));
 
         sequelize.authenticate()
