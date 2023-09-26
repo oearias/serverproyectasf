@@ -27,7 +27,7 @@ class Server {
             methods: 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
             allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
             credentials: true,
-            
+
         }));
 
         sequelize.authenticate()

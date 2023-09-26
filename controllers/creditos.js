@@ -200,6 +200,8 @@ const getCreditosPaginados = async (req, res = response) => {
 
     try {
 
+        console.log('entramos al controller creditos');
+
         const { page, limit, searchTerm } = req.query;
 
         const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
@@ -254,12 +256,13 @@ const getCreditosPaginados = async (req, res = response) => {
             return {
                 id: credito.id,
                 num_contrato: credito.num_contrato,
+                num_contrato_historico: credito.num_contrato_historico,
                 nombre_completo: credito.cliente.getNombreCompleto(),
                 zona: credito.cliente.agencia.zona.nombre,
                 agencia: credito.cliente.agencia.nombre,
                 monto_otorgado: credito.monto_otorgado,
-                estatus_contrato: credito.tipoEstatusContrato.nombre,
-                estatus_credito: credito.tipoEstatusCredito.nombre,
+                estatus_contrato: credito.tipoEstatusContrato?.nombre,
+                estatus_credito: credito.tipoEstatusCredito?.nombre,
                 entregado: credito.entregado,
                 no_entregado: credito.no_entregado,
                 num_cheque: credito.num_cheque

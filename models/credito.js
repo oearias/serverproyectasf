@@ -47,6 +47,9 @@ const Credito = sequelize.define('Credito', {
     num_contrato:{
         type: Sequelize.INTEGER,
     },
+    num_contrato_historico:{
+        type: Sequelize.STRING,
+    },
     fecha_creacion:{
         type: Sequelize.DATE,
     },
