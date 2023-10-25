@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check, body} = require('express-validator');
-const { clientesGet, clienteGet, clientePost, clientePut, clienteDelete, clientesGetByCriteria, clientesGetTotal, getClientesPaginados } = require('../controllers/clientes');
+const { clientesGet, clienteGet, clientePost, clientePut, clienteDelete, clientesGetByCriteria, clientesGetTotal, getClientesPaginados, getClientesLimitados } = require('../controllers/clientes');
 const { validarCampos } = require('../middlewares/validar-campos');
 
 const router = Router();
@@ -10,6 +10,8 @@ router.get('/:id', clienteGet);
 router.get('/', clientesGet);
 
 router.post('/clientes_list', getClientesPaginados);
+
+router.post('/clientes_list_limit/', getClientesLimitados);
 
 router.get('/total/total', clientesGetTotal);
 

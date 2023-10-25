@@ -37,7 +37,7 @@ const paths = {
     tipofuenteFinanciamiento    : '/api/tipos/fuente_financiamiento',
     identificacion              : '/api/tipos/identificacion',
     tipoParentesco              : '/api/tipos/parentesco',
-    userGroup                   : '/api/usuarios_groups',
+    userGroup                   : '/api/grupos_usuarios',
     userRole                    : '/api/usuarios_roles',
     usuarios                    : '/api/usuarios',
     zonas                       : '/api/zonas',

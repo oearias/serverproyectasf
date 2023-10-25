@@ -3,6 +3,12 @@ const bcryptjs = require('bcryptjs')
 const pool = require('../database/connection');
 const mensajes = require('../helpers/messages');
 const { generarJWT } = require('../helpers/generate-jwt');
+const User = require('../models/usuario');
+const PermisoModulo = require('../models/permiso_modulo');
+const Modulo = require('../models/modulos');
+const UserGroup = require('../models/user_group');
+const PermisoSubmodulo = require('../models/permisos_submodulos');
+const Submodulo = require('../models/submodulo');
 
 const table = 'dbo.usuarios'
 
@@ -10,39 +16,95 @@ const login = async (req, res = response) => {
 
     try {
 
-        const { email, password } = req.body;
+        const { email } = req.body;
+        const pass = req.body.password;
 
-        //validamos que exista el email
-        // const {rows} = await pool.query(`SELECT a.email, a.password, 
-        // INITCAP(a.nombre) as nombre, 
-        // INITCAP(a.apellido_paterno) as apellido_paterno, 
-        // INITCAP(a.apellido_materno) as apellido_materno 
-        // FROM ${table} a WHERE a.email = '${email}' `);
+        const user_founded = await User.findOne({
+            include: {
+                model: UserGroup,
+                as: 'userGroup'
+            },
+            where: {
+                usuario: email
+            }
+        });
 
-        const {rows} = await pool.query(`SELECT a.email, a.password, 
-        INITCAP(a.nombre) as nombre, 
-        INITCAP(a.apellido_paterno) as apellido_paterno, 
-        INITCAP(a.apellido_materno) as apellido_materno,
-        a.usuario,
-		b.nombre as role
-        FROM 
-		dbo.usuarios a 
-		LEFT JOIN
-		dbo.roles b
-		on a.role_id = b.id
-		WHERE a.email = '${email}' `);
 
-        if(!rows[0]){
+        if(!user_founded){
             return res.json({
                 msg: 'El correo no existe en la base de datos'
-            })
+            });
         }
 
-        const {id, nombre, usuario, apellido_paterno, apellido_materno, role } = rows[0];
-        const pass = rows[0]['password'];
+        const permisos_modulos = await PermisoModulo.findAll({
+            include: {
+                model: Modulo,
+                as: 'modulo',
+                attributes: ['id','nombre','icon','orden'],
+                order: ['orden','ASC']
+            },
+            where: {
+                user_group_id: user_founded.userGroup.id
+            },
+        });
 
-        //Varificar la contraseña
-        const validPassword = bcryptjs.compareSync(password, pass);
+        const permisos_submodulos = await PermisoSubmodulo.findAll({
+            include:{
+                model: Submodulo,
+                as: 'submodulo',
+                attributes: ['nombre','url','icon','orden','modulo_id']
+            },
+            where: {
+                user_group_id: user_founded.userGroup.id
+            }
+        })
+
+        const modulos = [];
+        
+        if(permisos_modulos){
+
+            permisos_modulos.forEach(permiso_modulo => {
+
+                const submodulos = [];
+
+                permisos_submodulos.forEach(permiso_submodulo =>{
+                    
+                    if(permiso_submodulo.submodulo.modulo_id === permiso_modulo.modulo.id){
+
+                        let submodulo = {
+                            submodulo_id: permiso_submodulo.submodulo.id,
+                            titulo: permiso_submodulo.submodulo.nombre,
+                            icon: permiso_submodulo.submodulo.icon,
+                            url: permiso_submodulo.submodulo.url,
+                            modulo_id: permiso_submodulo.submodulo.modulo_id
+                        }
+
+                        submodulos.push(submodulo);
+
+                    }
+                })
+
+                let modulo = {
+                    modulo_id: permiso_modulo.modulo.id,
+                    titulo: permiso_modulo.modulo.nombre,
+                    icono: permiso_modulo.modulo.icon,
+                    submenu: submodulos 
+                }
+
+                modulos.push(modulo);
+
+                // console.log(permiso.modulo.nombre);
+            });
+        }
+
+        //const {id, nombre, usuario, apellido_paterno, apellido_materno, role } = rows[0];
+        const {id, nombre, usuario, apellido_paterno, apellido_materno, role, password } = user_founded;
+
+
+        // const pass = rows[0]['password'];
+
+        //Varificar la contraseña, comparamos
+        const validPassword = bcryptjs.compareSync(pass, password);
 
         if(!validPassword){
             return res.status(400).json({
@@ -53,14 +115,20 @@ const login = async (req, res = response) => {
         //Generar el JWT
         const token = await generarJWT(id);
 
-        res.status(200).json({
+        const data = {
+            usuario_id: id,
             nombre,
             usuario,
             apellido_paterno,
             apellido_materno,
+            modulos,
             token,
-            role
-        });
+            role: user_founded.userGroup.nombre
+        }
+
+        res.status(200).json(
+            data
+        );
 
     } catch (error) {
 

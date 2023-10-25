@@ -24,6 +24,16 @@ const SolicitudCredito = sequelize.define('SolicitudCredito', {
             key: 'id'
         }
     },
+    aprobado_user_id:{
+        type: Sequelize.INTEGER,
+        references:{
+            model: 'User',
+            key: 'id'
+        }
+    },
+    fecha_aprobacion:{
+        type: Sequelize.DATE,
+    },
     telefono_contacto1: {
         type: Sequelize.STRING,
         validate: {

@@ -1,26 +1,37 @@
 const { Router } = require('express');
-const { check } = require('express-validator');
-const { userGroupsGet, userGroupGetByDynamicId, userGroupPost, userGroupPut, userGroupDelete } = require('../controllers/usuario_group');
+const { check, body } = require('express-validator');
 const { validarCampos } = require('../middlewares/validar-campos');
+const { getGruposUsuarios, grupoUsuarioPost, grupoUsuarioPut, getGrupoUsuario, grupoUsuarioDelete, getPermisosModulosByGrupoUsuarioId, updatePermisosPost, getGruposUsuariosList } = require('../controllers/grupos_usuarios');
 
 const router = Router();
 
-router.get('/:id/:criterio', userGroupGetByDynamicId);
+router.get('/:id', getGrupoUsuario);
 
-router.get('/', userGroupsGet);
+router.post('/grupo_usuario_list', getGruposUsuarios);
+
+//Grupos de usuarios sin paginar
+router.post('/grupos_usuarios_list', getGruposUsuariosList);
 
 router.post('/', [
-        check('usuario_id', 'El campo es obligatorio').not().isEmpty(),
-        check('group_id', 'El campo es obligatorio').not().isEmpty(),
+        check('nombre', 'El campo es obligatorio').not().isEmpty(),
+        check('descripcion', 'El campo es obligatorio').not().isEmpty(),
+        // body('nombre').toUpperCase(),
+        // body('descripcion').toUpperCase(),
         validarCampos
-], userGroupPost);
+], grupoUsuarioPost);
 
 router.put('/:id', [
-    check('usuario_id', 'El campo es obligatorio').not().isEmpty(),
-    check('group_id', 'El campo es obligatorio').not().isEmpty(),
+    check('nombre', 'El campo es obligatorio').not().isEmpty(),
+    check('descripcion', 'El campo es obligatorio').not().isEmpty(),
+    // body('nombre').toUpperCase(),
+    // body('descripcion').toUpperCase(),
     validarCampos
-], userGroupPut);
+], grupoUsuarioPut);
 
-router.delete('/:id', userGroupDelete);
+router.delete('/:id', grupoUsuarioDelete);
+
+router.get('/modulos_user_group/:id', getPermisosModulosByGrupoUsuarioId);
+
+router.post('/update_permisos', [], updatePermisosPost);
 
 module.exports = router;

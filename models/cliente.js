@@ -37,6 +37,9 @@ const Cliente = sequelize.define('Cliente', {
     sexo: {
         type: Sequelize.STRING,
     },
+    rfc: {
+        type: Sequelize.STRING,
+    },
     curp: {
         type: Sequelize.STRING,
     },

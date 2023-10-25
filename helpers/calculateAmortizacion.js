@@ -165,41 +165,6 @@ const generateAmortizacion = async (result = []) => {
 
 
             //SIN TABLA PARTICIONADA
-            // let { rows } = await pool.query(`
-            //     SELECT 
-            //         a.credito_id,
-            //         b.weekyear,
-            //         b.num_semana,
-            //         a.folio,
-            //         a.monto as monto_pagado,
-            //                 (SELECT 
-            //                     SUM(z.monto) as suma_monto_pagado
-            //                     FROM dbo.pagos z
-            //                     INNER JOIN 
-            //                     dbo.balance_semanal x 
-            //                     ON z.credito_id = x.credito_id 
-            //                     AND z.cancelado IS NULL
-            //                     AND z.fecha >= x.fecha_inicio AND z.fecha <= x.fecha_fin
-            //                     AND z.fecha BETWEEN  '${fecha}' AND '${fecha2}'
-            //                     AND z.weekyear = x.weekyear
-            //                     AND z.weekyear = ${semana_weekyear}
-            //                     AND z.credito_id = ${credito_id}
-            //                 ) as suma_monto_pagado,
-            //                 a.fecha as fecha_pago
-            //     FROM dbo.pagos a
-            //     INNER JOIN dbo.balance_semanal b 
-            //     ON a.credito_id = b.credito_id 
-            //     AND a.fecha BETWEEN  '${fecha}' AND '${fecha2}'
-            //     AND a.fecha >= b.fecha_inicio AND a.fecha <= b.fecha_fin 
-            //     AND a.credito_id = ${credito_id}
-            //     AND a.cancelado IS NULL
-            //     AND a.weekyear = b.weekyear
-            //     AND a.weekyear = ${semana_weekyear}
-            //     GROUP BY b.num_semana, a.id, b.id
-            //     ORDER BY a.credito_id, b.num_semana;
-            // `);
-
-            //CON TABLA PARTICIONADA
             let { rows } = await pool.query(`
                 SELECT 
                     a.credito_id,
@@ -230,9 +195,44 @@ const generateAmortizacion = async (result = []) => {
                 AND a.cancelado IS NULL
                 AND a.weekyear = b.weekyear
                 AND a.weekyear = ${semana_weekyear}
-                GROUP BY b.num_semana, a.id, b.id, a.credito_id, a.folio, a.monto, a.fecha
+                GROUP BY b.num_semana, a.id, b.id
                 ORDER BY a.credito_id, b.num_semana;
             `);
+
+            //CON TABLA PARTICIONADA
+            // let { rows } = await pool.query(`
+            //     SELECT 
+            //         a.credito_id,
+            //         b.weekyear,
+            //         b.num_semana,
+            //         a.folio,
+            //         a.monto as monto_pagado,
+            //                 (SELECT 
+            //                     SUM(z.monto) as suma_monto_pagado
+            //                     FROM dbo.pagos z
+            //                     INNER JOIN 
+            //                     dbo.balance_semanal x 
+            //                     ON z.credito_id = x.credito_id 
+            //                     AND z.cancelado IS NULL
+            //                     AND z.fecha >= x.fecha_inicio AND z.fecha <= x.fecha_fin
+            //                     AND z.fecha BETWEEN  '${fecha}' AND '${fecha2}'
+            //                     AND z.weekyear = x.weekyear
+            //                     AND z.weekyear = ${semana_weekyear}
+            //                     AND z.credito_id = ${credito_id}
+            //                 ) as suma_monto_pagado,
+            //                 a.fecha as fecha_pago
+            //     FROM dbo.pagos a
+            //     INNER JOIN dbo.balance_semanal b 
+            //     ON a.credito_id = b.credito_id 
+            //     AND a.fecha BETWEEN  '${fecha}' AND '${fecha2}'
+            //     AND a.fecha >= b.fecha_inicio AND a.fecha <= b.fecha_fin 
+            //     AND a.credito_id = ${credito_id}
+            //     AND a.cancelado IS NULL
+            //     AND a.weekyear = b.weekyear
+            //     AND a.weekyear = ${semana_weekyear}
+            //     GROUP BY b.num_semana, a.id, b.id, a.credito_id, a.folio, a.monto, a.fecha
+            //     ORDER BY a.credito_id, b.num_semana;
+            // `);
 
 
             if (rows.length > 0) {

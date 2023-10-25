@@ -2,6 +2,8 @@ const { response, text } = require('express');
 const pool = require('../database/connection');
 const { queries } = require('../database/queries');
 const mensajes = require('../helpers/messages');
+const { Op, Sequelize } = require('sequelize');
+const Semana = require('../models/semana');
 
 const semanaGet = async (req, res = response) => {
 
@@ -37,6 +39,83 @@ const semanasGet = async (req, res = response) => {
         res.status(500).json({
             msg: mensajes.errorInterno,
         })
+    }
+}
+
+const getSemanasPaginados = async (req, res = response) => {
+
+    try {
+
+        const { page, limit, searchTerm } = req.query;
+
+        const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
+        const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
+
+        const offset = (pageNumber - 1) * limitPerPage;
+
+        console.log(searchTerm);
+
+        let isOpened;
+
+        let searchCriteria = {
+            [Op.or]: [
+                Sequelize.where(Sequelize.cast(Sequelize.col('weekyear'), 'TEXT'), 'LIKE', `%${searchTerm}%`),
+                {
+                    serie: {
+                        [Op.like]: `%${searchTerm}%` // Búsqueda similar a LIKE en la propiedad 'serie'
+                    }
+                }
+            ]
+        };
+
+        if (searchTerm === 'ABIERTA' || searchTerm === 'abierta') {
+
+            searchCriteria = {
+                [Op.or]: [
+                    searchCriteria,
+                    {
+                        estatus: true
+                    }
+                ]
+            };
+        }
+
+        const { count, rows } = await Semana.findAndCountAll({
+            where: searchCriteria,
+            offset,
+            limit: limitPerPage,
+            order: [
+                ['year', 'DESC'],
+                ['weekyear', 'DESC']
+            ]
+        });
+
+        const semanasJSON = rows.map((semana) => {
+            return {
+                id: semana.id,
+                fecha_inicio: semana.fecha_inicio,
+                fecha_fin: semana.fecha_fin,
+                weekyear: semana.weekyear,
+                year: semana.year,
+                estatus: semana.estatus,
+                serie: semana.serie
+            };
+        });
+
+        const totalElements = count;
+        const totalPages = Math.ceil(totalElements / limitPerPage);
+
+        res.status(200).json({
+            semanasJSON,
+            totalPages,
+            currentPage: pageNumber
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        });
     }
 }
 
@@ -152,9 +231,9 @@ const semanasGetByCriteria = async (req, res = response) => {
 
         let sql;
 
-        switch(criterio){
+        switch (criterio) {
 
-            case 'estatus': 
+            case 'estatus':
 
                 sql = `
                     SELECT 
@@ -162,9 +241,9 @@ const semanasGetByCriteria = async (req, res = response) => {
                     FROM
                         dbo.semanas a
                     WHERE a.${criterio} = ${palabra} ORDER BY a.year, a.weekyear`;
-            break;
+                break;
 
-            case 'serie': 
+            case 'serie':
 
                 sql = `
                     SELECT 
@@ -172,7 +251,7 @@ const semanasGetByCriteria = async (req, res = response) => {
                     FROM
                         dbo.semanas a
                     WHERE a.${criterio} like '%${palabra}%' ORDER BY a.year, a.weekyear`;
-            break;
+                break;
 
             default:
 
@@ -182,7 +261,7 @@ const semanasGetByCriteria = async (req, res = response) => {
                     FROM
                         dbo.semanas a
                     WHERE a.${criterio} = ${palabra} ORDER BY a.year, a.weekyear`;
-            break;
+                break;
 
         }
 
@@ -241,5 +320,6 @@ module.exports = {
     semanaPut,
     semanaDelete,
     semanasGetByCriteria,
-    yearPost
+    yearPost,
+    getSemanasPaginados,
 }

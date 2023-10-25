@@ -12,6 +12,7 @@ const Cliente = require('../models/cliente');
 const Agencia = require('../models/agencia');
 const Zona = require('../models/zona');
 const TipoEstatusSolicitud = require('../models/tipo_estatus_solicitud');
+const Credito = require('../models/credito');
 
 const table = 'dbo.solicitud_credito';
 const tableUSer = 'dbo.clientes';
@@ -89,9 +90,9 @@ const getSolicitudesCreditoPaginados = async (req, res = response) => {
 
         // const searchTermLower = searchTerm.toLowerCase();
 
-        const {count, rows} = await SolicitudCredito.findAndCountAll({
+        const { count, rows } = await SolicitudCredito.findAndCountAll({
 
-            include:[
+            include: [
                 {
                     model: Cliente,
                     as: 'cliente'
@@ -109,14 +110,14 @@ const getSolicitudesCreditoPaginados = async (req, res = response) => {
                     as: 'tipoEstatusSolicitud'
                 }
             ],
-            where:{
+            where: {
                 [Op.or]: [
                     Sequelize.literal(`LOWER("cliente"."nombre") LIKE LOWER('%${searchTerm}%')`),
                     Sequelize.literal(`LOWER("cliente"."apellido_paterno") LIKE LOWER('%${searchTerm}%')`),
                     Sequelize.literal(`LOWER("cliente"."apellido_materno") LIKE LOWER('%${searchTerm}%')`),
                     Sequelize.literal(`LOWER(CONCAT("cliente"."nombre", ' ', "cliente"."apellido_paterno", ' ', "cliente"."apellido_materno")) LIKE LOWER('%${searchTerm}%')`),
                     Sequelize.literal(`LOWER("SolicitudCredito"."id"::TEXT) LIKE LOWER('%${searchTerm}%')`)
-                  ]
+                ]
             },
             offset,
             limit: limitPerPage,
@@ -134,7 +135,95 @@ const getSolicitudesCreditoPaginados = async (req, res = response) => {
                 zona: solicitud.agencia.zona.nombre,
                 agencia: solicitud.agencia.nombre,
                 monto: solicitud.monto,
-                estatus: solicitud.tipoEstatusSolicitud.nombre
+                estatus: solicitud.tipoEstatusSolicitud.nombre,
+                estatus_sol_id: solicitud.tipoEstatusSolicitud.id
+            }
+        });
+
+
+        res.status(200).json({
+            solicitudesJSON,
+            totalPages,
+            currentPage: pageNumber
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
+const getSolicitudesCreditoPorAprobarPaginados = async (req, res = response) => {
+
+    try {
+
+        const { page, limit, searchTerm } = req.query;
+
+        const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
+        const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
+
+        const offset = (pageNumber - 1) * limitPerPage;
+
+        // const searchTermLower = searchTerm.toLowerCase();
+
+        const { count, rows } = await SolicitudCredito.findAndCountAll({
+
+            include: [
+                {
+                    model: Cliente,
+                    as: 'cliente'
+                },
+                {
+                    model: Agencia,
+                    as: 'agencia',
+                    include: {
+                        model: Zona,
+                        as: 'zona'
+                    }
+                },
+                {
+                    model: TipoEstatusSolicitud,
+                    as: 'tipoEstatusSolicitud'
+                }
+            ],
+            where: {
+                [Op.and]: [
+                    {
+                        [Sequelize.Op.or]: [
+                            Sequelize.literal(`LOWER("cliente"."nombre") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER("cliente"."apellido_paterno") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER("cliente"."apellido_materno") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER(CONCAT("cliente"."nombre", ' ', "cliente"."apellido_paterno", ' ', "cliente"."apellido_materno")) LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER("SolicitudCredito"."id"::TEXT) LIKE LOWER('%${searchTerm}%')`)
+                        ]
+                    },
+                    {
+                        estatus_sol_id: 3 //Enviadas a revisión
+                    }
+                ]
+            },
+            offset,
+            limit: limitPerPage,
+            order: [['id', 'ASC']]
+        });
+
+        const totalElements = count;
+        const totalPages = Math.ceil(totalElements / limitPerPage);
+
+        const solicitudesJSON = rows.map((solicitud) => {
+            return {
+                id: solicitud.id,
+                fecha_solicitud: solicitud.fecha_solicitud,
+                nombre_completo: solicitud.cliente.getNombreCompleto(),
+                zona: solicitud.agencia.zona.nombre,
+                agencia: solicitud.agencia.nombre,
+                monto: solicitud.monto,
+                estatus: solicitud.tipoEstatusSolicitud.nombre,
+                estatus_sol_id: solicitud.tipoEstatusSolicitud.id
             }
         });
 
@@ -360,13 +449,13 @@ const solicitudCreditoPut = async (req, res = response) => {
             const fechaObservacion = moment(currentDate).format('YYYY-MM-DD HH:mm:ss');
 
             let evento;
-            
 
-            if(req.body.estatus_sol_id === 2){
+
+            if (req.body.estatus_sol_id === 2) {
                 evento = 'SE CANCELA'
-            }else if(req.body.estatus_sol_id === 1){
+            } else if (req.body.estatus_sol_id === 1) {
                 evento = 'CAMBIOS REQUERIDOS'
-            }else{
+            } else {
                 evento = '-'
             }
 
@@ -465,7 +554,7 @@ const solicitudGetByCriteria = async (req, res = response) => {
 
             case 'apellido_materno':
 
-            clausula_where = `WHERE b.apellido_materno like '%${cadena_aux}%' `
+                clausula_where = `WHERE b.apellido_materno like '%${cadena_aux}%' `
 
                 break;
 
@@ -560,6 +649,51 @@ const solChangeEstatusAprobadaToDelivery = async (req, res = response) => {
     }
 }
 
+const changeEstatusPendingToApproved = async (req, res = response) => {
+
+    const { id, estatus_sol_id, aprobado_user_id, monto, tarifa_id } = req.body;
+
+    console.log(req.body);
+
+    const fecha_presupuestal = new Date().toISOString();
+
+    try {
+
+        const solicitud_founded = await SolicitudCredito.findByPk(id);
+
+        if(!solicitud_founded){
+            res.status(500).json({
+                msg: mensajes.errorInterno
+            })
+        }
+
+        await solicitud_founded.update({
+            estatus_sol_id,
+            monto,
+            fecha_presupuestal,
+            fecha_aprobacion: fecha_presupuestal,
+            aprobado_user_id,
+            tarifa_id
+        })
+
+
+        //await pool.query(`CALL pr_crea_credito_preaprobado(${id})`);
+
+
+        res.status(200).json(
+            'Solicitud(es) autorizada(s)'
+        );
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno
+        })
+    }
+}
+
 const createCreditosMasivos = async (req, res = response) => {
 
     const solIds = req.body;
@@ -588,8 +722,78 @@ const createCreditosMasivos = async (req, res = response) => {
     }
 }
 
+const getSolicitudesParaPresupuesto = async (req, res = response) => {
+    try {
+        
+        const { rows } = await SolicitudCredito.findAndCountAll({
+            include: [{
+                model: Cliente,
+                as: 'cliente',
+            },
+            {
+                model: Agencia,
+                as: 'agencia',
+                include: {
+                    model: Zona,
+                    as: 'zona'
+                }
+            }],
+            where: {
+                estatus_sol_id: 6
+            }
+        });
+
+        console.log(rows);
+
+        // Crear un array de promesas
+        const solicitudesJSONPromises = rows.map(async (sol) => {
+            // Verificar si tiene créditos aprobados
+            const { count } = await Credito.findAndCountAll({
+                where: {
+                    cliente_id: sol.cliente.id,
+                    entregado: 1
+                }
+            });
+
+            console.log(count);
+
+            let cn_r = '';
+
+            if (count > 1) {
+                cn_r = 'Renovación'
+            } else {
+                cn_r = 'CN'
+            }
+
+            return {
+                id: sol.id,
+                fecha_solicitud: sol.fecha_creacion,
+                nombre_completo: sol.cliente.getNombreCompleto(),
+                agencia: sol.agencia,
+                monto: sol.monto,
+                creditos_aprobados: count,
+                cn_r
+            };
+        });
+
+        // Esperar a que todas las promesas se resuelvan
+        const solicitudesJSON = await Promise.all(solicitudesJSONPromises);
+
+        res.status(200).json({
+            solicitudesJSON
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        });
+    }
+}
+
+
 module.exports = {
     getSolicitudesCreditoPaginados,
+    getSolicitudesCreditoPorAprobarPaginados,
     solicitudCreditoGet,
     solicitudCreditosGet,
     solicitudCreditoGetException,
@@ -600,5 +804,7 @@ module.exports = {
     solicitudCreditoGetByClienteId,
     solChangeEstatusAprobadaToDelivery,
     createCreditosMasivos,
-    solicitudCreditosGetTotal
+    solicitudCreditosGetTotal,
+    getSolicitudesParaPresupuesto,
+    changeEstatusPendingToApproved
 }

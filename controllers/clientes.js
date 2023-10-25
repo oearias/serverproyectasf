@@ -12,6 +12,7 @@ const Agencia = require('../models/agencia');
 const Zona = require('../models/zona');
 const Sucursal = require('../models/sucursal');
 const Credito = require('../models/credito');
+const Colonia = require('../models/colonia');
 
 const table = 'dbo.clientes';
 
@@ -57,7 +58,7 @@ const clientesGet = async (req, res = response) => {
 }
 
 const getClientesPaginados = async (req, res = response) => {
-    
+
     try {
         const { page, limit, searchTerm } = req.query;
 
@@ -133,6 +134,80 @@ const getClientesPaginados = async (req, res = response) => {
         });
     }
 };
+
+const getClientesLimitados = async (req, res = response) => {
+
+    try {
+
+        const { searchTerm } = req.query;
+
+        const clientes = await Cliente.findAll({
+            include: [
+                {
+                    model: Agencia,
+                    as: 'agencia',
+                    include: {
+                        model: Zona,
+                        as: 'zona'
+                    }
+                },{
+                    model: Colonia,
+                    as: 'colonia'
+                }
+            ],
+            where: {
+                [Op.or]: [
+                    Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('Cliente.nombre')), 'LIKE', `%${searchTerm}%`),
+                    Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('apellido_paterno')), 'LIKE', `%${searchTerm}%`),
+                    Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('apellido_materno')), 'LIKE', `%${searchTerm}%`),
+                    Sequelize.where(
+                        Sequelize.fn('LOWER', Sequelize.fn('CONCAT', Sequelize.col('Cliente.nombre'), ' ', Sequelize.col('apellido_paterno'), ' ', Sequelize.col('apellido_materno'))),
+                        'LIKE',
+                        `%${searchTerm}%`
+                    ),
+                ],
+            },
+
+            limit: 25,
+            order: [['id', 'ASC']]
+        });
+
+
+        const clientesJSON = clientes.map((cliente) => {
+            return {
+                id: cliente.id,
+                nombre_completo: cliente.getNombreCompleto(),
+                fullname: `${cliente.getNombreCompleto()} | ${cliente.rfc}`,
+                nombre: cliente.nombre,
+                apellido_paterno: cliente.apellido_paterno,
+                apellido_materno: cliente.apellido_materno,
+                fecha_nacimiento: cliente.fecha_nacimiento,
+                sexo: cliente.sexo,
+                agencia_id: cliente.agencia.id,
+                zona_id: cliente.agencia.zona.id,
+                rfc: cliente.rfc,
+                curp: cliente.curp,
+                email: cliente.email,
+                telefono: cliente.telefono,
+                cp: cliente.colonia.cp,
+                cruzamientos: cliente.cruzamientos,
+                referencia: cliente.referencia
+            }
+        });
+
+        res.status(200).json({
+            clientesJSON
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
 
 const clientesGetTotal = async (req, res = response) => {
 
@@ -310,7 +385,7 @@ const clientesGetByCriteria = async (req, res = response) => {
                 break;
 
 
-                default: 
+            default:
                 clausula_where = '1 != 0';
                 break;
 
@@ -322,7 +397,7 @@ const clientesGetByCriteria = async (req, res = response) => {
         sql = `${select_query} ${clausula_where}
                 ${order_by}`;
 
-                console.log(sql);
+        console.log(sql);
 
         const { rows } = await pool.query(sql);
 
@@ -343,6 +418,7 @@ const clientesGetByCriteria = async (req, res = response) => {
 
 module.exports = {
     getClientesPaginados,
+    getClientesLimitados,
     clienteGet,
     clientesGet,
     clientesGetTotal,

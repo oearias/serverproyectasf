@@ -1,12 +1,15 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { solicitudCreditoGet, solicitudCreditosGet,
-        solicitudCreditoPost, solicitudCreditoDelete, solicitudCreditoPut, solicitudCreditoGetException, solicitudGetByCriteria, solicitudCreditoGetByClienteId, solChangeEstatusAprobadaToDelivery, solicitudCreditosGetTotal, getSolicitudesCreditoPaginados } = require('../controllers/solicitud_creditos');
+        solicitudCreditoPost, solicitudCreditoDelete, solicitudCreditoPut, solicitudCreditoGetException, solicitudGetByCriteria, solicitudCreditoGetByClienteId, solChangeEstatusAprobadaToDelivery, solicitudCreditosGetTotal, getSolicitudesCreditoPaginados, getSolicitudesParaPresupuesto, getSolicitudesCreditoPorAprobarPaginados, changeEstatusPendingToApproved } = require('../controllers/solicitud_creditos');
 const { validarCampos } = require('../middlewares/validar-campos');
 
 const router = Router();
 
 router.get('/:id', solicitudCreditoGet);
+
+//Solicitudes para presupuesto
+router.post('/presupuesto', getSolicitudesParaPresupuesto);
 
 router.get('/total/total', solicitudCreditosGetTotal);
 
@@ -19,6 +22,8 @@ router.get('/:criterio/:palabra', solicitudGetByCriteria);
 router.get('/', solicitudCreditosGet);
 
 router.post('/solicitudes_credito_list', getSolicitudesCreditoPaginados);
+
+router.post('/solicitudes_to_approve_credito_list', getSolicitudesCreditoPorAprobarPaginados);
 
 router.post('/', [
         //check('cliente_id', 'El campo es obligatorio').not().isEmpty(),
@@ -110,5 +115,7 @@ router.put('/:id', [
 router.delete('/:id', solicitudCreditoDelete);
 
 router.patch('/items', solChangeEstatusAprobadaToDelivery);
+
+router.patch('/approve_solicitudes', changeEstatusPendingToApproved);
 
 module.exports = router;

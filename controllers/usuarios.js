@@ -1,9 +1,15 @@
 const { response } = require('express');
 const bcryptjs = require('bcryptjs');
 const pool = require('../database/connection');
+
+const { Op, Sequelize } = require('sequelize');
+
 const { queries } = require('../database/queries');
+
 const { buildPatchQuery, buildPostQuery } = require('../database/build-query');
 const mensajes = require('../helpers/messages');
+const Usuario = require('../models/usuario');
+const UserGroup = require('../models/user_group');
 
 const table = 'dbo.usuarios'
 
@@ -41,18 +47,79 @@ const usuariosGet = async (req, res = response) => {
 
     } catch (error) {
 
+        console.log(error);
+
         res.status(500).json({
             msg: mensajes.errorInterno,
         })
     }
 }
 
+const getUsuariosPaginados = async (req, res = response) => {
+
+    try {
+        const { page, limit, searchTerm } = req.query;
+
+        const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
+        const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
+
+        const offset = (pageNumber - 1) * limitPerPage;
+
+        const { count, rows } = await Usuario.findAndCountAll({
+            include: [{
+                model: UserGroup,
+                as: 'userGroup'
+            }],
+            where: {
+                [Op.or]: [
+                  Sequelize.literal(
+                    `LOWER(CONCAT("Usuario"."nombre", ' ', "Usuario"."apellido_paterno", ' ', "Usuario"."apellido_materno")) LIKE LOWER(:searchTerm)`
+                  ),
+                  Sequelize.literal(
+                    `LOWER("userGroup"."nombre") LIKE LOWER(:searchTerm)`
+                  )
+                ]
+              },
+            replacements: { searchTerm: `%${searchTerm}%` },
+            offset,
+            limit: limitPerPage,
+            order: [['nombre', 'ASC']]
+        });
+
+        const usuariosJSON = rows.map((usuario) => {
+
+            return {
+                id: usuario.id,
+                nombre: usuario.nombre,
+                nombre_completo: usuario.getNombreCompleto(),
+                user_group_nombre: usuario.userGroup.nombre,
+            }
+        })
+
+
+        const totalElements = count;
+        const totalPages = Math.ceil(totalElements / limitPerPage);
+
+        res.status(200).json({
+            usuariosJSON,
+            totalPages,
+            currentPage: pageNumber
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        });
+    }
+};
+
 const usuarioPost = async (req, res = response) => {
 
     try {
 
         req.body.created_at = new Date().toISOString();
-        const { password, nombre, apellido_paterno, apellido_materno, usuario, email, role_id, created_at } = req.body;
+        const { password, nombre, apellido_paterno, apellido_materno, 
+            usuario, email, user_group_id, created_at } = req.body;
 
 
         //Encriptamos el password
@@ -67,7 +134,8 @@ const usuarioPost = async (req, res = response) => {
             usuario: usuario,
             email: email,
             created_at: created_at,
-            role_id: role_id
+            //role_id: role_id
+            user_group_id: user_group_id
         }
 
         let consulta = buildPostQuery(table, user);
@@ -263,6 +331,7 @@ const usuarioChangePassword = async (req, res = response) => {
 module.exports = {
     usuarioGet,
     usuariosGet,
+    getUsuariosPaginados,
     usuarioPost,
     usuarioPut,
     usuarioDelete,

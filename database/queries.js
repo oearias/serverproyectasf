@@ -523,20 +523,30 @@ const queries = {
 
     getUsuarios:        `SELECT a.id, a.nombre, a.apellido_paterno, a.apellido_materno, a.email,
                         TRIM(a.nombre||' '||a.apellido_paterno||' '||COALESCE(a.apellido_materno,'')) as nombre_completo,
-                        b.nombre as role_nombre
+                        b.nombre as role_nombre,
+                        c.nombre as user_group_nombre
                         FROM dbo.usuarios a 
                         LEFT JOIN
                         dbo.roles b
                         on a.role_id = b.id
+                        LEFT JOIN
+                        dbo.user_group c
+                        on c.id = a.user_group_id
                         ORDER BY a.id`,
 
-    getUsuario:         `SELECT a.id, a.nombre, a.apellido_paterno, a.apellido_materno, a.email, a.usuario,
+    getUsuario:         `
+                        SELECT a.id, a.nombre, a.apellido_paterno, a.apellido_materno, a.email, a.usuario,
                         TRIM(a.nombre||' '||a.apellido_paterno||' '||COALESCE(a.apellido_materno,'')) as nombre_completo,
-                        b.id as role_id, b.nombre as role_nombre
+                        b.id as role_id, a.user_group_id, 
+                        b.nombre as role_nombre,
+                        c.nombre as user_group_nombre
                         FROM dbo.usuarios a 
                         LEFT JOIN
                         dbo.roles b
                         on a.role_id = b.id
+                        LEFT JOIN
+                        dbo.user_group c
+                        on c.id = a.user_group_id
                         WHERE a.id = $1`,
 
     //El INSERT y el UPDATE van programados
@@ -1277,7 +1287,7 @@ const queries = {
                                         TO_CHAR(a.fecha_fin_prog, 'DD-MM-YYYY') as fecha_fin,
                                         b.nombre||' '||b.apellido_paterno||' '||b.apellido_materno as nombre_completo,
                                         b.rfc, b.curp, b.telefono, b.email,
-                                        EXTRACT (DAY FROM b.fecha_nacimiento) as dia_fecha_nacimiento,
+                                        LPAD(EXTRACT (DAY FROM b.fecha_nacimiento)::text, 2, '0') as dia_fecha_nacimiento,
                                         fu_get_month_letras(b.fecha_nacimiento) as mes_fecha_nacimiento,
                                         EXTRACT (YEAR FROM b.fecha_nacimiento) as año_fecha_nacimiento,
                                         TO_CHAR(b.fecha_nacimiento, 'DD-MM-YYYY') as fecha_nacimiento, 
@@ -1464,17 +1474,20 @@ const queries = {
 
     getReporteCartas:                   `
                                 SELECT 
+                                c.id as id,
                                 e.nombre as agencia,
                                 f.nombre as zona,
                                 c.num_contrato, 
+                                c.fecha_inicio_real,
+                                TO_CHAR(c.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
                                 TRIM(TO_CHAR(( c.monto_total / g.num_semanas),'999,999D99')) as monto_semanal,
                                 TRIM(TO_CHAR(c.monto_otorgado,'999,999D99')) as monto_otorgado, 
                                 h.nombre as estatus,
                                 d.nombre || ' ' || d.apellido_paterno || ' ' || d.apellido_materno as nombre_completo,
                                 c.monto_total as monto_total,
                                 fu_calcula_total_penalizaciones(c.id) as total_penalizaciones,
-                                fu_calcula_suma_total_pagado_by_credito_id(c.id) as total_pagado,
-                                TRIM(TO_CHAR(((fu_calcula_total_penalizaciones(c.id) + c.monto_total ) - fu_calcula_suma_total_pagado_by_credito_id(c.id) ),'999,999D99')) as total_liquidar
+                                COALESCE(fu_calcula_suma_total_pagado_by_credito_id(c.id),0) as total_pagado,
+                                TRIM(TO_CHAR(((fu_calcula_total_penalizaciones(c.id) + c.monto_total ) - COALESCE(fu_calcula_suma_total_pagado_by_credito_id(c.id),0) ),'999,999D99')) as total_liquidar
                                 FROM 
                                 dbo.semanas a
                                 inner join 
@@ -1490,7 +1503,7 @@ const queries = {
                                 on e.id = d.agencia_id
                                 INNER JOIN
                                 dbo.zonas f
-                                on f.id = e.id
+                                on f.id = e.zona_id
                                 INNER JOIN 
                                 dbo.tarifas g
                                 on g.id = c.tarifa_id

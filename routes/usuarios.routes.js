@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
-const { usuarioGet, usuariosGet, usuarioPost, usuarioPut, usuarioDelete, usuarioChangePassword, usuariosGetByCriteria } = require('../controllers/usuarios');
+const { usuarioGet, usuariosGet, usuarioPost, usuarioPut, usuarioDelete, usuarioChangePassword, usuariosGetByCriteria, getUsuariosPaginados } = require('../controllers/usuarios');
 const { validarCampos } = require('../middlewares/validar-campos');
 
 const router = Router();
@@ -8,6 +8,8 @@ const router = Router();
 router.get('/:id', usuarioGet);
 
 router.get('/', usuariosGet);
+
+router.post('/usuarios_list', getUsuariosPaginados);
 
 router.get('/:criterio/:palabra', usuariosGetByCriteria);
 

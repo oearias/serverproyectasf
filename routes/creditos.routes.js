@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { creditoGet, creditosGet, creditoPost, creditoPut, creditoDelete, 
         amortizacionGet, printContrato, printAmortizacion, printAllDoc, printTarjetaPagos, amortizacionPost, 
-        setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete, creditoGetByCriteria, printContratosMasivos, printCreditos, creditosGetOptimized, creditosGetTotal, get_creditos_paginados, getCreditosPaginados, getCreditosLimitados, getCreditoOptimizado, getCreditosByClienteId, getCreditosInversionPositivaPaginados, getCreditosLimitadosInversionPositiva, printReporteCartas} = require('../controllers/creditos');
+        setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete, creditoGetByCriteria, printContratosMasivos, printCreditos, creditosGetOptimized, creditosGetTotal, get_creditos_paginados, getCreditosPaginados, getCreditosLimitados, getCreditoOptimizado, getCreditosByClienteId, getCreditosInversionPositivaPaginados, getCreditosLimitadosInversionPositiva, printReporteCartas, getCreditosProgramacionEntregaPaginados} = require('../controllers/creditos');
 const { createCreditosMasivos } = require('../controllers/solicitud_creditos');
 const { validarCampos } = require('../middlewares/validar-campos');
 
@@ -21,7 +21,10 @@ router.post('/creditos_list_limit', getCreditosLimitados);
 router.post('/creditos_cliente', getCreditosByClienteId);
 
 router.post('/creditos_list/inversion_positiva', getCreditosInversionPositivaPaginados);
+
 router.post('/creditos_list_limit/inversion_positiva', getCreditosLimitadosInversionPositiva);
+
+router.post('/creditos_list/programacion_entrega', getCreditosProgramacionEntregaPaginados);
 
 router.get('/total/total', creditosGetTotal);
 

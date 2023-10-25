@@ -69,9 +69,12 @@
                             <th class="text-center">No. Contrato</th>
                             <th class="text-center">Nombre</th>
                             <th class="text-center">Tarifa <br>semanal</th>
-                            <th class="text-center">Monto</th>
                             <th class="text-center">Adeudo para liquidar</th>
+                            <th class="text-center">Fecha Final de Contrato</th>
+                            <th class="text-center">Último pago</th>
+                            <th class="text-center">Semanas Atraso</th>
                             <th class="text-center">Estatus</th>
+                            <th class="text-center">Acción correspondiente</th>
 
                         </tr>
                     </thead>
@@ -86,7 +89,7 @@
                                 {{this.agencia}}
                             </td>
 
-                            <td class="text-center align-middle" >
+                            <td class="text-center align-middle">
                                 {{this.num_contrato}}
                             </td>
 
@@ -99,15 +102,28 @@
                             </td>
 
                             <td class="text-end align-middle">
-                                ${{this.monto_otorgado}}
-                            </td>
-
-                            <td class="text-end align-middle">
                                 ${{this.total_liquidar}}
                             </td>
 
+                            <td class="text-end align-middle">
+                                {{this.fecha_fin_prog}}
+                            </td>
+
+                            <td class="text-end align-middle">
+                                {{this.fecha_ultimo_pago}}
+                            </td>
+
+                            <td class="text-end align-middle">
+                                {{this.semanas_atraso}}
+                            </td>
+
+
                             <td class="text-center align-middle">
                                 {{this.estatus}}
+                            </td>
+
+                            <td class="text-end align-middle">
+                                {{this.accion_correspondiente}}
                             </td>
 
                         </tr>
