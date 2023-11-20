@@ -143,7 +143,7 @@ const queries = {
                             a.id, 
                             k.clave ||'-'||b.num_cliente as num_cliente,
                             b.apellido_paterno, b.apellido_materno, b.nombre, 
-                            b.nombre||' '||b.apellido_paterno||' '||b.apellido_materno as nombre_completo,  
+                            b.nombre||' '||b.apellido_paterno||' '||COALESCE(b.apellido_materno,'') as nombre_completo,  
                             b.fecha_nacimiento,
                             b.sexo, b.telefono, b.rfc, b.curp, b.email,
                             c.id as estatus_sol_id, c.nombre as estatus, 
@@ -1261,7 +1261,8 @@ const queries = {
                                         a.monto_otorgado,
                                         a.monto_total,
                                         c.num_semanas,
-                                        a.inversion_positiva
+                                        a.inversion_positiva,
+                                        a.aux_num_penalizaciones
                                         FROM 
                                         dbo.creditos a
                                         INNER JOIN

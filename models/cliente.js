@@ -103,8 +103,19 @@ const Cliente = sequelize.define('Cliente', {
     timestamps: false
 });
 
+// Cliente.prototype.getNombreCompleto = function () {
+//     return `${this.nombre} ${this.apellido_paterno} ${this.apellido_materno}`;
+// }
+
 Cliente.prototype.getNombreCompleto = function () {
-    return `${this.nombre} ${this.apellido_paterno} ${this.apellido_materno}`;
+    let nombreCompleto = this.nombre || ''; // Inicializa con el nombre
+    if (this.apellido_paterno) {
+        nombreCompleto += ' ' + this.apellido_paterno;
+    }
+    if (this.apellido_materno) {
+        nombreCompleto += ' ' + this.apellido_materno;
+    }
+    return nombreCompleto;
 }
 
 Cliente.belongsTo(TipoCliente, { as: 'tipoCliente', foreignKey: 'tipo_cliente_id' });

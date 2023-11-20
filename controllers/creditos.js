@@ -200,8 +200,6 @@ const getCreditosPaginados = async (req, res = response) => {
 
     try {
 
-        console.log('entramos al controller creditos');
-
         const { page, limit, searchTerm } = req.query;
 
         const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
@@ -438,7 +436,7 @@ const getCreditosProgramacionEntregaPaginados = async (req, res = response) => {
                     },
                     {
                         preaprobado: {
-                            [Op.eq]:1
+                            [Op.eq]: 1
                         }
                     }
                 ]
@@ -550,7 +548,7 @@ const getCreditosMarcarEntregados = async (req, res = response) => {
                     },
                     {
                         preaprobado: {
-                            [Op.eq]:1
+                            [Op.eq]: 1
                         }
                     }
                 ]
@@ -654,7 +652,58 @@ const getCreditosByClienteId = async (req, res = response) => {
 
 
 
-        const creditosJSON = rows.map((credito) => {
+        const creditosJSON = await Promise.all(rows.map(async (credito) => {
+
+            const ultimoPago = await Pago.findOne({
+                where: {
+                    credito_id: credito.id,
+                    // monto: {
+                    //     [Op.gte]: credito.monto_semanal,
+                    // },
+                },
+                order: [['fecha', 'DESC']],
+                limit: 1
+            });
+
+            if (ultimoPago) {
+
+                console.log('entra al ultimo pago');
+
+                //Este fue el ultimo pago, pero debo de saber si fue completo
+
+                fechaOriginal = ultimoPago.fecha;
+
+                const partesFecha = fechaOriginal.split('-'); // Dividimos la fecha en año, mes y día
+                fechaFormateada = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]}`;
+
+
+
+            } else {
+
+                fechaFormateada = '';
+
+            }
+
+            //Penalizaciones
+            const num_penalizaciones = await Credito.sequelize.query(
+                'SELECT fu_calcula_dias_penalizaciones(:param1) as penalizaciones',
+                {
+                    replacements: { param1: credito.id },
+                    type: Sequelize.QueryTypes.SELECT,
+                }
+            );
+
+            const total_penalizaciones = await Credito.sequelize.query(
+                'SELECT fu_calcula_total_penalizaciones(:param1) as penalizaciones',
+                {
+                    replacements: { param1: credito.id },
+                    type: Sequelize.QueryTypes.SELECT,
+                }
+            );
+
+            //FIXME: Verificar si la fecha fin está disponible en la base rosa
+            console.log(credito);
+
             return {
                 id: credito.id,
                 num_contrato: credito.num_contrato,
@@ -662,15 +711,18 @@ const getCreditosByClienteId = async (req, res = response) => {
                 zona: credito.cliente.agencia.zona.nombre,
                 agencia: credito.cliente.agencia.nombre,
                 monto_otorgado: credito.monto_otorgado,
+                fecha_inicio_real: credito.fecha_inicio_real,
+                fecha_fin_prog: credito.fecha_fin_prog,
                 estatus_contrato: credito.tipoEstatusContrato.nombre,
                 estatus_credito: credito.tipoEstatusCredito.nombre,
                 entregado: credito.entregado,
                 no_entregado: credito.no_entregado,
-                num_cheque: credito.num_cheque
+                num_cheque: credito.num_cheque,
+                fecha_ultimo_pago: fechaFormateada ? fechaFormateada : '',
+                dias_penalizaciones: num_penalizaciones[0].penalizaciones,
+                total_penalizaciones: total_penalizaciones[0].penalizaciones,
             }
-        });
-
-        console.log(creditosJSON);
+        }));
 
 
         res.status(200).json({
@@ -1741,205 +1793,201 @@ const printCreditos = async (req, res = response) => {
 
 const printReporteCartas = async (req, res = response) => {
 
-    try {
+    console.log('entramos al reporte de cartas');
 
-        const { semana_id } = req.params;
+    const { semana_id } = req.params;
 
-        const values = [semana_id];
+    const values = [semana_id];
 
-        //Iniciamos leyendo la plantilla del contrato
-        const template = fs.readFileSync('./views/template_reporte_cartas.hbs', 'utf-8');
+    //Iniciamos leyendo la plantilla del contrato
+    const template = fs.readFileSync('./views/template_reporte_cartas.hbs', 'utf-8');
 
-        // const creditos = await Credito.findAll({
-        //     include: [
-        //         {
-        //             model: Cliente,
-        //             as: 'cliente',
-        //             include: {
-        //                 model: Agencia,
-        //                 as: 'agencia',
-        //                 include: {
-        //                     model: Zona,
-        //                     as: 'zona'
-        //                 }
-        //             }
-        //         },
-        //         {
-        //             model: Tarifa,
-        //             as: 'tarifa'
-        //         },
-        //         {
-        //             model: TipoEstatusCredito,
-        //             as: 'tipoEstatusCredito'
-        //         }
-        //     ],
-        //     where: {
-        //         estatus_credito_id: {
-        //             [Op.not]: [1]
-        //         }
-        //     },
-        //     order: [
-        //         [Sequelize.literal('"cliente.agencia.zona.nombre"'), 'ASC'],
-        //         [Sequelize.literal('"cliente.agencia.nombre"'), 'ASC']
-        //     ],
-        //     limit: 200
-        // });
 
-        const { rows } = await pool.query(queries.getReporteCartas, values);
+    // const creditos = await Credito.findAll({
+    //     include: [
+    //         {
+    //             model: Cliente,
+    //             as: 'cliente',
+    //             include: {
+    //                 model: Agencia,
+    //                 as: 'agencia',
+    //                 include: {
+    //                     model: Zona,
+    //                     as: 'zona'
+    //                 }
+    //             }
+    //         },
+    //         {
+    //             model: Tarifa,
+    //             as: 'tarifa'
+    //         },
+    //         {
+    //             model: TipoEstatusCredito,
+    //             as: 'tipoEstatusCredito'
+    //         }
+    //     ],
+    //     where: {
+    //         estatus_credito_id: {
+    //             [Op.not]: [1]
+    //         }
+    //     },
+    //     order: [
+    //         [Sequelize.literal('"cliente.agencia.zona.nombre"'), 'ASC'],
+    //         [Sequelize.literal('"cliente.agencia.nombre"'), 'ASC']
+    //     ],
+    //     limit: 200
+    // });
 
-        const creditosJSON = await Promise.all( rows.map( async (credito) => {
+    const { rows } = await pool.query(queries.getReporteCartas, values);
 
-            //TODO: Validar si existe num_contrato_historico
+    const creditosJSON = await Promise.all(rows.map(async (credito) => {
 
-            const ultimoPago = await Pago.findOne({
-                where:{
-                    credito_id: credito.id,
-                    monto: {
-                        [Op.gte]: credito.monto_semanal, 
-                      },
+        //TODO: Validar si existe num_contrato_historico
+
+        const ultimoPago = await Pago.findOne({
+            where: {
+                credito_id: credito.id,
+                monto: {
+                    [Op.gte]: credito.monto_semanal,
                 },
-                order: [['fecha','DESC']],
-                limit: 1
-            });
-
-            const semanaReporte = await Semana.findOne({
-                where: {
-                    id: semana_id
-                }
-            })
-
-            let fechaOriginal = '';
-            let fechaFormateada = '';
-
-            let semanaAtraso = 0;
-            let clasificacion = '';
-
-
-
-            if(ultimoPago){
-
-                //Este fue el ultimo pago, pero debo de saber si fue completo
-
-                fechaOriginal = ultimoPago.fecha;
-                const ultimaSemanaPago = ultimoPago.weekyear
-                
-
-                console.log('La ultima semana de pago fue: ', ultimaSemanaPago);
-                console.log('La semana del reporte es: ', semanaReporte.weekyear);
-
-                semanaAtraso = semanaReporte.weekyear - ultimaSemanaPago;
-
-                console.log('LA diferencia en semanas es: ', semanaAtraso);
-
-                const partesFecha = fechaOriginal.split('-'); // Dividimos la fecha en año, mes y día
-                fechaFormateada = `${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`;
-
-            
-
-            }else{
-                fechaFormateada = '';
-
-                //Calculo la primer semana del credito
-                console.log(credito.fecha_inicio_real);
-
-                const primerSemanaCredito = await Semana.findOne({
-                    where: {
-                        fecha_inicio: {
-                            [Op.lte]: credito.fecha_inicio_real 
-                        },
-                        fecha_fin: {
-                            [Op.gte]: credito.fecha_inicio_real 
-                        }
-                    }
-                });
-
-                semanaAtraso = semanaReporte.weekyear - primerSemanaCredito.weekyear;
-
-            }
-
-            if(semanaAtraso < 0){
-                clasificacion = 'Visita/Llamada';
-            }else if (semanaAtraso > 14){
-                clasificacion = 'Extrajudicial';
-            }else{
-
-                let clasificaciones = {
-                    0: 'Visita/Llamada',
-                    1: 'Carta N-1',
-                    2: 'Carta N-1',
-                    3: 'Carta N-1',
-                    4: 'Carta N-2',
-                    5: 'Carta N-2',
-                    6: 'Carta N-2',
-                    7: 'Carta N-2',
-                    8: 'Carta N-3',
-                    9: 'Carta N-3',
-                    10: 'Carta N-3',
-                    11: 'Carta N-3',
-                    12: 'Incumplimiento',
-                    13: 'Incumplimiento',
-                    14: 'Extrajudicial'
-                };
-
-                clasificacion = clasificaciones[semanaAtraso] || 'Otro';
-
-            }
-
-            return {
-                num_contrato: credito.num_contrato,
-                zona: credito.zona,
-                agencia: credito.agencia,
-                nombre: credito.nombre_completo,
-                fecha_fin_prog: credito.fecha_fin_prog,
-                fecha_ultimo_pago: fechaFormateada ? fechaFormateada : '-',
-                monto_otorgado: credito.monto_otorgado,
-                monto_semanal: credito.monto_semanal,
-                semanas_atraso: semanaAtraso ? semanaAtraso : '',
-                estatus: credito.estatus,
-                total_pagado: credito.total_pagado,
-                total_penalizaciones: credito.total_penalizaciones,
-                monto_total: credito.monto_total,
-                total_liquidar: credito.total_liquidar,
-                accion_correspondiente: clasificacion
-            }
-
-        }));
-
-        // const creditosJSON = rows.map((credito) => {
-
-        //     //TODO: Validar si existe num_contrato_historico
-
-        //     return {
-        //         credito_id: credito.id,
-        //         num_contrato: credito.num_contrato,
-        //         zona: credito.cliente.agencia.zona.nombre,
-        //         agencia: credito.cliente.agencia.nombre,
-        //         nombre: credito.cliente.getNombreCompleto(),
-        //         monto_otorgado: credito.monto_otorgado,
-        //         monto_semanal: ( credito.monto_total / credito.tarifa.num_semanas).toFixed(2),
-        //         estatus: credito.tipoEstatusCredito.nombre
-        //     }
-
-        // });
-
-        const DOC = handlebars.compile(template);
-
-
-        //Aqui pasamos data al template hbs
-        const html = DOC({ creditosJSON });
-
-        const browser = await puppeteer.launch({
-            'args': [
-                '--no-sandbox',
-                '--disable-setuid-sandbox'
-            ]
+            },
+            order: [['fecha', 'DESC']],
+            limit: 1
         });
 
-        const page = await browser.newPage();
+        const semanaReporte = await Semana.findOne({
+            where: {
+                id: semana_id
+            }
+        })
 
-        // Configurar el tiempo de espera de la navegación
-        await page.setDefaultNavigationTimeout(0);
-        await page.setContent(html);
+        let fechaOriginal = '';
+        let fechaFormateada = '';
+
+        let semanaAtraso = 0;
+        let clasificacion = '';
+
+
+
+        if (ultimoPago) {
+
+            //Este fue el ultimo pago, pero debo de saber si fue completo
+
+            fechaOriginal = ultimoPago.fecha;
+            const ultimaSemanaPago = ultimoPago.weekyear
+
+            semanaAtraso = semanaReporte.weekyear - ultimaSemanaPago;
+
+            const partesFecha = fechaOriginal.split('-'); // Dividimos la fecha en año, mes y día
+            fechaFormateada = `${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`;
+
+
+
+        } else {
+            fechaFormateada = '';
+
+            //Calculo la primer semana del credito
+
+            const primerSemanaCredito = await Semana.findOne({
+                where: {
+                    fecha_inicio: {
+                        [Op.lte]: credito.fecha_inicio_real
+                    },
+                    fecha_fin: {
+                        [Op.gte]: credito.fecha_inicio_real
+                    }
+                }
+            });
+
+            semanaAtraso = semanaReporte.weekyear - primerSemanaCredito.weekyear;
+
+        }
+
+        if (semanaAtraso < 0) {
+            clasificacion = 'Visita/Llamada';
+        } else if (semanaAtraso > 14) {
+            clasificacion = 'Extrajudicial';
+        } else {
+
+            let clasificaciones = {
+                0: 'Visita/Llamada',
+                1: 'Carta N-1',
+                2: 'Carta N-1',
+                3: 'Carta N-1',
+                4: 'Carta N-2',
+                5: 'Carta N-2',
+                6: 'Carta N-2',
+                7: 'Carta N-2',
+                8: 'Carta N-3',
+                9: 'Carta N-3',
+                10: 'Carta N-3',
+                11: 'Carta N-3',
+                12: 'Incumplimiento',
+                13: 'Incumplimiento',
+                14: 'Extrajudicial'
+            };
+
+            clasificacion = clasificaciones[semanaAtraso] || 'Otro';
+
+        }
+
+        return {
+            num_contrato: credito.num_contrato,
+            zona: credito.zona,
+            agencia: credito.agencia,
+            nombre: credito.nombre_completo,
+            fecha_fin_prog: credito.fecha_fin_prog,
+            fecha_ultimo_pago: fechaFormateada ? fechaFormateada : '-',
+            monto_otorgado: credito.monto_otorgado,
+            monto_semanal: credito.monto_semanal,
+            semanas_atraso: semanaAtraso ? semanaAtraso : '',
+            estatus: credito.estatus,
+            total_pagado: credito.total_pagado,
+            total_penalizaciones: credito.total_penalizaciones,
+            monto_total: credito.monto_total,
+            total_liquidar: credito.total_liquidar,
+            accion_correspondiente: clasificacion
+        }
+
+    }));
+
+    // const creditosJSON = rows.map((credito) => {
+
+    //     //TODO: Validar si existe num_contrato_historico
+
+    //     return {
+    //         credito_id: credito.id,
+    //         num_contrato: credito.num_contrato,
+    //         zona: credito.cliente.agencia.zona.nombre,
+    //         agencia: credito.cliente.agencia.nombre,
+    //         nombre: credito.cliente.getNombreCompleto(),
+    //         monto_otorgado: credito.monto_otorgado,
+    //         monto_semanal: ( credito.monto_total / credito.tarifa.num_semanas).toFixed(2),
+    //         estatus: credito.tipoEstatusCredito.nombre
+    //     }
+
+    // });
+
+    const DOC = handlebars.compile(template);
+
+
+    //Aqui pasamos data al template hbs
+    const html = DOC({ creditosJSON });
+
+    const browser = await puppeteer.launch({
+        'args': [
+            '--no-sandbox',
+            '--disable-setuid-sandbox'
+        ]
+    });
+
+    const page = await browser.newPage();
+
+    // Configurar el tiempo de espera de la navegación
+    await page.setDefaultNavigationTimeout(50000);
+    await page.setContent(html);
+
+    try {
 
         const pdf = await page.pdf({
             format: 'letter',
@@ -1963,11 +2011,14 @@ const printReporteCartas = async (req, res = response) => {
 
         return res.send(buffer);
 
-    } catch (error) {
+    } catch (pdfError) {
 
-        console.log(error);
+        console.log('Error al generar el PDF:', pdfError);
+        await browser.close();
 
-        res.json(error.message);
+        res.status(500).json({
+            error: 'Error al generar el PDF'
+        });
     }
 
 }

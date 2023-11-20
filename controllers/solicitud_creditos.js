@@ -723,6 +723,7 @@ const createCreditosMasivos = async (req, res = response) => {
 }
 
 const getSolicitudesParaPresupuesto = async (req, res = response) => {
+    
     try {
         
         const { rows } = await SolicitudCredito.findAndCountAll({
@@ -755,11 +756,9 @@ const getSolicitudesParaPresupuesto = async (req, res = response) => {
                 }
             });
 
-            console.log(count);
-
             let cn_r = '';
 
-            if (count > 1) {
+            if (count >= 1) {
                 cn_r = 'Renovación'
             } else {
                 cn_r = 'CN'

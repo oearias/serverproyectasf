@@ -19,6 +19,9 @@ const generateAmortizacion = async (result = []) => {
         const {fu_get_cliente_cumplido} = cliente_cump.rows[0];
         const cliente_cumplido = fu_get_cliente_cumplido;
 
+        //Penalizaciones traidas de la base de Israel
+        const penalizaciones_auxiliares = result[0]['aux_num_penalizaciones'];
+
 
         //TOTALES
         let penalizacion_total = 0;
@@ -40,7 +43,7 @@ const generateAmortizacion = async (result = []) => {
         `);
 
         if (rows.length) {
-            console.log('Ya terminó el man');
+            console.log('Ya terminó de pagar');
             fecha_ultimo_pago = rows[0]['fecha_finalizacion'];
             //fechaToCompare = new Date(rows[0]['fecha_finalizacion']);
             fechaToCompare = new Date();
@@ -60,7 +63,7 @@ const generateAmortizacion = async (result = []) => {
         //Esto evita que se traslapen las fechas
         let fechaWeekyear = new Date(fecha_inicial);
 
-        console.log('FEcha de la semana:',fechaWeekyear);
+        console.log('Fecha de la semana:',fechaWeekyear);
 
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
         fechaFormateada = fechaWeekyear.toISOString('es-ES', options).replace(/\//g, '-').slice(0, 10);
@@ -78,10 +81,10 @@ const generateAmortizacion = async (result = []) => {
         //Fecha Formateada2 es fecha formateada mas 1 día, esto con el fin de eliminar que se traslapen las semanas
         const resultado_weekyear = await pool.query(`
         SELECT a.weekyear
-        FROM dbo.semanas a
-        WHERE '${fechaFormateada}' >= a.fecha_inicio AND '${fechaFormateada}' <= a.fecha_fin
-        AND '${fechaFormateada2}' >= a.fecha_inicio AND '${fechaFormateada2}' <= a.fecha_fin
-    `);
+            FROM dbo.semanas a
+            WHERE '${fechaFormateada}' >= a.fecha_inicio AND '${fechaFormateada}' <= a.fecha_fin
+            AND '${fechaFormateada2}' >= a.fecha_inicio AND '${fechaFormateada2}' <= a.fecha_fin
+        `);
 
 
         let semana_weekyear = 0;
@@ -432,10 +435,20 @@ const generateAmortizacion = async (result = []) => {
             //si ya se termino de pagar el credito guardamos en la base de datos
             //que datos necesitamos credito_id, num_semana, fecha, y los totales
             penalizacion_semanal = (monto_otorgado * dias_penalizacion) / 100;
+
+
+            if(penalizaciones_auxiliares === 0){
+                console.log('Segun la base de Israel no hay penalizaciones');
+                penalizacion_semanal = 0;
+                dias_penalizacion = 0;
+            }
+
             adeudo_semanal = (monto_semanal + penalizacion_semanal) - suma_monto_pagado;
 
             penalizacion_total += penalizacion_semanal;
             pagado_total += Number(suma_monto_pagado);
+
+            console.log('La penalizacion de Israel es:', penalizaciones_auxiliares);
 
             //Ultima vuelta, inversion positiva y cliente cumplido
             if (num_semana === result[0]['num_semanas']) {
@@ -528,16 +541,16 @@ const generateAmortizacion = async (result = []) => {
         //Validar que no siempre e ejecute esta consulta
 
         const consulta_pagos_tardios = await pool.query(`
-        SELECT a.id, a.folio, a.fecha as fecha_pago, a.monto as monto_pagado, 
-        a.weekyear 
-        FROM 
-        dbo.pagos a
-        INNER JOIN 
-        dbo.creditos b
-        ON a.credito_id = b.id  
-        WHERE a.credito_id = ${credito_id}
-        AND a.fecha > b.fecha_fin_prog
-        AND a.cancelado IS NULL ORDER BY a.FECHA`);
+            SELECT a.id, a.folio, a.fecha as fecha_pago, a.monto as monto_pagado, 
+            a.weekyear 
+            FROM 
+            dbo.pagos a
+            INNER JOIN 
+            dbo.creditos b
+            ON a.credito_id = b.id  
+            WHERE a.credito_id = ${credito_id}
+            AND a.fecha > b.fecha_fin_prog
+            AND a.cancelado IS NULL ORDER BY a.FECHA`);
 
         if( consulta_pagos_tardios.rows.length > 0){
             console.log('Existen pagos depués de la fecha');
@@ -573,6 +586,8 @@ const generateAmortizacion = async (result = []) => {
             }
 
             
+        }else{
+            console.log('no existen pagos despues de la fecha');
         }
 
         //Tendriamos que hacer un for hasta n

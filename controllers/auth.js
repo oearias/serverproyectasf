@@ -16,6 +16,8 @@ const login = async (req, res = response) => {
 
     try {
 
+        console.log(req.body);
+
         const { email } = req.body;
         const pass = req.body.password;
 
