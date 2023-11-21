@@ -2000,7 +2000,7 @@ const printReporteCartas = async (req, res = response) => {
     const page = await browser.newPage();
 
     // Configurar el tiempo de espera de la navegación
-    await page.setDefaultNavigationTimeout(100000);
+    await page.setDefaultNavigationTimeout(200000);
     await page.setContent(html);
 
     try {
