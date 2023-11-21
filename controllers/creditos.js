@@ -16,7 +16,7 @@ const { Op, Sequelize } = require('sequelize');
 const { queries } = require('../database/queries');
 const { buildPatchQuery, buildPostQueryReturningId } = require('../database/build-query');
 const mensajes = require('../helpers/messages');
-const { generateAmortizacion } = require('../helpers/calculateAmortizacion');
+const { generateAmortizacion, devuelve_num_dias_penalizaciones, devuelve_grand_total } = require('../helpers/calculateAmortizacion');
 const Credito = require('../models/credito');
 const Tarifa = require('../models/tarifa');
 const Colonia = require('../models/colonia');
@@ -1793,7 +1793,6 @@ const printCreditos = async (req, res = response) => {
 
 const printReporteCartas = async (req, res = response) => {
 
-    console.log('entramos al reporte de cartas');
 
     const { semana_id } = req.params;
 
@@ -1838,7 +1837,7 @@ const printReporteCartas = async (req, res = response) => {
     //     limit: 200
     // });
 
-    const { rows } = await pool.query(queries.getReporteCartas, values);
+    const { rows } = await pool.query(queries.getReporteCartasOptimizado, values);
 
     const creditosJSON = await Promise.all(rows.map(async (credito) => {
 
@@ -1931,6 +1930,19 @@ const printReporteCartas = async (req, res = response) => {
 
         }
 
+        //Aqui podriamos ejecutar los metodos para calcular el total para liquidar, el total_pago y el total de las penalizaciones
+
+        const total_pagado = await Pago.sum('monto',{
+            where: {
+                credito_id: credito.id,
+                cancelado: null
+            }
+        });
+
+        //Aqui 
+
+        const grand_total = await devuelve_grand_total(credito);
+
         return {
             num_contrato: credito.num_contrato,
             zona: credito.zona,
@@ -1942,14 +1954,18 @@ const printReporteCartas = async (req, res = response) => {
             monto_semanal: credito.monto_semanal,
             semanas_atraso: semanaAtraso ? semanaAtraso : '',
             estatus: credito.estatus,
-            total_pagado: credito.total_pagado,
+            //total_pagado: credito.total_pagado,
+            total_pagado,
             total_penalizaciones: credito.total_penalizaciones,
             monto_total: credito.monto_total,
             total_liquidar: credito.total_liquidar,
-            accion_correspondiente: clasificacion
+            accion_correspondiente: clasificacion,
+            total_liquidar: grand_total
         }
 
     }));
+
+    //console.log(creditosJSON);
 
     // const creditosJSON = rows.map((credito) => {
 

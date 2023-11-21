@@ -1512,6 +1512,47 @@ const queries = {
                                 dbo.tipo_estatus_credito h 
                                 on h.id = c.tipo_credito_id AND h.id != 1 
                                 WHERE a.id = $1
+                                ORDER BY f.id ASC, e.id ASC`,
+
+    getReporteCartasOptimizado:                   `
+                                SELECT 
+                                c.id as id,
+                                e.nombre as agencia,
+                                f.nombre as zona,
+                                c.num_contrato, 
+                                c.fecha_inicio_real,
+                                g.num_semanas,
+                                TO_CHAR(c.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
+                                TRIM(TO_CHAR(( c.monto_total / g.num_semanas),'999,999D99')) as monto_semanal,
+                                c.monto_otorgado, 
+                                h.nombre as estatus,
+                                d.nombre || ' ' || d.apellido_paterno || ' ' || d.apellido_materno as nombre_completo,
+                                c.monto_total as monto_total,
+                                COALESCE(c.aux_num_penalizaciones,0) as aux_num_penalizaciones,
+                                c.inversion_positiva
+                                FROM 
+                                dbo.semanas a
+                                inner join 
+                                dbo.balance_semanal b
+                                on a.fecha_inicio = b.fecha_inicio AND a.fecha_fin = b.fecha_fin and a.weekyear = b.weekyear
+                                inner join 
+                                dbo.creditos c
+                                on c.id = b.credito_id
+                                inner join dbo.clientes d
+                                on d.id = c.cliente_id
+                                INNER JOIN
+                                dbo.agencias e
+                                on e.id = d.agencia_id
+                                INNER JOIN
+                                dbo.zonas f
+                                on f.id = e.zona_id
+                                INNER JOIN 
+                                dbo.tarifas g
+                                on g.id = c.tarifa_id
+                                INNER JOIN
+                                dbo.tipo_estatus_credito h 
+                                on h.id = c.tipo_credito_id AND h.id != 1 
+                                WHERE a.id = $1
                                 ORDER BY f.id ASC, e.id ASC`
 }
 
