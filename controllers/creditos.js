@@ -115,7 +115,6 @@ const getCreditoOptimizado = async (req, res = response) => {
 
         const { credito_id } = req.body;
 
-
         const credito = await Credito.findOne({
 
             include: [
@@ -155,31 +154,11 @@ const getCreditoOptimizado = async (req, res = response) => {
         });
 
         if (credito) {
-            credito.tarifa_id = credito.tarifa.tarifa_id
+            credito.tarifa_id = credito.tarifa_id
             credito.tipoCredito = credito.tipoCredito
-            credito.monto_semanal = (credito.monto_total / credito.tarifa.num_semanas)
+            credito.monto_semanal = credito.tarifa.monto_semanal
             credito.cliente.dataValues.nombre_completo = `${credito.cliente.nombre} ${credito.cliente.apellido_paterno} ${credito.cliente.apellido_materno}`
         }
-
-        console.log(credito.cliente.dataValues);
-
-
-        // const creditosJSON = creditos.map((credito) => {
-        //     return {
-        //         id: credito.id,
-        //         num_contrato: credito.num_contrato,
-        //         nombre: `${credito.num_contrato} | ${credito.cliente.num_cliente} | ${credito.cliente.getNombreCompleto()}`,
-        //         nombre_completo: credito.cliente.getNombreCompleto(),
-        //         zona: credito.cliente.agencia.zona.nombre,
-        //         agencia: credito.cliente.agencia.nombre,
-        //         monto_otorgado: credito.monto_otorgado,
-        //         estatus_contrato: credito.tipoEstatusContrato.nombre,
-        //         estatus_credito: credito.tipoEstatusCredito.nombre,
-        //         entregado: credito.entregado,
-        //         no_entregado: credito.no_entregado,
-        //         num_cheque: credito.num_cheque
-        //     }
-        // })
 
 
         res.status(200).json(
@@ -225,6 +204,10 @@ const getCreditosPaginados = async (req, res = response) => {
                     }
                 },
                 {
+                    model: Tarifa,
+                    as: 'tarifa'
+                },
+                {
                     model: TipoEstatusContrato,
                     as: 'tipoEstatusContrato'
                 },
@@ -240,6 +223,7 @@ const getCreditosPaginados = async (req, res = response) => {
                     Sequelize.literal(`LOWER("cliente"."apellido_materno") LIKE LOWER('%${searchTerm}%')`),
                     Sequelize.literal(`LOWER(CONCAT("cliente"."nombre", ' ', "cliente"."apellido_paterno", ' ', "cliente"."apellido_materno")) LIKE LOWER('%${searchTerm}%')`),
                     Sequelize.literal(`"num_contrato"::TEXT LIKE '%${searchTerm}%'`),
+                    Sequelize.literal(`"num_contrato_historico"::TEXT LIKE '%${searchTerm}%'`),
                 ]
             },
             offset,
@@ -258,9 +242,10 @@ const getCreditosPaginados = async (req, res = response) => {
                 nombre_completo: credito.cliente.getNombreCompleto(),
                 zona: credito.cliente.agencia.zona.nombre,
                 agencia: credito.cliente.agencia.nombre,
-                monto_otorgado: credito.monto_otorgado,
+                monto_otorgado: credito.tarifa.monto,
                 estatus_contrato: credito.tipoEstatusContrato?.nombre,
                 estatus_credito: credito.tipoEstatusCredito?.nombre,
+                estatus_credito_id: credito.tipoEstatusCredito?.id,
                 entregado: credito.entregado,
                 no_entregado: credito.no_entregado,
                 num_cheque: credito.num_cheque
@@ -1103,8 +1088,6 @@ const creditoDelete = async (req, res = response) => {
 
 const creditoGetByCriteria = async (req, res = response) => {
 
-    console.log('entramos al criteria');
-
     const { criterio, palabra } = req.params;
 
     try {
@@ -1426,6 +1409,8 @@ const amortizacionGet = async (req, res = response) => {
         //necesitamos saber datos generales del credito, tarifa num de semanas, monto semanal y monto total.
         const resultado = await generateAmortizacion(rows);
 
+        console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>');
+
         res.status(200).json(
             resultado
         );
@@ -1441,6 +1426,7 @@ const amortizacionGet = async (req, res = response) => {
 }
 
 const amortizacionPost = async (req, res = response) => {
+
 
     try {
 
@@ -1837,7 +1823,16 @@ const printReporteCartas = async (req, res = response) => {
     //     limit: 200
     // });
 
-    const { rows } = await pool.query(queries.getReporteCartasOptimizado, values);
+    // const { rows } = await pool.query(queries.getReporteCartasOptimizado, values);
+
+    const { rows } = await pool.query(queries.getReporteCartasUNION, values);
+
+
+    const semanaReporte = await Semana.findOne({
+        where: {
+            id: semana_id
+        }
+    })
 
     const creditosJSON = await Promise.all(rows.map(async (credito) => {
 
@@ -1845,20 +1840,14 @@ const printReporteCartas = async (req, res = response) => {
 
         const ultimoPago = await Pago.findOne({
             where: {
-                credito_id: credito.id,
+                credito_id: credito.credito_id,
                 monto: {
-                    [Op.gte]: credito.monto_semanal,
+                    [Op.gte]: credito.monto_semanal, //Este fue el ultimo pago, con esta condicion me aseguro que el ultimo pago fue completo
                 },
             },
-            order: [['fecha', 'DESC']],
-            limit: 1
+            order: [['fecha', 'DESC']]
         });
 
-        const semanaReporte = await Semana.findOne({
-            where: {
-                id: semana_id
-            }
-        })
 
         let fechaOriginal = '';
         let fechaFormateada = '';
@@ -1867,15 +1856,28 @@ const printReporteCartas = async (req, res = response) => {
         let clasificacion = '';
 
 
-
         if (ultimoPago) {
 
-            //Este fue el ultimo pago, pero debo de saber si fue completo
-
             fechaOriginal = ultimoPago.fecha;
+
             const ultimaSemanaPago = ultimoPago.weekyear
 
             semanaAtraso = semanaReporte.weekyear - ultimaSemanaPago;
+
+            //FIXME: PEndiente ver como se calcula dif de semanas de atraso
+
+            if (credito.credito_id === 7003) {
+                console.log(credito.num_contrato);
+                console.log(ultimaSemanaPago);
+                console.log(ultimoPago);
+                console.log(semanaAtraso);
+            }
+
+            if (semanaReporte.weekyear < ultimaSemanaPago) {
+                semanaAtraso = 0;
+            }
+
+
 
             const partesFecha = fechaOriginal.split('-'); // Dividimos la fecha en año, mes y día
             fechaFormateada = `${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`;
@@ -1883,9 +1885,11 @@ const printReporteCartas = async (req, res = response) => {
 
 
         } else {
+
             fechaFormateada = '';
 
             //Calculo la primer semana del credito
+
 
             const primerSemanaCredito = await Semana.findOne({
                 where: {
@@ -1932,19 +1936,18 @@ const printReporteCartas = async (req, res = response) => {
 
         //Aqui podriamos ejecutar los metodos para calcular el total para liquidar, el total_pago y el total de las penalizaciones
 
-        const total_pagado = await Pago.sum('monto',{
-            where: {
-                credito_id: credito.id,
-                cancelado: null
-            }
-        });
+        //TODO: esto no lo utilizaremos por el momento
+        // const total_pagado = await Pago.sum('monto',{
+        //     where: {
+        //         credito_id: credito.credito_id,
+        //         cancelado: null
+        //     }
+        // });
 
-        //Aqui 
-
-        const grand_total = await devuelve_grand_total(credito);
 
         return {
             num_contrato: credito.num_contrato,
+            num_contrato_historico: credito.num_contrato_historico,
             zona: credito.zona,
             agencia: credito.agencia,
             nombre: credito.nombre_completo,
@@ -1953,17 +1956,18 @@ const printReporteCartas = async (req, res = response) => {
             monto_otorgado: credito.monto_otorgado,
             monto_semanal: credito.monto_semanal,
             semanas_atraso: semanaAtraso ? semanaAtraso : '',
-            estatus: credito.estatus,
+            estatus: credito.estatus_credito,
             //total_pagado: credito.total_pagado,
-            total_pagado,
+            //total_pagado,
             total_penalizaciones: credito.total_penalizaciones,
             monto_total: credito.monto_total,
             total_liquidar: credito.total_liquidar,
             accion_correspondiente: clasificacion,
-            total_liquidar: grand_total
         }
 
     }));
+
+    const cantidadRegistros = creditosJSON.length;
 
     //console.log(creditosJSON);
 
@@ -1980,15 +1984,14 @@ const printReporteCartas = async (req, res = response) => {
     //         monto_otorgado: credito.monto_otorgado,
     //         monto_semanal: ( credito.monto_total / credito.tarifa.num_semanas).toFixed(2),
     //         estatus: credito.tipoEstatusCredito.nombre
-    //     }
+    //     }s
 
     // });
 
     const DOC = handlebars.compile(template);
 
-
     //Aqui pasamos data al template hbs
-    const html = DOC({ creditosJSON });
+    const html = DOC({ creditosJSON, cantidadRegistros });
 
     const browser = await puppeteer.launch({
         'args': [

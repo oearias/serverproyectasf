@@ -8,6 +8,12 @@ const Tarifa = sequelize.define('Tarifa', {
         autoIncrement: true,
         allowNull: false
     },
+    monto: {
+        type: Sequelize.FLOAT,
+    },
+    monto_semanal: {
+        type: Sequelize.FLOAT,
+    },
     num_semanas: {
         type: Sequelize.INTEGER,
     },
@@ -16,6 +22,12 @@ const Tarifa = sequelize.define('Tarifa', {
     },
     nombre:{
         type: Sequelize.STRING
+    },
+    estatus:{
+        type: Sequelize.STRING
+    },
+    bonificaciones: {
+        type: Sequelize.BOOLEAN
     }
 }, {
     tableName: 'tarifas',

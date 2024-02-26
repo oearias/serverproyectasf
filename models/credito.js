@@ -122,6 +122,9 @@ const Credito = sequelize.define('Credito', {
     num_contrato_historico:{
         type: Sequelize.STRING
     },
+    aux_num_penalizaciones:{
+        type: Sequelize.INTEGER
+    },
 }, {
     tableName: 'creditos',
     schema: 'dbo',

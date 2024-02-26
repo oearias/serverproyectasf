@@ -163,6 +163,8 @@ const queries = {
                             a.observaciones_negocio,
                             a.tiempo_empleo_años, a.tiempo_empleo_meses, 
                             a.fecha_creacion, 
+                            a.tarifa_id,
+                            n.monto,
                             a.calle, a.num_ext, a.num_int, 
                             a.municipio, a.localidad, a.estado, 
                             f.id as colonia_id, 
@@ -210,6 +212,9 @@ const queries = {
                             LEFT JOIN 
                             dbo.solicitud_servicio m
                             on a.id = m.solicitud_credito_id
+                            LEFT JOIN 
+                            dbo.tarifas n
+                            on a.tarifa_id = n.id
                             WHERE a.id = $1`,
 
     getSolCreditoByClienteId:   `SELECT a.id,
@@ -1262,7 +1267,8 @@ const queries = {
                                         a.monto_total,
                                         c.num_semanas,
                                         a.inversion_positiva,
-                                        a.aux_num_penalizaciones
+                                        a.aux_num_penalizaciones,
+                                        c.bonificaciones
                                         FROM 
                                         dbo.creditos a
                                         INNER JOIN
@@ -1514,27 +1520,71 @@ const queries = {
                                 WHERE a.id = $1
                                 ORDER BY f.id ASC, e.id ASC`,
 
+    // getReporteCartasOptimizado:                   `
+    //                             SELECT 
+    //                             c.id as id,
+    //                             e.nombre as agencia,
+    //                             f.nombre as zona,
+    //                             c.num_contrato, 
+    //                             c.num_contrato_historico,
+    //                             c.fecha_inicio_real,
+    //                             g.num_semanas,
+    //                             TO_CHAR(c.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
+    //                             g.monto_semanal as monto_semanal,
+    //                             c.monto_otorgado, 
+    //                             h.nombre as estatus,
+    //                             d.nombre || ' ' || d.apellido_paterno || ' ' || d.apellido_materno as nombre_completo,
+    //                             (g.monto_semanal * g.num_semanas)as monto_total,
+    //                             COALESCE(c.aux_num_penalizaciones,0) as aux_num_penalizaciones,
+    //                             c.inversion_positiva
+    //                             FROM 
+    //                             dbo.semanas a
+    //                             inner join 
+    //                             dbo.balance_semanal b
+    //                             on a.fecha_inicio = b.fecha_inicio AND a.fecha_fin = b.fecha_fin and a.weekyear = b.weekyear
+    //                             inner join 
+    //                             dbo.creditos c
+    //                             on c.id = b.credito_id
+    //                             inner join dbo.clientes d
+    //                             on d.id = c.cliente_id
+    //                             INNER JOIN
+    //                             dbo.agencias e
+    //                             on e.id = d.agencia_id
+    //                             INNER JOIN
+    //                             dbo.zonas f
+    //                             on f.id = e.zona_id
+    //                             INNER JOIN 
+    //                             dbo.tarifas g
+    //                             on g.id = c.tarifa_id
+    //                             INNER JOIN
+    //                             dbo.tipo_estatus_credito h 
+    //                             on h.id = c.estatus_credito_id AND h.id != 1 
+    //                             WHERE a.id = $1 
+    //                             ORDER BY f.nombre ASC, e.nombre ASC, d.nombre
+    //                             `,
+
     getReporteCartasOptimizado:                   `
                                 SELECT 
                                 c.id as id,
                                 e.nombre as agencia,
                                 f.nombre as zona,
                                 c.num_contrato, 
+                                c.num_contrato_historico,
                                 c.fecha_inicio_real,
                                 g.num_semanas,
                                 TO_CHAR(c.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
-                                TRIM(TO_CHAR(( c.monto_total / g.num_semanas),'999,999D99')) as monto_semanal,
+                                g.monto_semanal as monto_semanal,
                                 c.monto_otorgado, 
                                 h.nombre as estatus,
                                 d.nombre || ' ' || d.apellido_paterno || ' ' || d.apellido_materno as nombre_completo,
-                                c.monto_total as monto_total,
+                                (g.monto_semanal * g.num_semanas)as monto_total,
                                 COALESCE(c.aux_num_penalizaciones,0) as aux_num_penalizaciones,
                                 c.inversion_positiva
                                 FROM 
                                 dbo.semanas a
-                                inner join 
+                                left join 
                                 dbo.balance_semanal b
-                                on a.fecha_inicio = b.fecha_inicio AND a.fecha_fin = b.fecha_fin and a.weekyear = b.weekyear
+                                on b.fecha_fin <= a.fecha_fin and a.weekyear = b.weekyear
                                 inner join 
                                 dbo.creditos c
                                 on c.id = b.credito_id
@@ -1551,9 +1601,140 @@ const queries = {
                                 on g.id = c.tarifa_id
                                 INNER JOIN
                                 dbo.tipo_estatus_credito h 
-                                on h.id = c.tipo_credito_id AND h.id != 1 
-                                WHERE a.id = $1
-                                ORDER BY f.id ASC, e.id ASC`
+                                on h.id = c.estatus_credito_id AND h.id = 2 
+                                WHERE a.id = $1 
+                                ORDER BY f.nombre ASC, e.nombre ASC, d.nombre
+                                `,
+
+    // getReporteCartasUNION: `
+
+    // (SELECT 
+    // a.id,
+    // a.fecha_inicio_real,
+    // f.nombre as zona,
+    // e.nombre as agencia,
+    // a.num_contrato,
+    // a.num_contrato_historico,
+    // g.nombre ||' '||g.apellido_paterno ||' '||g.apellido_materno as nombre_completo,
+    // h.monto_semanal,
+    // TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
+    // i.nombre as estatus
+    // FROM 
+    //     dbo.creditos a
+    // INNER JOIN 
+    //     dbo.balance_semanal b ON a.id = b.credito_id
+    // INNER JOIN 
+    //     dbo.semanas c 
+    //     ON b.fecha_inicio = c.fecha_inicio 
+    //     AND b.fecha_fin = c.fecha_fin 
+    //     AND b.weekyear = c.weekyear
+    // INNER JOIN
+    //     dbo.solicitud_credito d ON a.solicitud_credito_id = d.id
+    // INNER JOIN
+    //     dbo.agencias e ON d.agencia_id = e.id
+    // INNER JOIN
+    //     dbo.zonas f ON e.zona_id = f.id
+    // INNER JOIN
+    //     dbo.clientes g ON a.cliente_id = g.id
+    // INNER JOIN
+    //     dbo.tarifas h ON a.tarifa_id = h.id
+    // INNER JOIN
+    //     dbo.tipo_estatus_credito i ON a.estatus_credito_id = i.id
+    // WHERE 
+    //     c.id = $1
+    //     AND a.estatus_credito_id = 2)
+
+    // UNION
+
+    // (SELECT 
+    //     a.id,
+    //     a.fecha_inicio_real,
+    //     f.nombre as zona,
+    //     e.nombre as agencia,
+    //     a.num_contrato,
+    //     a.num_contrato_historico,
+    //     g.nombre ||' '||g.apellido_paterno ||' '||g.apellido_materno as nombre_completo,
+    //     h.monto_semanal,
+    //     TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
+    //     i.nombre as estatus
+    // FROM 
+    //     dbo.creditos a
+    // LEFT JOIN 
+    //     dbo.balance_semanal b ON a.id = b.credito_id
+    // LEFT JOIN 
+    //     dbo.semanas c 
+    //     ON b.fecha_inicio = c.fecha_inicio 
+    //     AND b.fecha_fin = c.fecha_fin 
+    //     AND b.weekyear = c.weekyear
+    // LEFT JOIN
+    //     dbo.solicitud_credito d ON a.solicitud_credito_id = d.id
+    // LEFT JOIN
+    //     dbo.agencias e ON d.agencia_id = e.id
+    // LEFT JOIN
+    //     dbo.zonas f ON e.zona_id = f.id
+    // LEFT JOIN
+    //     dbo.clientes g ON a.cliente_id = g.id
+    // LEFT JOIN
+    //     dbo.tarifas h ON a.tarifa_id = h.id
+    // LEFT JOIN
+    //     dbo.tipo_estatus_credito i ON a.estatus_credito_id = i.id
+    // WHERE 
+    //     c.id IS NULL 
+    //     AND a.estatus_credito_id = 2 
+    //     AND (SELECT MAX(fecha_fin) FROM dbo.balance_semanal WHERE credito_id = a.id) < (SELECT fecha_fin FROM dbo.semanas WHERE id = $1 )
+    // )
+    // ORDER BY zona, agencia, nombre_completo
+    
+    // `
+
+    getReporteCartasUNION: `
+    
+    (SELECT 
+        a.credito_id,
+        a.fecha_inicio_real,
+        a.zona,
+        a.agencia,
+        a.num_contrato,
+        a.num_contrato_historico,
+        a.nombre_completo,
+        a.monto_semanal,
+        TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
+        a.estatus_credito
+        FROM 
+            dbo.vwm_creditos a
+        INNER JOIN 
+            dbo.balance_semanal b 
+            ON a.credito_id = b.credito_id
+        INNER JOIN 
+            dbo.semanas c 
+            ON b.fecha_inicio = c.fecha_inicio 
+            AND b.fecha_fin = c.fecha_fin 
+            AND b.weekyear = c.weekyear
+        WHERE 
+            c.id = $1
+            
+    UNION
+    
+    SELECT
+        a.credito_id,
+        a.fecha_inicio_real,
+        a.zona,
+        a.agencia,
+        a.num_contrato,
+        a.num_contrato_historico,
+        a.nombre_completo,
+        a.monto_semanal,
+        TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
+        a.estatus_credito
+    FROM dbo.vwm_creditos a
+        JOIN dbo.semanas c 
+        ON a.fecha_fin_prog < c.fecha_inicio
+    WHERE c.id = $1 and a.estatus_credito = 'VIGENTE'
+
+    )
+            ORDER BY zona, agencia, nombre_completo
+    
+    `
 }
 
 module.exports = {

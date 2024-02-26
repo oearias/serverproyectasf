@@ -13,11 +13,14 @@ const Agencia = require('../models/agencia');
 const Zona = require('../models/zona');
 const TipoEstatusSolicitud = require('../models/tipo_estatus_solicitud');
 const Credito = require('../models/credito');
+const Tarifa = require('../models/tarifa');
 
 const table = 'dbo.solicitud_credito';
 const tableUSer = 'dbo.clientes';
 
 const solicitudCreditoGet = async (req, res = response) => {
+
+    console.log('get soklicitud');
 
     try {
 
@@ -106,6 +109,10 @@ const getSolicitudesCreditoPaginados = async (req, res = response) => {
                     }
                 },
                 {
+                    model: Tarifa,
+                    as: 'tarifa'
+                },
+                {
                     model: TipoEstatusSolicitud,
                     as: 'tipoEstatusSolicitud'
                 }
@@ -124,6 +131,8 @@ const getSolicitudesCreditoPaginados = async (req, res = response) => {
             order: [['id', 'ASC']]
         });
 
+        console.log(rows);
+
         const totalElements = count;
         const totalPages = Math.ceil(totalElements / limitPerPage);
 
@@ -134,6 +143,7 @@ const getSolicitudesCreditoPaginados = async (req, res = response) => {
                 nombre_completo: solicitud.cliente.getNombreCompleto(),
                 zona: solicitud.agencia.zona.nombre,
                 agencia: solicitud.agencia.nombre,
+                tarifa: solicitud.tarifa,
                 monto: solicitud.monto,
                 estatus: solicitud.tipoEstatusSolicitud.nombre,
                 estatus_sol_id: solicitud.tipoEstatusSolicitud.id
@@ -186,6 +196,10 @@ const getSolicitudesCreditoPorAprobarPaginados = async (req, res = response) => 
                     }
                 },
                 {
+                    model: Tarifa,
+                    as: 'tarifa'
+                },
+                {
                     model: TipoEstatusSolicitud,
                     as: 'tipoEstatusSolicitud'
                 }
@@ -221,11 +235,13 @@ const getSolicitudesCreditoPorAprobarPaginados = async (req, res = response) => 
                 nombre_completo: solicitud.cliente.getNombreCompleto(),
                 zona: solicitud.agencia.zona.nombre,
                 agencia: solicitud.agencia.nombre,
-                monto: solicitud.monto,
+                monto: solicitud.tarifa.monto,
                 estatus: solicitud.tipoEstatusSolicitud.nombre,
                 estatus_sol_id: solicitud.tipoEstatusSolicitud.id
             }
         });
+
+        console.log(solicitudesJSON);
 
 
         res.status(200).json({
@@ -267,6 +283,8 @@ const solicitudCreditoPost = async (req, res = response) => {
     try {
 
         req.body.fecha_creacion = new Date().toISOString();
+
+        console.log(req.body);
 
         //preguntamos si ya existe el cliente_id, sino existe lo creamos
         if (!req.body.cliente_id) {
@@ -319,6 +337,8 @@ const solicitudCreditoPost = async (req, res = response) => {
 
         //Consulta del insert solicitud
         let consulta = buildPostQuery(table, req.body);
+
+        console.log(consulta);
 
         const result = await pool.query(consulta);
 
@@ -661,7 +681,7 @@ const changeEstatusPendingToApproved = async (req, res = response) => {
 
         const solicitud_founded = await SolicitudCredito.findByPk(id);
 
-        if(!solicitud_founded){
+        if (!solicitud_founded) {
             res.status(500).json({
                 msg: mensajes.errorInterno
             })
@@ -704,6 +724,7 @@ const createCreditosMasivos = async (req, res = response) => {
 
         for (const id of solIds) {
 
+            //Creamos los créditos preaprobados, aqui colocamos el monto total
             const result = await pool.query(`CALL pr_crea_credito_preaprobado(${id})`);
 
 
@@ -723,22 +744,28 @@ const createCreditosMasivos = async (req, res = response) => {
 }
 
 const getSolicitudesParaPresupuesto = async (req, res = response) => {
-    
+
     try {
-        
+
         const { rows } = await SolicitudCredito.findAndCountAll({
-            include: [{
-                model: Cliente,
-                as: 'cliente',
-            },
-            {
-                model: Agencia,
-                as: 'agencia',
-                include: {
-                    model: Zona,
-                    as: 'zona'
+            include: [
+                {
+                    model: Cliente,
+                    as: 'cliente',
+                },
+                {
+                    model: Tarifa,
+                    as: 'tarifa',
+                },
+                {
+                    model: Agencia,
+                    as: 'agencia',
+                    include: {
+                        model: Zona,
+                        as: 'zona'
+                    }
                 }
-            }],
+            ],
             where: {
                 estatus_sol_id: 6
             }
@@ -769,7 +796,7 @@ const getSolicitudesParaPresupuesto = async (req, res = response) => {
                 fecha_solicitud: sol.fecha_creacion,
                 nombre_completo: sol.cliente.getNombreCompleto(),
                 agencia: sol.agencia,
-                monto: sol.monto,
+                monto: sol.tarifa.monto,
                 creditos_aprobados: count,
                 cn_r
             };

@@ -57,6 +57,8 @@
 
         <div class="text-center" style="font-weight: bold;">REPORTE DE CARTAS</div>
 
+        <div style="font-size: 8px;">Total de registros: {{cantidadRegistros}}</div>
+
         <div class="row mb-1">
 
             <div style="border-radius: 10px; padding-bottom: 3px;">
@@ -67,14 +69,15 @@
                             <th class="text-center">Zona</th>
                             <th class="text-center">Agencia</th>
                             <th class="text-center">No. Contrato</th>
+                            <th class="text-center">Contrato Historico</th>
                             <th class="text-center">Nombre</th>
                             <th class="text-center">Tarifa <br>semanal</th>
-                            <th class="text-center">Adeudo para liquidar</th>
-                            <th class="text-center">Fecha Final <br>sde Contrato</th>
+                            <th class="text-center">Adeudo <br>para liquidar</th>
+                            <th class="text-center">Fecha Final <br>de Contrato</th>
                             <th class="text-center">Último pago</th>
                             <th class="text-center">Semanas Atraso</th>
                             <th class="text-center">Estatus</th>
-                            <th class="text-center">Acción <br>scorrespondiente</th>
+                            <th class="text-center">Acción <br>correspondiente</th>
 
                         </tr>
                     </thead>
@@ -91,6 +94,10 @@
 
                             <td class="text-center align-middle">
                                 {{this.num_contrato}}
+                            </td>
+
+                            <td class="text-center align-middle">
+                                {{this.num_contrato_historico}}
                             </td>
 
                             <td class="align-middle" style="width: 200px;">

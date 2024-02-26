@@ -64,7 +64,6 @@ const getClientesPaginados = async (req, res = response) => {
 
         const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
         const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
-
         const offset = (pageNumber - 1) * limitPerPage;
 
         const { count, rows } = await Cliente.findAndCountAll({
@@ -179,6 +178,13 @@ const getClientesLimitados = async (req, res = response) => {
                 nombre_completo: cliente.getNombreCompleto(),
                 fullname: `${cliente.getNombreCompleto()} | ${cliente.rfc}`,
                 nombre: cliente.nombre,
+                calle: cliente.calle,
+                num_ext: cliente.num_ext,
+                num_int: cliente.num_int,
+                municipio: cliente.municipio,
+                localidad: cliente.localidad,
+                estado: cliente.estado,
+                colonia_id: cliente.colonia_id,
                 apellido_paterno: cliente.apellido_paterno,
                 apellido_materno: cliente.apellido_materno,
                 fecha_nacimiento: cliente.fecha_nacimiento,

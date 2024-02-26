@@ -37,7 +37,7 @@ router.post('/', [
         check('direccion_contacto1', 'El campo es obligatorio').not().isEmpty(),
         check('direccion_contacto2', 'El campo es obligatorio').not().isEmpty(),
         check('fecha_solicitud', 'La fecha de la solicitud es obligatorio').not().isEmpty(),
-        check('monto', 'El campo monto es obligatorio').not().isEmpty(),
+        //check('monto', 'El campo monto es obligatorio').not().isEmpty(),
         check('tipo_identificacion_id', 'El tipo de identificacion es obligatorio').not().isEmpty(),
         check('num_identificacion', 'El número de identificación es obligatorio').not().isEmpty(),
         check('ocupacion_id', 'El campo tipo de Ocupación es obligatorio').not().isEmpty(),
