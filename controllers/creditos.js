@@ -589,6 +589,8 @@ const getCreditosByClienteId = async (req, res = response) => {
 
     try {
 
+        console.log('entramos al controller');
+
         const { cliente_id } = req.body
         const { page, limit, searchTerm } = req.query;
 
@@ -687,7 +689,6 @@ const getCreditosByClienteId = async (req, res = response) => {
             );
 
             //FIXME: Verificar si la fecha fin está disponible en la base rosa
-            console.log(credito);
 
             return {
                 id: credito.id,
@@ -698,8 +699,9 @@ const getCreditosByClienteId = async (req, res = response) => {
                 monto_otorgado: credito.monto_otorgado,
                 fecha_inicio_real: credito.fecha_inicio_real,
                 fecha_fin_prog: credito.fecha_fin_prog,
-                estatus_contrato: credito.tipoEstatusContrato.nombre,
+                estatus_contrato: credito.tipoEstatusContrato?.nombre,
                 estatus_credito: credito.tipoEstatusCredito.nombre,
+                estatus_credito_id: credito.tipoEstatusCredito.id,
                 entregado: credito.entregado,
                 no_entregado: credito.no_entregado,
                 num_cheque: credito.num_cheque,

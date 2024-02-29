@@ -1699,7 +1699,7 @@ const queries = {
         a.nombre_completo,
         a.monto_semanal,
         TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
-        a.estatus_credito
+        a.estatus_credito_id
         FROM 
             dbo.vwm_creditos a
         INNER JOIN 
@@ -1725,11 +1725,11 @@ const queries = {
         a.nombre_completo,
         a.monto_semanal,
         TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
-        a.estatus_credito
+        a.estatus_credito_id
     FROM dbo.vwm_creditos a
         JOIN dbo.semanas c 
-        ON a.fecha_fin_prog < c.fecha_inicio
-    WHERE c.id = $1 and a.estatus_credito = 'VIGENTE'
+        ON a.fecha_fin_prog <= c.fecha_inicio
+    WHERE c.id = $1 and a.estatus_credito_id = 2
 
     )
             ORDER BY zona, agencia, nombre_completo
