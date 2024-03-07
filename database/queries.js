@@ -1265,6 +1265,7 @@ const queries = {
                                         a.fecha_inicio_real,
                                         a.monto_otorgado,
                                         a.monto_total,
+                                        c.monto_semanal,
                                         c.num_semanas,
                                         a.inversion_positiva,
                                         a.aux_num_penalizaciones,
@@ -1697,9 +1698,15 @@ const queries = {
         a.num_contrato,
         a.num_contrato_historico,
         a.nombre_completo,
+        a.monto as monto_otorgado,
         a.monto_semanal,
         TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
-        a.estatus_credito_id
+        a.estatus_credito_id,
+        a.estatus_credito,
+        a.monto_total,
+ 		COALESCE(a.monto_total_pagado,0) as monto_total_pagado,
+        (a.monto_total - COALESCE(a.monto_total_pagado,0) ) as monto_total_restante,
+        a.total_penalizaciones
         FROM 
             dbo.vwm_creditos a
         INNER JOIN 
@@ -1723,16 +1730,32 @@ const queries = {
         a.num_contrato,
         a.num_contrato_historico,
         a.nombre_completo,
+        a.monto as monto_otorgado,
         a.monto_semanal,
         TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
-        a.estatus_credito_id
-    FROM dbo.vwm_creditos a
-        JOIN dbo.semanas c 
+        a.estatus_credito_id,
+        a.estatus_credito,
+        a.monto_total,
+        COALESCE(a.monto_total_pagado,0) as monto_total_pagado,
+        (a.monto_total - COALESCE(a.monto_total_pagado,0) ) as monto_total_restante,
+        a.total_penalizaciones
+    FROM 
+ 		dbo.vwm_creditos a
+    JOIN 
+ 		dbo.semanas c 
         ON a.fecha_fin_prog <= c.fecha_inicio
-    WHERE c.id = $1 and a.estatus_credito_id = 2
+    WHERE c.id = $1
+ 	AND a.estatus_credito_id = 2 
 
     )
             ORDER BY zona, agencia, nombre_completo
+    
+    `,
+
+    getPenalizacionesByCreditoId: `
+    SELECT SUM(recargo_semanal) as penalizaciones
+    FROM dbo.balance_semanal 
+    WHERE credito_id = $1 AND transcurrida = 1
     
     `
 }

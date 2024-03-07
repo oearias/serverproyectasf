@@ -1,6 +1,6 @@
 
 const pool = require('../database/connection');
-const accounting = require('accounting');
+
 
 const generateAmortizacion = async (result = []) => {
 
@@ -18,7 +18,7 @@ const generateAmortizacion = async (result = []) => {
         let semanas = [];
         //const fecha_inicial = result['fecha_inicio_prog'];
         const fecha_inicial = result[0]['fecha_inicio_real'];
-        let monto_semanal = result[0]['monto_total'] / result[0]['num_semanas'];
+        let monto_semanal = result[0]['monto_semanal'];
         const inversion_positiva = result[0]['inversion_positiva'];
         const cliente_cump = await pool.query(`SELECT fu_get_cliente_cumplido(${credito_id})`);
 
@@ -613,9 +613,6 @@ const generateAmortizacion = async (result = []) => {
     }
 
 }
-
-
-
 
 
 module.exports = {

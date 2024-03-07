@@ -1403,6 +1403,7 @@ const amortizacionGet = async (req, res = response) => {
 
     try {
 
+        console.log('este sel buenasw');
         const { id } = req.params;
         const values = [id];
 
@@ -1834,7 +1835,9 @@ const printReporteCartas = async (req, res = response) => {
         where: {
             id: semana_id
         }
-    })
+    });
+
+    const fechaFinSemanaReporte = new Date(semanaReporte.fecha_fin); 
 
     const creditosJSON = await Promise.all(rows.map(async (credito) => {
 
@@ -1843,9 +1846,9 @@ const printReporteCartas = async (req, res = response) => {
         const ultimoPago = await Pago.findOne({
             where: {
                 credito_id: credito.credito_id,
-                monto: {
-                    [Op.gte]: credito.monto_semanal, //Este fue el ultimo pago, con esta condicion me aseguro que el ultimo pago fue completo
-                },
+                // monto: {
+                //     [Op.gte]: credito.monto_semanal, //Este fue el ultimo pago, con esta condicion me aseguro que el ultimo pago fue completo
+                // },
             },
             order: [['fecha', 'DESC']]
         });
@@ -1857,27 +1860,33 @@ const printReporteCartas = async (req, res = response) => {
         let semanaAtraso = 0;
         let clasificacion = '';
 
+        let diffDias;
+
 
         if (ultimoPago) {
 
+            // Obtenemos la fecha del último pago y la convertimos a un objeto Date
+            const fechaUltimoPago = new Date(ultimoPago.fecha);
+
+            // Restamos la fecha del último pago a la fecha_fin de la semana del reporte
+            const diffTiempo = fechaFinSemanaReporte.getTime() - fechaUltimoPago.getTime();
+
+            // Convertimos la diferencia de tiempo a días
+            diffDias = Math.ceil(diffTiempo / (1000 * 60 * 60 * 24));
+            
+
+            console.log('Diferencia en días:', diffDias);
+
+            /////////
+
             fechaOriginal = ultimoPago.fecha;
 
-            const ultimaSemanaPago = ultimoPago.weekyear
+            console.log(credito.credito_id);
+            console.log(diffDias);
 
-            semanaAtraso = semanaReporte.weekyear - ultimaSemanaPago;
+            
 
-            //FIXME: PEndiente ver como se calcula dif de semanas de atraso
-
-            if (credito.credito_id === 7003) {
-                console.log(credito.num_contrato);
-                console.log(ultimaSemanaPago);
-                console.log(ultimoPago);
-                console.log(semanaAtraso);
-            }
-
-            if (semanaReporte.weekyear < ultimaSemanaPago) {
-                semanaAtraso = 0;
-            }
+            semanaAtraso = Math.ceil(diffDias / 7);
 
 
 
@@ -1915,8 +1924,8 @@ const printReporteCartas = async (req, res = response) => {
         } else {
 
             let clasificaciones = {
-                0: 'Visita/Llamada',
-                1: 'Carta N-1',
+                // 0: 'Visita/Llamada',
+                1: 'Visita/Llamada',
                 2: 'Carta N-1',
                 3: 'Carta N-1',
                 4: 'Carta N-2',
@@ -1946,6 +1955,24 @@ const printReporteCartas = async (req, res = response) => {
         //     }
         // });
 
+        let total_liquidar = 0;
+
+
+        total_liquidar = ( (credito.monto_total)  - (credito.monto_total_pagado) ) + Number(credito.total_penalizaciones) ;
+
+        total_liquidar = Number(total_liquidar).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");;
+
+        console.log(`Credito_id: ${credito.credito_id}`);
+        console.log(`Total a liquidar: ${total_liquidar}`);
+        //console.log(`Monto restante: ${credito.monto_total_restante}`);
+        console.log(`Total penalizaciones: ${credito.total_penalizaciones} `);
+
+        
+
+        //En caso de tener preguntamos si tiene aux_num_penalizaciones
+
+        //Si no tiene contrato historico, preguntamos por penalizaciones normales, si tiene las calculamos mediante la funcion
+
 
         return {
             num_contrato: credito.num_contrato,
@@ -1959,11 +1986,10 @@ const printReporteCartas = async (req, res = response) => {
             monto_semanal: credito.monto_semanal,
             semanas_atraso: semanaAtraso ? semanaAtraso : '',
             estatus: credito.estatus_credito,
-            //total_pagado: credito.total_pagado,
-            //total_pagado,
+            total_pagado: credito.monto_total_pagado,
+            total_liquidar: total_liquidar,
             total_penalizaciones: credito.total_penalizaciones,
             monto_total: credito.monto_total,
-            total_liquidar: credito.total_liquidar,
             accion_correspondiente: clasificacion,
         }
 
