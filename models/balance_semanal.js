@@ -37,6 +37,9 @@ const BalanceSemanal = sequelize.define('BalanceSemanal', {
     fecha_fin_valida:{
         type: Sequelize.DATE
     },
+    monto_semanal:{
+        type: Sequelize.FLOAT
+    },
     adeudo_semanal:{
         type: Sequelize.FLOAT
     },
@@ -49,10 +52,13 @@ const BalanceSemanal = sequelize.define('BalanceSemanal', {
     transcurriendo:{
         type: Sequelize.INTEGER
     },
-    monto_pago:{
+    monto_pagado:{
         type: Sequelize.FLOAT
     },
     weekyear:{
+        type: Sequelize.INTEGER
+    },
+    num_dias_penalizacion_semanal:{
         type: Sequelize.INTEGER
     },
 }, {

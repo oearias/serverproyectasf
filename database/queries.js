@@ -1,3 +1,5 @@
+const { beginMarkedContent } = require("pdf-lib")
+
 const queries = {
 
     getTarifas:         'SELECT * FROM dbo.tarifas order by num_semanas',
@@ -1263,6 +1265,7 @@ const queries = {
                                         a.id as credito_id,
                                         a.fecha_inicio_prog,
                                         a.fecha_inicio_real,
+                                        a.fecha_fin_prog,
                                         a.monto_otorgado,
                                         a.monto_total,
                                         c.monto_semanal,
@@ -1701,6 +1704,7 @@ const queries = {
         a.monto as monto_otorgado,
         a.monto_semanal,
         TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
+        a.fecha_fin_prog as fecha_fin_prog2, 
         a.estatus_credito_id,
         a.estatus_credito,
         a.monto_total,
@@ -1718,7 +1722,7 @@ const queries = {
             AND b.fecha_fin = c.fecha_fin 
             AND b.weekyear = c.weekyear
         WHERE 
-            c.id = $1
+            c.id = $1 
             
     UNION
     
@@ -1733,6 +1737,7 @@ const queries = {
         a.monto as monto_otorgado,
         a.monto_semanal,
         TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
+        a.fecha_fin_prog as fecha_fin_prog2, 
         a.estatus_credito_id,
         a.estatus_credito,
         a.monto_total,
@@ -1763,3 +1768,4 @@ const queries = {
 module.exports = {
     queries
 }
+

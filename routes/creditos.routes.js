@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { creditoGet, creditosGet, creditoPost, creditoPut, creditoDelete, 
         amortizacionGet, printContrato, printAmortizacion, printAllDoc, printTarjetaPagos, amortizacionPost, 
-        setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete, creditoGetByCriteria, printContratosMasivos, printCreditos, creditosGetOptimized, creditosGetTotal, get_creditos_paginados, getCreditosPaginados, getCreditosLimitados, getCreditoOptimizado, getCreditosByClienteId, getCreditosInversionPositivaPaginados, getCreditosLimitadosInversionPositiva, printReporteCartas, getCreditosProgramacionEntregaPaginados} = require('../controllers/creditos');
+        setFechaCreditosMasivos, printEntregasCredito, inversionPositivaDelete, creditoGetByCriteria, printContratosMasivos, printCreditos, creditosGetOptimized, creditosGetTotal, get_creditos_paginados, getCreditosPaginados, getCreditosLimitados, getCreditoOptimizado, getCreditosByClienteId, getCreditosInversionPositivaPaginados, getCreditosLimitadosInversionPositiva, printReporteCartas, getCreditosProgramacionEntregaPaginados, printReporteCartasXLS} = require('../controllers/creditos');
 const { createCreditosMasivos } = require('../controllers/solicitud_creditos');
 const { validarCampos } = require('../middlewares/validar-campos');
 
@@ -71,6 +71,8 @@ router.post('/amortizacion/:id', amortizacionPost);
 router.post('/print/:id', printContrato);
 
 router.post('/print/reporte_cartas/:semana_id', printReporteCartas);
+
+router.post('/print/reporte_cartasXLS/:semana_id', printReporteCartasXLS);
 
 router.patch('/print/creditos',printCreditos);
 
