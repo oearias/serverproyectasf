@@ -9,14 +9,13 @@ const Modulo = require('../models/modulos');
 const UserGroup = require('../models/user_group');
 const PermisoSubmodulo = require('../models/permisos_submodulos');
 const Submodulo = require('../models/submodulo');
+const Session = require('../models/session');
+const Usuario = require('../models/usuario');
 
-const table = 'dbo.usuarios'
 
 const login = async (req, res = response) => {
 
     try {
-
-        console.log(req.body);
 
         const { email } = req.body;
         const pass = req.body.password;
@@ -117,6 +116,14 @@ const login = async (req, res = response) => {
         //Generar el JWT
         const token = await generarJWT(id);
 
+        //Creamos nuevo registro de sesion
+        const new_session = await Session.create({
+            usuario_id: user_founded.id,
+            session_in: new Date(),
+            session_last_check: new Date(),
+            session_status: 'A'
+        });
+
         const data = {
             usuario_id: id,
             nombre,
@@ -125,8 +132,16 @@ const login = async (req, res = response) => {
             apellido_materno,
             modulos,
             token,
-            role: user_founded.userGroup.nombre
+            role: user_founded.userGroup.nombre,
+            session: {
+                session_id: new_session.id,
+                usuario_id: new_session.usuario_id,
+                session_in: new_session.session_in,
+                sesion_status: new_session.session_status
+            }
         }
+
+        console.log(data);
 
         res.status(200).json(
             data
@@ -142,6 +157,57 @@ const login = async (req, res = response) => {
     }
 }
 
+const logout = async (req, res = response, next) => {
+
+    try {
+
+        console.log('si llegamos al controller de salida');
+        
+        const { usuario_id, session_id } = req.body;
+
+        console.log(req.body);
+
+        const usuario = await Usuario.findOne({
+            where:{
+                id:  usuario_id
+            }
+        });
+
+        const sesion_actual = await Session.findOne({
+            where: {
+                id: session_id
+            }
+        });
+
+        if(sesion_actual.session_status == 'A'){
+            //sesiones del usuario
+
+            sesion_actual.update({
+                session_out: new Date(),
+                session_lastcheck: new Date(),
+                session_status: 'I'
+            })
+
+        }
+
+        req.session.destroy();
+        res.json({
+            message: 'Sesión finalizada correctamente'
+        })
+
+
+
+    } catch (error) {
+
+
+        res.status(400).send(error);
+        next()
+        
+    }
+
+}
+
 module.exports = {
-    login
+    login,
+    logout
 }

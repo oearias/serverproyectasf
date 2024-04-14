@@ -48,10 +48,7 @@ const Cliente = sequelize.define('Cliente', {
     },
     email: {
         type: Sequelize.STRING,
-        unique: true,
-        validate: {
-            isEmail: true
-        }
+        allowNull: true
     },
     num_cliente_historico: {
         type: Sequelize.INTEGER,

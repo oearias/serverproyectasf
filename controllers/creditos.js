@@ -1290,14 +1290,18 @@ const printContratosMasivos = async (req, res = response) => {
             // que pueden aparecer en la tarjeta de pagos.
             //esto se establece en la query GetCredito.
 
-            const { num_contrato, num_cliente, monto_otorgado, monto_otorgado2, monto_total, monto_semanal,
+            const {
+                num_contrato, num_cliente, monto_otorgado, monto_otorgado2, monto_total, monto_semanal,
                 num_semanas, dif_num_semanas,
                 nombre, apellido_paterno, apellido_materno, monto_total_letras,
                 telefono, calle, num_ext, colonia, cp, tipo_asentamiento, zona, agencia, fecha_inicio_prog,
-                fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2 } = resultado.rows[0];
+                fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2, fecha_fin_prog_proyecta,
+                dia_fecha_fin_prog_proyecta,
+                mes_fecha_fin_prog_proyecta,
+                anio_fecha_fin_prog_proyecta
+            } = resultado.rows[0];
 
-            console.log(dif_num_semanas);
-            console.log('num_semanas:', num_semanas);
+            console.log(fecha_fin_prog_proyecta);
 
             result['contrato'] = {
                 rows
@@ -1308,6 +1312,10 @@ const printContratosMasivos = async (req, res = response) => {
                 monto_semanal,
                 num_semanas, dif_num_semanas,
                 fecha_inicio_prog, fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2,
+                fecha_fin_prog_proyecta,
+                dia_fecha_fin_prog_proyecta,
+                mes_fecha_fin_prog_proyecta,
+                anio_fecha_fin_prog_proyecta,
                 nombre, apellido_paterno, apellido_materno, telefono, calle, num_ext, tipo_asentamiento, colonia, cp,
                 zona, agencia
             };
@@ -1848,12 +1856,11 @@ const printReporteCartas = async (req, res = response) => {
         }
     });
 
-    
+
     const fechaInicioSemanaReporte = new Date(semanaReporte.fecha_inicio);
-    
+
 
     const creditosJSON = await Promise.all(rows.map(async (credito) => {
-
 
         const ultimoPago = await Pago.findOne({
             where: {
@@ -1884,28 +1891,19 @@ const printReporteCartas = async (req, res = response) => {
             // Convertimos la diferencia de tiempo a días
             diffDias = Math.ceil(diffTiempo / (1000 * 60 * 60 * 24));
 
-            console.log('Diferencia en días:', diffDias);
-
             fechaOriginal = ultimoPago.fecha;
-
-            console.log(credito.credito_id);
-            console.log(diffDias);
 
             //semanaAtraso = Math.ceil(diffDias / 7);
             semanaAtraso = Math.round(diffDias / 7);
 
             //console.log('semana atraso',semanaAtraso);
-            console.log('semana atraso2',semanaAtraso2);
+            console.log('semana atraso2', semanaAtraso2);
 
 
             const partesFecha = fechaOriginal.split('-'); // Dividimos la fecha en año, mes y día
             fechaFormateada = `${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`;
 
-
-
         } else {
-
-            
 
             fechaFormateada = '';
 
@@ -1925,14 +1923,12 @@ const printReporteCartas = async (req, res = response) => {
 
             //Debemos de ver los casos cuando apenas empezaran a pagar
 
-            console.log('no hay pagos');
-
             const fecha_inicio_real = new Date(credito.fecha_inicio_real);
             fecha_inicio_real.setUTCHours(fecha_inicio_real.getUTCHours() - 6);
 
             if (fecha_inicio_real.getTime() === new Date(fechaInicioSemanaReporte).getTime()) {
                 semanaAtraso = 0;
-            } 
+            }
 
         }
 
@@ -1967,15 +1963,6 @@ const printReporteCartas = async (req, res = response) => {
 
         let total_liquidar = 0;
 
-        // const {rows} = await pool.query(`
-        //     SELECT SUM(num_dias_penalizacion_semanal) 
-        //     FROM dbo.balance_semanal where credito_id = ${credito.credito_id}
-        //     AND fecha_inicio < '${semanaReporte.fecha_inicio}'
-        // `);
-
-        // const num_dias_penalizaciones = rows[0].sum;
-
-
         const num_dias_penalizaciones = await BalanceSemanal.sum('num_dias_penalizacion_semanal', {
             where: {
                 credito_id: credito.credito_id,
@@ -1985,19 +1972,13 @@ const printReporteCartas = async (req, res = response) => {
             }
         });
 
-
-        console.log('Fecha inicio de la semana', semanaReporte.fecha_inicio);
-
         let monto_total_penalizaciones = Number(num_dias_penalizaciones) * (Number(credito.monto_otorgado) * 0.010);
-
-        console.log('Monto total pagado:', credito.monto_total_pagado);
-
 
         total_liquidar = ((credito.monto_total) - (credito.monto_total_pagado)) + Number(monto_total_penalizaciones);
 
         total_liquidar = Number(total_liquidar).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-        
+
 
         console.log(`Credito_id: ${credito.credito_id}`);
         console.log(`Total a liquidar: ${total_liquidar}`);
@@ -2022,8 +2003,7 @@ const printReporteCartas = async (req, res = response) => {
             fecha_ultimo_pago: fechaFormateada ? fechaFormateada : '-',
             monto_otorgado: credito.monto_otorgado,
             monto_semanal: credito.monto_semanal,
-            semanas_atraso: semanaAtraso!= null ? semanaAtraso : '',
-            //estatus: credito.estatus_credito,
+            semanas_atraso: semanaAtraso != null ? semanaAtraso : '',
             estatus: fechaFinProgramadoContrato < fechaInicioSemanaReporte ? 'Vencido' : 'Vigente',
             total_pagado: credito.monto_total_pagado,
             total_liquidar: total_liquidar,
@@ -2122,12 +2102,12 @@ const printReporteCartasXLS = async (req, res, next) => {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Reporte Cartas');
 
-        
+
         // Definir encabezados de las columnas y el tipo de datos
         worksheet.columns = [
             { header: 'Zona', key: 'zona' },
             { header: 'Agencia', key: 'agencia' },
-            { header: 'Número de Contrato', key: 'num_contrato',  }, // Formato de número sin decimales
+            { header: 'Número de Contrato', key: 'num_contrato', }, // Formato de número sin decimales
             { header: 'Número de Contrato Histórico', key: 'num_contrato_historico', width: 20 },
             { header: 'Nombre', key: 'nombre', width: 30 },
             { header: 'Tarifa Semanal', key: 'monto_semanal', width: 15, style: { numFmt: '#,##0.00' } }, // Formato de número con dos decimales y separador de miles
@@ -2138,20 +2118,6 @@ const printReporteCartasXLS = async (req, res, next) => {
             { header: 'Estatus', key: 'estatus' },
             { header: 'Acción Correspondiente', key: 'accion_correspondiente' },
         ];
-        // worksheet.columns = [
-        //     { header: 'Zona', key: 'zona' },
-        //     { header: 'Agencia', key: 'agencia' },
-        //     { header: 'Número de Contrato', key: 'num_contrato' },
-        //     { header: 'Número de Contrato Histórico', key: 'num_contrato_historico' },
-        //     { header: 'Nombre', key: 'nombre' },
-        //     { header: 'Tarifa Semanal', key: 'monto_semanal' },
-        //     { header: 'Adeudo para liquidar', key: 'total_liquidar' },
-        //     { header: 'Fecha Final de Contrato', key: 'fecha_fin_prog' },
-        //     { header: 'Último Pago', key: 'fecha_ultimo_pago' },
-        //     { header: 'Semanas de Atraso', key: 'semanas_atraso' },
-        //     { header: 'Estatus', key: 'estatus' },
-        //     { header: 'Acción Correspondiente', key: 'accion_correspondiente' },
-        // ];
 
         const semanaReporte = await Semana.findOne({
             where: {
@@ -2159,7 +2125,7 @@ const printReporteCartasXLS = async (req, res, next) => {
             }
         });
 
-        const fechaFinSemanaReporte = new Date(semanaReporte.fecha_fin);
+        const fechaInicioSemanaReporte = new Date(semanaReporte.fecha_inicio);
 
         // Iterar sobre los créditos y calcular las acciones correspondientes
         await Promise.all(rows.map(async (credito) => {
@@ -2175,6 +2141,7 @@ const printReporteCartasXLS = async (req, res, next) => {
             let fechaFormateada = '';
 
             let semanaAtraso = 0;
+            let semanaAtraso2 = 0;
             let clasificacion = '';
 
             let diffDias;
@@ -2185,30 +2152,25 @@ const printReporteCartasXLS = async (req, res, next) => {
                 const fechaUltimoPago = new Date(ultimoPago.fecha);
 
                 // Restamos la fecha del último pago a la fecha_fin de la semana del reporte
-                const diffTiempo = fechaFinSemanaReporte.getTime() - fechaUltimoPago.getTime();
+                const diffTiempo = fechaInicioSemanaReporte.getTime() - fechaUltimoPago.getTime();
 
                 // Convertimos la diferencia de tiempo a días
                 diffDias = Math.ceil(diffTiempo / (1000 * 60 * 60 * 24));
 
                 fechaOriginal = ultimoPago.fecha;
 
-
-                semanaAtraso = Math.ceil(diffDias / 7);
-
+                //semanaAtraso = Math.ceil(diffDias / 7);
+                semanaAtraso = Math.round(diffDias / 7);
 
 
                 const partesFecha = fechaOriginal.split('-'); // Dividimos la fecha en año, mes y día
                 fechaFormateada = `${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`;
-
-
 
             } else {
 
                 fechaFormateada = '';
 
                 //Calculo la primer semana del credito
-
-
                 const primerSemanaCredito = await Semana.findOne({
                     where: {
                         fecha_inicio: {
@@ -2222,6 +2184,15 @@ const printReporteCartasXLS = async (req, res, next) => {
 
                 semanaAtraso = semanaReporte.weekyear - primerSemanaCredito.weekyear;
 
+                //Debemos de ver los casos cuando apenas empezaran a pagar
+
+                const fecha_inicio_real = new Date(credito.fecha_inicio_real);
+                fecha_inicio_real.setUTCHours(fecha_inicio_real.getUTCHours() - 6);
+
+                if (fecha_inicio_real.getTime() === new Date(fechaInicioSemanaReporte).getTime()) {
+                    semanaAtraso = 0;
+                }
+
             }
 
             if (semanaAtraso < 0) {
@@ -2231,7 +2202,7 @@ const printReporteCartasXLS = async (req, res, next) => {
             } else {
 
                 let clasificaciones = {
-                    // 0: 'Visita/Llamada',
+                    0: 'Visita/Llamada',
                     1: 'Visita/Llamada',
                     2: 'Carta N-1',
                     3: 'Carta N-1',
@@ -2252,7 +2223,6 @@ const printReporteCartasXLS = async (req, res, next) => {
 
             }
 
-
             let total_liquidar = 0;
 
             const num_dias_penalizaciones = await BalanceSemanal.sum('num_dias_penalizacion_semanal', {
@@ -2268,9 +2238,9 @@ const printReporteCartasXLS = async (req, res, next) => {
 
             total_liquidar = ((credito.monto_total) - (credito.monto_total_pagado)) + Number(monto_total_penalizaciones);
 
-            total_liquidar = Number(total_liquidar).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");;
+            total_liquidar = Number(total_liquidar).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-
+            const fechaFinProgramadoContrato = new Date(credito.fecha_fin_prog2);
 
             // Agregar fila al worksheet
             worksheet.addRow({
@@ -2280,16 +2250,16 @@ const printReporteCartasXLS = async (req, res, next) => {
                 agencia: credito.agencia,
                 nombre: credito.nombre_completo,
                 fecha_fin_prog: credito.fecha_fin_prog,
-                fecha_ultimo_pago: credito.fecha_ultimo_pago,
+                fecha_ultimo_pago: fechaFormateada ? fechaFormateada : '-',
                 monto_otorgado: credito.monto_otorgado,
                 monto_semanal: credito.monto_semanal,
-                semanas_atraso: semanaAtraso ? semanaAtraso : '',
-                estatus: credito.estatus_credito,
+                semanas_atraso: semanaAtraso != null ? semanaAtraso : '',
+                estatus: fechaFinProgramadoContrato < fechaInicioSemanaReporte ? 'Vencido' : 'Vigente',
                 total_pagado: credito.monto_total_pagado,
                 total_liquidar: total_liquidar,
                 total_penalizaciones: credito.total_penalizaciones,
                 monto_total: credito.monto_total,
-                accion_correspondiente: clasificacion, // Agregar la clasificación como acción correspondiente
+                accion_correspondiente: clasificacion,
             });
         }));
 

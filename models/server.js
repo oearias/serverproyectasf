@@ -2,7 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const sequelize = require('../database/config');
 const paths = require('../routes/paths.routes');
-const path = require('path')
+const path = require('path');
+const session = require('express-session');
 
 class Server {
 
@@ -39,6 +40,13 @@ class Server {
             })
 
         this.app.use(express.json());
+
+        //Sessions
+        this.app.use(session({
+            secret: 'arenita cat',
+            resave: false,
+            saveUninitialized: false
+        }));
 
         //Handlebars
         this.app.set('views', path.join(__dirname, 'views'));

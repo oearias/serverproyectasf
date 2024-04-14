@@ -23,7 +23,7 @@ const semanaGet = async (req, res = response) => {
             msg: mensajes.errorInterno
         })
     }
-}
+} 
 
 const semanasGet = async (req, res = response) => {
 

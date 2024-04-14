@@ -102,7 +102,7 @@
         <div class="text-center fw-bold">
             "ANEXO 1"
         </div>
-        <div class="text-center fw-bold">
+        <div style="text-align: center;">
             "CARATULA DE CONTRATO"
         </div>
         <div class="bg-encabezado encabezado">
@@ -144,21 +144,21 @@
                 <td class="fw-bold fs7" style="width: 200px; border-top:none; border-left: none;">Nombre:</td>
                 <td class="fs8" style="border-right: none; border-top: none;">{{contrato.rows.0.nombre_completo}}</td>
             </tr>
-            <tr>
+            {{!-- <tr>
                 <td class="fw-bold fs7" style="border-left: none;">Estado civil:</td>
                 <td style="border-right: none;">{{contrato.rows.0.nombre}}</td>
             </tr>
             <tr>
                 <td class="fw-bold fs7" style="border-left: none;">Ocupación:</td>
                 <td class="fs8" style="border-right: none;">{{contrato.rows.0.ocupacion}}</td>
-            </tr>
+            </tr> --}}
             <tr>
                 <td class="fw-bold fs7" style="border-left: none;">Lugar y fecha de nacimiento:</td>
                 <td class="fs8" style="border-right: none;">Ciudad del Carmen, Campeche
                     {{contrato.rows.0.dia_fecha_nacimiento}}-{{contrato.rows.0.mes_fecha_nacimiento}}-{{contrato.rows.0.año_fecha_nacimiento}}
                 </td>
             </tr>
-            <tr>
+            {{!-- <tr>
                 <td class="fw-bold fs7" style="border-left: none;">Registro federal de contribuyentes:</td>
                 <td class="fs8" style="border-right: none;">{{contrato.rows.0.rfc}}</td>
             </tr>
@@ -166,7 +166,7 @@
                 <td class="fw-bold fs7" style="border-left: none; border-bottom: none;">Clave única de registro de
                     población:</td>
                 <td class="fs8" style="border-bottom: none; border-right: none;">{{contrato.rows.0.curp}}</td>
-            </tr>
+            </tr> --}}
         </table>
 
         <div class="bg-encabezado encabezado fw-bold">
@@ -670,8 +670,8 @@
 
         <div class="mt-2" style="text-align: justify; font-size: 10px">
             <b>Enteradas las Partes del alcance legal de todas y cada una de las obligaciones previstas y
-                derivadas del presente contrato, es su voluntad firmarlo a los</b> __________ <b>días del mes de
-            </b> _______________________________ <b> de </b> _______________.
+                derivadas del presente contrato, es su voluntad firmarlo a los <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.dia_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> días del mes de
+            <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.mes_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> de <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.anio_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> </b>.
         </div>
 
         <div class="mt-4 row text-center" style="font-size: 10px;">
@@ -692,6 +692,7 @@
                 </div>
                 <div class="mt-4">_______________________________________________</div>
                 <div class="fw-bold">Nombre:</div>
+                <div class="fw-bold">{{credito.nombre}} {{credito.apellido_paterno}} {{credito.apellido_materno}}</div>
             </div>
         </div>
 
@@ -758,21 +759,21 @@
                 <td class="fw-bold fs7" style="width: 200px; border-top:none; border-left: none;">Nombre:</td>
                 <td class="fs8" style="border-right: none; border-top: none;">{{contrato.rows.0.nombre_completo}}</td>
             </tr>
-            <tr>
+            {{!-- <tr>
                 <td class="fw-bold fs7" style="border-left: none;">Estado civil:</td>
                 <td style="border-right: none;">{{contrato.rows.0.nombre}}</td>
             </tr>
             <tr>
                 <td class="fw-bold fs7" style="border-left: none;">Ocupación:</td>
                 <td class="fs8" style="border-right: none;">{{contrato.rows.0.ocupacion}}</td>
-            </tr>
+            </tr> --}}
             <tr>
                 <td class="fw-bold fs7" style="border-left: none;">Lugar y fecha de nacimiento:</td>
                 <td class="fs8" style="border-right: none;">Ciudad del Carmen, Campeche
                     {{contrato.rows.0.dia_fecha_nacimiento}}-{{contrato.rows.0.mes_fecha_nacimiento}}-{{contrato.rows.0.año_fecha_nacimiento}}
                 </td>
             </tr>
-            <tr>
+            {{!-- <tr>
                 <td class="fw-bold fs7" style="border-left: none;">Registro federal de contribuyentes:</td>
                 <td class="fs8" style="border-right: none;">{{contrato.rows.0.rfc}}</td>
             </tr>
@@ -780,7 +781,7 @@
                 <td class="fw-bold fs7" style="border-left: none; border-bottom: none;">Clave única de registro de
                     población:</td>
                 <td class="fs8" style="border-bottom: none; border-right: none;">{{contrato.rows.0.curp}}</td>
-            </tr>
+            </tr> --}}
         </table>
 
         <div class="bg-encabezado encabezado fw-bold">
@@ -1284,8 +1285,8 @@
 
         <div class="mt-2" style="text-align: justify; font-size: 10px">
             <b>Enteradas las Partes del alcance legal de todas y cada una de las obligaciones previstas y
-                derivadas del presente contrato, es su voluntad firmarlo a los</b> __________ <b>días del mes de
-            </b> _______________________________ <b> de </b> _______________.
+                derivadas del presente contrato, es su voluntad firmarlo a los <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.dia_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> días del mes de
+            <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.mes_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> de <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.anio_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> </b>.
         </div>
 
         <div class="mt-4 row text-center" style="font-size: 10px;">
@@ -1306,6 +1307,7 @@
                 </div>
                 <div class="mt-4">_______________________________________________</div>
                 <div class="fw-bold">Nombre:</div>
+                <div class="fw-bold">{{credito.nombre}} {{credito.apellido_paterno}} {{credito.apellido_materno}}</div>
             </div>
         </div>
 
@@ -1353,7 +1355,8 @@
                     &nbsp;{{credito.tipo_asentamiento}}&nbsp;{{credito.colonia}} C.P. {{credito.cp}}&nbsp;</span> de
                 Ciudad del Carmen,
                 Campeche,
-                el día <span></span> establecida como fecha de vencimiento, para realizar el pago de la cantidad de $
+                el día <span class="subrayado">{{credito.dia_fecha_fin_prog_proyecta}} de {{credito.mes_fecha_fin_prog_proyecta}} 
+                    de {{credito.anio_fecha_fin_prog_proyecta}}</span> establecida como fecha de vencimiento, para realizar el pago de la cantidad de $
                 <span class="subrayado">&nbsp;{{credito.monto_total}}&nbsp;</span> (<span
                     class="subrayado">&nbsp;{{credito.monto_total_letras}}&nbsp;</span>moneda nacional).
                 <br>
@@ -1362,7 +1365,7 @@
                 liquidación, causará intereses moratorios al tipo de 2% por ciento mensual, pagadero en esta Ciudad del
                 Carmen, Campeche y que será exigible de acuerdo a la jurisdicción de los tribunales de la misma
                 conjuntamente con la suerte principal. El deudor reconoce que el presente pagaré podrá ser transmitido
-                por el "Tenedor" ya sea por ndoso o cesión ordinaria o cualquier otra forma permitida por la Ley para su
+                por el "Tenedor" ya sea por endoso o cesión ordinaria o cualquier otra forma permitida por la Ley para su
                 cobro, incluyendo el caso de transmisión, endoso o cesión del mismo no se requerirá protesto previo.
             </p>
         </div>

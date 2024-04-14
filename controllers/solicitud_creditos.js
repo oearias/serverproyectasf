@@ -14,26 +14,65 @@ const Zona = require('../models/zona');
 const TipoEstatusSolicitud = require('../models/tipo_estatus_solicitud');
 const Credito = require('../models/credito');
 const Tarifa = require('../models/tarifa');
+const SolicitudEvento = require('../models/solicitud_evento');
+const SolicitudServicio = require('../models/solicitud_servicio');
+const sequelize = require('../database/config');
+const Sucursal = require('../models/sucursal');
+const Colonia = require('../models/colonia');
 
 const table = 'dbo.solicitud_credito';
 const tableUSer = 'dbo.clientes';
 
 const solicitudCreditoGet = async (req, res = response) => {
 
-    console.log('get soklicitud');
+    console.log('get solicitud');
 
     try {
 
         const { id } = req.params;
-        const values = [id];
 
-        const { rows } = await pool.query(queries.getSolCredito, values);
+        const solicitud_credito = await SolicitudCredito.findOne({
+            include: [
+                {
+                    model: Tarifa,
+                    as: 'tarifa'
+                },
+                {
+                    model: Cliente,
+                    as: 'cliente',
+                }, {
+                    model: Agencia,
+                    as: 'agencia',
+                    include: {
+                        model: Zona,
+                        as: 'zona',
+                        include: {
+                            model: Sucursal,
+                            as: 'sucursal'
+                        }
+                    }
+                },{
+                    model: SolicitudServicio,
+                    as: 'solicitudServicio'
+                },{
+                    model: Colonia,
+                    as: 'colonia'
+                }
+            ],
+            where: {
+                id: id
+            }
+        });
+
+        console.log(solicitud_credito);
 
         res.status(200).json(
-            rows[0]
+            solicitud_credito
         );
 
     } catch (error) {
+
+        console.log(error);
 
         res.status(500).json({
             msg: mensajes.errorInterno
@@ -260,6 +299,99 @@ const getSolicitudesCreditoPorAprobarPaginados = async (req, res = response) => 
     }
 }
 
+const getSolicitudesToModifyPaginados = async (req, res = response) => {
+
+    try {
+
+        const { page, limit, searchTerm } = req.query;
+
+        const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
+        const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
+
+        const offset = (pageNumber - 1) * limitPerPage;
+
+        // const searchTermLower = searchTerm.toLowerCase();
+
+        const { count, rows } = await SolicitudCredito.findAndCountAll({
+
+            include: [
+                {
+                    model: Cliente,
+                    as: 'cliente'
+                },
+                {
+                    model: Agencia,
+                    as: 'agencia',
+                    include: {
+                        model: Zona,
+                        as: 'zona'
+                    }
+                },
+                {
+                    model: Tarifa,
+                    as: 'tarifa'
+                },
+                {
+                    model: TipoEstatusSolicitud,
+                    as: 'tipoEstatusSolicitud'
+                }
+            ],
+            where: {
+                [Op.and]: [
+                    {
+                        [Sequelize.Op.or]: [
+                            Sequelize.literal(`LOWER("cliente"."nombre") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER("cliente"."apellido_paterno") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER("cliente"."apellido_materno") LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER(CONCAT("cliente"."nombre", ' ', "cliente"."apellido_paterno", ' ', "cliente"."apellido_materno")) LIKE LOWER('%${searchTerm}%')`),
+                            Sequelize.literal(`LOWER("SolicitudCredito"."id"::TEXT) LIKE LOWER('%${searchTerm}%')`)
+                        ]
+                    },
+                    {
+                        estatus_sol_id: 9 //Enviadas a modificacion
+                    }
+                ]
+            },
+            offset,
+            limit: limitPerPage,
+            order: [['id', 'ASC']]
+        });
+
+        const totalElements = count;
+        const totalPages = Math.ceil(totalElements / limitPerPage);
+
+        const solicitudesJSON = rows.map((solicitud) => {
+            return {
+                id: solicitud.id,
+                fecha_solicitud: solicitud.fecha_solicitud,
+                nombre_completo: solicitud.cliente.getNombreCompleto(),
+                zona: solicitud.agencia.zona.nombre,
+                agencia: solicitud.agencia.nombre,
+                monto: solicitud.tarifa.monto,
+                estatus: solicitud.tipoEstatusSolicitud.nombre,
+                estatus_sol_id: solicitud.tipoEstatusSolicitud.id
+            }
+        });
+
+        console.log(solicitudesJSON);
+
+
+        res.status(200).json({
+            solicitudesJSON,
+            totalPages,
+            currentPage: pageNumber
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
 const solicitudCreditosGetTotal = async (req, res = response) => {
 
     try {
@@ -278,115 +410,236 @@ const solicitudCreditosGetTotal = async (req, res = response) => {
     }
 }
 
+// const solicitudCreditoPost = async (req, res = response) => {
+
+//     try {
+
+//         const { body } = req;
+
+//         const {cliente} = body;
+
+//         req.body.fecha_creacion = new Date().toISOString();
+
+//         console.log(req.body);
+
+//         //preguntamos si ya existe el cliente_id, sino existe lo creamos
+//         if (!req.body.cliente_id) {
+
+//             // req.body.cliente.sucursal_id = req.body.sucursal_id;
+//             req.body.cliente.agencia_id = req.body.agencia_id;
+
+//             let queryInsertClient = buildPostQuery(tableUSer, req.body.cliente);
+
+//             const resultClient = await pool.query(queryInsertClient);
+
+//             if (resultClient) {
+//                 const cliente_id = resultClient.rows[0]['id'];
+//                 req.body.cliente_id = cliente_id;
+//             }
+
+//         }
+
+//         req.body.calle = req.body.cliente.calle;
+//         req.body.num_int = req.body.cliente.num_int;
+//         req.body.num_ext = req.body.cliente.num_ext;
+//         req.body.cruzamientos = req.body.cliente.cruzamientos;
+//         req.body.referencia = req.body.cliente.referencia;
+//         req.body.colonia_id = req.body.cliente.colonia_id;
+//         req.body.municipio = req.body.cliente.municipio;
+//         req.body.localidad = req.body.cliente.localidad;
+//         req.body.estado = req.body.cliente.estado;
+
+//         const servicios = {
+//             luz: req.body.servicios.luz,
+//             agua_potable: req.body.servicios.agua_potable,
+//             auto_propio: req.body.servicios.auto_propio,
+//             telefono_fijo: req.body.servicios.telefono_fijo,
+//             telefono_movil: req.body.servicios.telefono_movil,
+//             refrigerador: req.body.servicios.refrigerador,
+//             estufa: req.body.servicios.estufa,
+//             internet: req.body.servicios.internet,
+//             gas: req.body.servicios.gas,
+//             tv: req.body.servicios.tv,
+//             alumbrado_publico: req.body.servicios.alumbrado_publico
+//         }
+
+//         delete req.body.dependientes;
+//         delete req.body.cliente;
+//         delete req.body.servicios;
+//         delete req.body.id;
+//         delete req.body.sucursal_id;
+//         delete req.body.zona_id;
+//         delete req.body.observaciones;
+
+//         //Consulta del insert solicitud
+//         let consulta = buildPostQuery(table, req.body);
+
+//         console.log(consulta);
+
+//         //Creamos al cliente
+
+//         const cliente_creado = await Cliente.create({
+//             nombre: cliente.nombre,
+
+//         })
+
+//         //Creamos la solicitud
+
+//         const solicitud_credito = await SolicitudCredito.create({
+//             tarifa_id: body.tarifa_id,
+//             estatus_sol_id: body.estatus_sol_id,
+//             agencia_id: body.agencia_id
+//         })
+
+//         const result = await pool.query(consulta);
+
+//         const solicitud_id = result.rows[0]['id'];
+
+//         const values = [
+//             solicitud_id,
+//             servicios.luz,
+//             servicios.agua_potable,
+//             servicios.auto_propio,
+//             servicios.telefono_fijo,
+//             servicios.telefono_movil,
+//             servicios.refrigerador,
+//             servicios.estufa,
+//             servicios.internet,
+//             servicios.gas,
+//             servicios.tv,
+//             servicios.alumbrado_publico
+//         ]
+
+//         const { rows } = await pool.query(queries.insertServicios, values);
+
+//         if (result.rows[0]['id']) {
+
+//             res.status(201).json(
+//                 `La solicitud: ${result.rows[0]['id']} ha sido añadida correctamente.`
+//             );
+
+//         }
+
+//     } catch (error) {
+
+//         console.log(error);
+
+//         const errors = [{
+//             msg: error.constraint,
+//             param: error.detail
+//         }]
+
+//         if (errors)
+
+//             return res.status(500).json({
+//                 errors
+//             })
+
+//         res.status(500).json({
+//             msg: mensajes.errorInterno
+//         });
+//     }
+// }
+
 const solicitudCreditoPost = async (req, res = response) => {
+
+    let t;
 
     try {
 
-        req.body.fecha_creacion = new Date().toISOString();
+        const { body } = req;
+
+        const { cliente, servicios } = body;
 
         console.log(req.body);
 
+        t = await sequelize.transaction();
+
+        // Verificar si existe el cliente_id, sino existe lo creamos
+        let clienteId = body.cliente_id;
+
         //preguntamos si ya existe el cliente_id, sino existe lo creamos
-        if (!req.body.cliente_id) {
+        if (!body.cliente_id) {
 
-            // req.body.cliente.sucursal_id = req.body.sucursal_id;
-            req.body.cliente.agencia_id = req.body.agencia_id;
+            //TODO: Pendiente completar los otros datos no obligatorios
+            //Creamos al cliente si no existe
+            const cliente_creado = await Cliente.create({
+                nombre: cliente.nombre,
+                apellido_paterno: cliente.apellido_paterno,
+                apellido_materno: cliente.apellido_materno,
+                telefono: cliente.telefono,
+                sexo: cliente.sexo,
+                agencia_id: body.agencia_id,
+                fecha_nacimiento: cliente.fecha_nacimiento,
+                email: cliente.email,
+                calle: cliente.calle,
+                num_ext: cliente.num_ext,
+                colonia_id: cliente.colonia_id,
+                municipio: cliente.municipio,
+                localidad: cliente.localidad,
+                estado: cliente.estado,
+                cruzamientos: cliente.cruzamientos,
+                referencia: cliente.referencia
+            }, { transaction: t });
 
-            let queryInsertClient = buildPostQuery(tableUSer, req.body.cliente);
+            clienteId = cliente_creado.id;
 
-            const resultClient = await pool.query(queryInsertClient);
+        } else {
 
-            if (resultClient) {
-                const cliente_id = resultClient.rows[0]['id'];
-                req.body.cliente_id = cliente_id;
-            }
-
-        }
-
-        req.body.calle = req.body.cliente.calle;
-        req.body.num_int = req.body.cliente.num_int;
-        req.body.num_ext = req.body.cliente.num_ext;
-        req.body.cruzamientos = req.body.cliente.cruzamientos;
-        req.body.referencia = req.body.cliente.referencia;
-        req.body.colonia_id = req.body.cliente.colonia_id;
-        req.body.municipio = req.body.cliente.municipio;
-        req.body.localidad = req.body.cliente.localidad;
-        req.body.estado = req.body.cliente.estado;
-
-        const servicios = {
-            luz: req.body.servicios.luz,
-            agua_potable: req.body.servicios.agua_potable,
-            auto_propio: req.body.servicios.auto_propio,
-            telefono_fijo: req.body.servicios.telefono_fijo,
-            telefono_movil: req.body.servicios.telefono_movil,
-            refrigerador: req.body.servicios.refrigerador,
-            estufa: req.body.servicios.estufa,
-            internet: req.body.servicios.internet,
-            gas: req.body.servicios.gas,
-            tv: req.body.servicios.tv,
-            alumbrado_publico: req.body.servicios.alumbrado_publico
-        }
-
-        delete req.body.dependientes;
-        delete req.body.cliente;
-        delete req.body.servicios;
-        delete req.body.id;
-        delete req.body.sucursal_id;
-        delete req.body.zona_id;
-        delete req.body.observaciones;
-
-        //Consulta del insert solicitud
-        let consulta = buildPostQuery(table, req.body);
-
-        console.log(consulta);
-
-        const result = await pool.query(consulta);
-
-        const solicitud_id = result.rows[0]['id'];
-
-        const values = [
-            solicitud_id,
-            servicios.luz,
-            servicios.agua_potable,
-            servicios.auto_propio,
-            servicios.telefono_fijo,
-            servicios.telefono_movil,
-            servicios.refrigerador,
-            servicios.estufa,
-            servicios.internet,
-            servicios.gas,
-            servicios.tv,
-            servicios.alumbrado_publico
-        ]
-
-        const { rows } = await pool.query(queries.insertServicios, values);
-
-        if (result.rows[0]['id']) {
-
-            res.status(201).json(
-                `La solicitud: ${result.rows[0]['id']} ha sido añadida correctamente.`
-            );
+            clienteId = body.cliente_id;
 
         }
+
+        //TODO: Pendiente completar los otros datos no obligatorios
+        //Creamos la solicitud
+        const solicitud_credito = await SolicitudCredito.create({
+            cliente_id: clienteId,
+            fecha_solicitud: body.fecha_solicitud,
+            estatus_sol_id: body.estatus_sol_id,
+            agencia_id: body.agencia_id,
+            colonia_id: cliente.colonia_id,
+            calle: cliente.calle,
+            num_ext: cliente.num_ext,
+            num_int: cliente.num_int,
+            municipio: cliente.municipio,
+            localidad: cliente.localidad,
+            estado: cliente.estado,
+            fecha_creacion: new Date(),
+            tarifa_id: body.tarifa_id,
+        }, { transaction: t });
+
+        //Creamos los servicios
+        await SolicitudServicio.create({
+            solicitud_credito_id: solicitud_credito.id,
+            luz: servicios.luz,
+            agua_potable: servicios.agua_potable,
+            auto_propio: servicios.auto_propio,
+            telefono_fijo: servicios.telefono_fijo,
+            telefono_movil: servicios.telefono_movil,
+            refrigerador: servicios.refrigerador,
+            estufa: servicios.estufa,
+            internet: servicios.internet,
+            gas: servicios.gas,
+            tv: servicios.tv,
+            alumbrado_publico: servicios.alumbrado_publico
+        }, { transaction: t });
+
+        await t.commit();
+
+        res.status(201).json(
+            `La solicitud ha sido añadida correctamente.`
+        );
 
     } catch (error) {
 
         console.log(error);
 
-        const errors = [{
-            msg: error.constraint,
-            param: error.detail
-        }]
-
-        if (errors)
-
-            return res.status(500).json({
-                errors
-            })
+        await t.rollback();
 
         res.status(500).json({
             msg: mensajes.errorInterno
         });
+
     }
 }
 
@@ -671,9 +924,30 @@ const solChangeEstatusAprobadaToDelivery = async (req, res = response) => {
 
 const changeEstatusPendingToApproved = async (req, res = response) => {
 
-    const { id, estatus_sol_id, aprobado_user_id, monto, tarifa_id } = req.body;
+    const { body } = req;
 
-    console.log(req.body);
+    const { id, estatus_sol_id, usuario_id, monto,
+        tarifa_id, observaciones, accion } = body;
+
+    let evento, mensaje_respuesta;
+
+    if (accion == 'aprobar') {
+
+        mensaje_respuesta = 'Solicitud autorizada'
+        evento = 'AUTORIZADA'
+
+    } else if (accion == 'modificar') {
+
+        mensaje_respuesta = 'Solicitud enviada a modificación'
+        evento = 'REQUIERE MODIFICACIÓN'
+
+    } else {
+
+        mensaje_respuesta = 'Solicitud Rechazada'
+        evento = 'RECHAZADA'
+
+    }
+
 
     const fecha_presupuestal = new Date().toISOString();
 
@@ -692,17 +966,27 @@ const changeEstatusPendingToApproved = async (req, res = response) => {
             monto,
             fecha_presupuestal,
             fecha_aprobacion: fecha_presupuestal,
-            aprobado_user_id,
+            aprobado_user_id: usuario_id,
             tarifa_id
         })
 
+
+        await SolicitudEvento.create({
+            solicitud_credito_id: id,
+            observacion: observaciones,
+            evento: evento,
+            fecha: new Date(),
+            usuario_id: usuario_id
+        })
 
         //await pool.query(`CALL pr_crea_credito_preaprobado(${id})`);
 
 
         res.status(200).json(
-            'Solicitud(es) autorizada(s)'
+            `${mensaje_respuesta}`
         );
+
+
 
     } catch (error) {
 
@@ -771,8 +1055,6 @@ const getSolicitudesParaPresupuesto = async (req, res = response) => {
             }
         });
 
-        console.log(rows);
-
         // Crear un array de promesas
         const solicitudesJSONPromises = rows.map(async (sol) => {
             // Verificar si tiene créditos aprobados
@@ -819,6 +1101,7 @@ const getSolicitudesParaPresupuesto = async (req, res = response) => {
 
 module.exports = {
     getSolicitudesCreditoPaginados,
+    getSolicitudesToModifyPaginados,
     getSolicitudesCreditoPorAprobarPaginados,
     solicitudCreditoGet,
     solicitudCreditosGet,

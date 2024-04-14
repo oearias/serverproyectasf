@@ -9,6 +9,8 @@ const Agencia = require('./agencia');
 const Parentesco = require('./parentesco');
 const Tarifa = require('./tarifa');
 const Ocupacion = require('./ocupacion');
+const SolicitudServicio = require('./solicitud_servicio');
+const Colonia = require('./colonia');
 
 const SolicitudCredito = sequelize.define('SolicitudCredito', {
     id: {
@@ -219,6 +221,8 @@ SolicitudCredito.belongsTo(TipoEstatusSolicitud, {as: 'tipoEstatusSolicitud', fo
 SolicitudCredito.belongsTo(Parentesco, {as: 'parentesco1', foreignKey: 'parentesco_contacto1'});
 SolicitudCredito.belongsTo(Parentesco, {as: 'parentesco2', foreignKey: 'parentesco_contacto2'});
 SolicitudCredito.belongsTo(Tarifa, { as: 'tarifa', foreignKey: 'tarifa_id' });
+SolicitudCredito.belongsTo(Colonia, { as: 'colonia', foreignKey: 'colonia_id' });
 SolicitudCredito.belongsTo(TipoEmpleo, { as: 'tipoEmpleo', foreignKey: 'tipo_empleo_id' });
+SolicitudCredito.hasOne(SolicitudServicio, { as: 'solicitudServicio', foreignKey: 'solicitud_credito_id' });
 
 module.exports = SolicitudCredito;

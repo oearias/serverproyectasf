@@ -59,6 +59,9 @@ const Credito = sequelize.define('Credito', {
     fecha_fin_prog:{
         type: Sequelize.DATE
     },
+    fecha_fin_prog_proyecta:{
+        type: Sequelize.DATE
+    },
     fecha_entrega_prog:{
         type: Sequelize.DATE
     },

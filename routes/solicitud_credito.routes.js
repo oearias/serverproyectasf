@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { solicitudCreditoGet, solicitudCreditosGet,
-        solicitudCreditoPost, solicitudCreditoDelete, solicitudCreditoPut, solicitudCreditoGetException, solicitudGetByCriteria, solicitudCreditoGetByClienteId, solChangeEstatusAprobadaToDelivery, solicitudCreditosGetTotal, getSolicitudesCreditoPaginados, getSolicitudesParaPresupuesto, getSolicitudesCreditoPorAprobarPaginados, changeEstatusPendingToApproved } = require('../controllers/solicitud_creditos');
+        solicitudCreditoPost, solicitudCreditoDelete, solicitudCreditoPut, solicitudCreditoGetException, solicitudGetByCriteria, solicitudCreditoGetByClienteId, solChangeEstatusAprobadaToDelivery, solicitudCreditosGetTotal, getSolicitudesCreditoPaginados, getSolicitudesParaPresupuesto, getSolicitudesCreditoPorAprobarPaginados, changeEstatusPendingToApproved, getSolicitudesToModifyPaginados } = require('../controllers/solicitud_creditos');
 const { validarCampos } = require('../middlewares/validar-campos');
 
 const router = Router();
@@ -25,25 +25,27 @@ router.post('/solicitudes_credito_list', getSolicitudesCreditoPaginados);
 
 router.post('/solicitudes_to_approve_credito_list', getSolicitudesCreditoPorAprobarPaginados);
 
+router.post('/solicitudes_to_modify_list', getSolicitudesToModifyPaginados);
+
 router.post('/', [
         //check('cliente_id', 'El campo es obligatorio').not().isEmpty(),
         
         body('nombre_contacto1').toUpperCase(),
         body('nombre_contacto2').toUpperCase(),
-        check('telefono_contacto1', 'El campo es obligatorio').not().isEmpty(),
-        check('telefono_contacto1', 'El teléfono de la referencia 1 debe tener al menos 10 dígitos').isLength({ min: 10 }),
-        check('telefono_contacto2', 'El campo es obligatorio').not().isEmpty(),
-        check('telefono_contacto2', 'El teléfono de la referencia 2 debe tener al menos 10 dígitos').isLength({ min: 10 }),
-        check('direccion_contacto1', 'El campo es obligatorio').not().isEmpty(),
-        check('direccion_contacto2', 'El campo es obligatorio').not().isEmpty(),
+        // check('telefono_contacto1', 'El campo es obligatorio').not().isEmpty(),
+        // check('telefono_contacto1', 'El teléfono de la referencia 1 debe tener al menos 10 dígitos').isLength({ min: 10 }),
+        // check('telefono_contacto2', 'El campo es obligatorio').not().isEmpty(),
+        // check('telefono_contacto2', 'El teléfono de la referencia 2 debe tener al menos 10 dígitos').isLength({ min: 10 }),
+        // check('direccion_contacto1', 'El campo es obligatorio').not().isEmpty(),
+        // check('direccion_contacto2', 'El campo es obligatorio').not().isEmpty(),
         check('fecha_solicitud', 'La fecha de la solicitud es obligatorio').not().isEmpty(),
         //check('monto', 'El campo monto es obligatorio').not().isEmpty(),
-        check('tipo_identificacion_id', 'El tipo de identificacion es obligatorio').not().isEmpty(),
-        check('num_identificacion', 'El número de identificación es obligatorio').not().isEmpty(),
-        check('ocupacion_id', 'El campo tipo de Ocupación es obligatorio').not().isEmpty(),
+        // check('tipo_identificacion_id', 'El tipo de identificacion es obligatorio').not().isEmpty(),
+        // check('num_identificacion', 'El número de identificación es obligatorio').not().isEmpty(),
+        // check('ocupacion_id', 'El campo tipo de Ocupación es obligatorio').not().isEmpty(),
         check('estatus_sol_id', 'El campo es obligatorio').not().isEmpty(),
         check('agencia_id', 'El campo es obligatorio').not().isEmpty(),
-        check('ingreso_mensual', 'El ingreso mensual es obligatorio').not().isEmpty(),
+        // check('ingreso_mensual', 'El ingreso mensual es obligatorio').not().isEmpty(),
         body('vivienda_propia').toUpperCase(),
         body('cliente.nombre').toUpperCase(),
         body('cliente.apellido_paterno').toUpperCase(),

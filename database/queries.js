@@ -1119,6 +1119,10 @@ const queries = {
                         a.fecha_creacion, a.fecha_inicio_prog, a.hora_entrega, a.fecha_fin_prog, a.fecha_entrega_prog,  
                         TO_CHAR(a.fecha_entrega_prog,'DD-MM-YYYY') as fecha_entrega_prog2, 
                         TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog2, 
+                        TO_CHAR(a.fecha_fin_prog_proyecta,'DD-MM-YYYY') as fecha_fin_prog_proyecta, 
+                        LPAD(EXTRACT (DAY FROM a.fecha_fin_prog_proyecta)::text, 2, '0') as dia_fecha_fin_prog_proyecta,
+                        fu_get_month_letras(a.fecha_fin_prog_proyecta) as mes_fecha_fin_prog_proyecta,
+                        EXTRACT (YEAR FROM a.fecha_fin_prog_proyecta) as anio_fecha_fin_prog_proyecta,
                         a.fecha_inicio_real, a.fecha_fin_real, a.fecha_entrega_real,
                         h.id as fuente_financ_id, 
                         b.id tarifa_id, 
@@ -1302,6 +1306,9 @@ const queries = {
                                         fu_get_month_letras(b.fecha_nacimiento) as mes_fecha_nacimiento,
                                         EXTRACT (YEAR FROM b.fecha_nacimiento) as año_fecha_nacimiento,
                                         TO_CHAR(b.fecha_nacimiento, 'DD-MM-YYYY') as fecha_nacimiento, 
+                                        LPAD(EXTRACT (DAY FROM a.fecha_entrega_prog)::text, 2, '0') as dia_fecha_entrega_prog,
+                                        fu_get_month_letras(a.fecha_entrega_prog) as mes_fecha_entrega_prog,
+                                        EXTRACT (YEAR FROM a.fecha_entrega_prog) as anio_fecha_entrega_prog,
                                         b.calle, b.num_ext, 
                                         INITCAP(g.nombre) as tipo_asentamiento, 
                                         UPPER(f.nombre) as colonia, f.cp,
@@ -1321,7 +1328,7 @@ const queries = {
                                         INNER JOIN 
                                         dbo.solicitud_credito c
                                         on c.id = a.solicitud_credito_id
-                                        INNER JOIN dbo.ocupaciones d
+                                        LEFT JOIN dbo.ocupaciones d
                                         on c.ocupacion_id = d.id
                                         INNER JOIN
                                         dbo.tarifas e
@@ -1358,7 +1365,7 @@ const queries = {
                                         WHERE a.credito_id = $1
                                         ORDER by a.num_semana`,
 
-    getEventosByCreditoId:              `SELECT usuario, evento, observacion, fecha
+    getEventosByCreditoId:              `SELECT usuario_id, evento, observacion, fecha
                                         FROM dbo.solicitud_eventos 
                                         WHERE solicitud_credito_id = $1 ORDER BY fecha DESC`,
                                 
