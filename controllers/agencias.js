@@ -141,6 +141,9 @@ const agenciasGetByZonaId = async (req, res = response) => {
         );
 
     } catch (error) {
+
+        console.log(error);
+
         res.status(500).json({
             msg: mensajes.errorInterno,
         })

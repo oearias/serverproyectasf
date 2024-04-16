@@ -7,8 +7,6 @@ const Cliente = require('./cliente');
 const TipoEstatusCredito = require('./tipo_estatus_credito')
 const SolicitudCredito = require('./solicitud_credito');
 const TipoEstatusContrato = require('./tipo_estatus_contrato');
-const BalanceSemanal = require('./balance_semanal');
-
 
 const Credito = sequelize.define('Credito', {
     id: {
@@ -141,5 +139,118 @@ Credito.belongsTo(Cliente, { as: 'cliente', foreignKey: 'cliente_id' });
 Credito.belongsTo(SolicitudCredito, { as: 'solicitudCredito', foreignKey: 'solicitud_credito_id' });
 Credito.belongsTo(TipoEstatusContrato, { as: 'tipoEstatusContrato', foreignKey: 'estatus_contrato_id' });
 
+Credito.devuelveRegistrosReporteCartas = async (semana_id, zona_id, agencia_id) => {
+
+    try {
+
+        let query;
+
+        query = `
+    
+        (
+            SELECT 
+                a.credito_id,
+                a.fecha_inicio_real,
+                a.zona_id,
+                a.zona,
+                a.agencia_id,
+                a.agencia,
+                a.num_contrato,
+                a.num_contrato_historico,
+                a.nombre_completo,
+                a.monto as monto_otorgado,
+                a.monto_semanal,
+                TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
+                a.fecha_fin_prog as fecha_fin_prog2, 
+                a.estatus_credito_id,
+                a.estatus_credito,
+                a.monto_total,
+                COALESCE(a.monto_total_pagado,0) as monto_total_pagado,
+                (a.monto_total - COALESCE(a.monto_total_pagado,0) ) as monto_total_restante,
+                a.total_penalizaciones
+            FROM 
+                dbo.vwm_creditos a
+            INNER JOIN 
+                dbo.balance_semanal b 
+                ON a.credito_id = b.credito_id
+            INNER JOIN 
+                dbo.semanas c 
+                ON b.fecha_inicio = c.fecha_inicio 
+                AND b.fecha_fin = c.fecha_fin 
+                AND b.weekyear = c.weekyear
+            WHERE 
+                c.id = ${semana_id} ` 
+
+        if(zona_id){
+            query += `AND a.zona_id = ${zona_id} `
+        }
+
+        if(agencia_id){
+            query += `AND a.agencia_id = ${agencia_id} `
+        }
+                    
+        query +=
+
+        `UNION 
+            
+            SELECT
+                a.credito_id,
+                a.fecha_inicio_real,
+                a.zona_id,
+                a.zona,
+                a.agencia_id,
+                a.agencia,
+                a.num_contrato,
+                a.num_contrato_historico,
+                a.nombre_completo,
+                a.monto as monto_otorgado,
+                a.monto_semanal,
+                TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
+                a.fecha_fin_prog as fecha_fin_prog2, 
+                a.estatus_credito_id,
+                a.estatus_credito,
+                a.monto_total,
+                COALESCE(a.monto_total_pagado,0) as monto_total_pagado,
+                (a.monto_total - COALESCE(a.monto_total_pagado,0) ) as monto_total_restante,
+                a.total_penalizaciones
+            FROM 
+                dbo.vwm_creditos a
+            JOIN 
+                dbo.semanas c 
+                ON a.fecha_fin_prog <= c.fecha_inicio
+            WHERE c.id = ${semana_id}
+            AND a.estatus_credito_id = 2 `
+
+        if(zona_id){
+            query += `AND a.zona_id = ${zona_id} `
+        }
+
+        if(agencia_id){
+            query += `AND a.agencia_id = ${agencia_id} `
+        }
+        
+    
+    query += `)
+
+        ORDER BY zona, agencia, nombre_completo
+        
+        `;
+
+        console.log(query);
+
+        const rows = await sequelize.query(query);
+
+        return rows;
+        
+    } catch (error) {
+        
+        console.log(error);
+
+    }
+
+
+}
 
 module.exports = Credito;
+
+

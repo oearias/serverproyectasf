@@ -70,9 +70,9 @@ router.post('/amortizacion/:id', amortizacionPost);
 
 router.post('/print/:id', printContrato);
 
-router.post('/print/reporte_cartas/:semana_id', printReporteCartas);
+router.post('/print/reporte_cartas/:id', printReporteCartas);
 
-router.post('/print/reporte_cartasXLS/:semana_id', printReporteCartasXLS);
+router.post('/print/reporte_cartasXLS/:id', printReporteCartasXLS);
 
 router.patch('/print/creditos',printCreditos);
 

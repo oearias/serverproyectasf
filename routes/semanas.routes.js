@@ -1,13 +1,15 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { validarCampos } = require('../middlewares/validar-campos');
-const { semanaGet, semanasGet, semanasGetByCriteria, semanaPost, semanaDelete, semanaPut, yearPost, getSemanasPaginados } = require('../controllers/semanas');
+const { semanaGet, semanasGet, semanasGetByCriteria, semanaPost, semanaDelete, semanaPut, yearPost, getSemanasPaginados, semanaOpenedGet } = require('../controllers/semanas');
 
 const router = Router();
 
 router.get('/:id', semanaGet);
 
 router.get('/', semanasGet);
+
+router.post('/opened', semanaOpenedGet);
 
 router.post('/semanas_list', getSemanasPaginados);
 

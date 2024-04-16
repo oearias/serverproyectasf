@@ -26,6 +26,6 @@ router.put('/:id', [
 
 router.delete('/:id', agenciaDelete);
 
-router.get('/zona/:id', agenciasGetByZonaId);
+router.post('/zona/:id', agenciasGetByZonaId);
 
 module.exports = router;

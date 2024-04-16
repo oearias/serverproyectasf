@@ -1801,64 +1801,23 @@ const printCreditos = async (req, res = response) => {
 
 const printReporteCartas = async (req, res = response) => {
 
+    const { id, zona_id, agencia_id } = req.body;
 
-    const { semana_id } = req.params;
-
-    const values = [semana_id];
+    //const values = [id];
 
     //Iniciamos leyendo la plantilla del contrato
     const template = fs.readFileSync('./views/template_reporte_cartas.hbs', 'utf-8');
 
-
-    // const creditos = await Credito.findAll({
-    //     include: [
-    //         {
-    //             model: Cliente,
-    //             as: 'cliente',
-    //             include: {
-    //                 model: Agencia,
-    //                 as: 'agencia',
-    //                 include: {
-    //                     model: Zona,
-    //                     as: 'zona'
-    //                 }
-    //             }
-    //         },
-    //         {
-    //             model: Tarifa,
-    //             as: 'tarifa'
-    //         },
-    //         {
-    //             model: TipoEstatusCredito,
-    //             as: 'tipoEstatusCredito'
-    //         }
-    //     ],
-    //     where: {
-    //         estatus_credito_id: {
-    //             [Op.not]: [1]
-    //         }
-    //     },
-    //     order: [
-    //         [Sequelize.literal('"cliente.agencia.zona.nombre"'), 'ASC'],
-    //         [Sequelize.literal('"cliente.agencia.nombre"'), 'ASC']
-    //     ],
-    //     limit: 200
-    // });
-
-    // const { rows } = await pool.query(queries.getReporteCartasOptimizado, values);
-
-    const { rows } = await pool.query(queries.getReporteCartasUNION, values);
-
+    //const { rows } = await pool.query(queries.getReporteCartasUNION, values);
+    const [rows] = await Credito.devuelveRegistrosReporteCartas(id, zona_id, agencia_id);
 
     const semanaReporte = await Semana.findOne({
         where: {
-            id: semana_id
+            id: id
         }
     });
 
-
     const fechaInicioSemanaReporte = new Date(semanaReporte.fecha_inicio);
-
 
     const creditosJSON = await Promise.all(rows.map(async (credito) => {
 
@@ -1869,12 +1828,10 @@ const printReporteCartas = async (req, res = response) => {
             order: [['fecha', 'DESC']]
         });
 
-
         let fechaOriginal = '';
         let fechaFormateada = '';
 
         let semanaAtraso = 0;
-        let semanaAtraso2 = 0;
         let clasificacion = '';
 
         let diffDias;
@@ -1895,9 +1852,6 @@ const printReporteCartas = async (req, res = response) => {
 
             //semanaAtraso = Math.ceil(diffDias / 7);
             semanaAtraso = Math.round(diffDias / 7);
-
-            //console.log('semana atraso',semanaAtraso);
-            console.log('semana atraso2', semanaAtraso2);
 
 
             const partesFecha = fechaOriginal.split('-'); // Dividimos la fecha en año, mes y día
@@ -1978,19 +1932,17 @@ const printReporteCartas = async (req, res = response) => {
 
         total_liquidar = Number(total_liquidar).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-
-
-        console.log(`Credito_id: ${credito.credito_id}`);
-        console.log(`Total a liquidar: ${total_liquidar}`);
-        console.log(`Monto total de penalizaciones: ${monto_total_penalizaciones}`);
-        console.log('PENALIZACIONES;', num_dias_penalizaciones);
+        // console.log(`Credito_id: ${credito.credito_id}`);
+        // console.log(`Total a liquidar: ${total_liquidar}`);
+        // console.log(`Monto total de penalizaciones: ${monto_total_penalizaciones}`);
+        // console.log('PENALIZACIONES;', num_dias_penalizaciones);
 
         const fechaFinProgramadoContrato = new Date(credito.fecha_fin_prog2);
 
-        console.log('FEcha fin contrato', credito.fecha_fin_prog);
-        console.log('Fecha Fin Contrato Date', fechaFinProgramadoContrato);
-        console.log('Fecha Inicio Semana', fechaInicioSemanaReporte);
-        console.log('Semanas de Atraso', semanaAtraso);
+        // console.log('FEcha fin contrato', credito.fecha_fin_prog);
+        // console.log('Fecha Fin Contrato Date', fechaFinProgramadoContrato);
+        // console.log('Fecha Inicio Semana', fechaInicioSemanaReporte);
+        // console.log('Semanas de Atraso', semanaAtraso);
 
 
         return {
@@ -2016,24 +1968,6 @@ const printReporteCartas = async (req, res = response) => {
 
     const cantidadRegistros = creditosJSON.length;
 
-    //console.log(creditosJSON);
-
-    // const creditosJSON = rows.map((credito) => {
-
-    //     //TODO: Validar si existe num_contrato_historico
-
-    //     return {
-    //         credito_id: credito.id,
-    //         num_contrato: credito.num_contrato,
-    //         zona: credito.cliente.agencia.zona.nombre,
-    //         agencia: credito.cliente.agencia.nombre,
-    //         nombre: credito.cliente.getNombreCompleto(),
-    //         monto_otorgado: credito.monto_otorgado,
-    //         monto_semanal: ( credito.monto_total / credito.tarifa.num_semanas).toFixed(2),
-    //         estatus: credito.tipoEstatusCredito.nombre
-    //     }s
-
-    // });
 
     const DOC = handlebars.compile(template);
 
@@ -2049,7 +1983,6 @@ const printReporteCartas = async (req, res = response) => {
 
     const page = await browser.newPage();
 
-    // Configurar el tiempo de espera de la navegación
     await page.setDefaultNavigationTimeout(200000);
     await page.setContent(html);
 
@@ -2092,36 +2025,33 @@ const printReporteCartas = async (req, res = response) => {
 const printReporteCartasXLS = async (req, res, next) => {
 
     try {
-        const { semana_id } = req.params;
-        const values = [semana_id];
+        const { id, zona_id, agencia_id } = req.body;
 
-        // Ejecutar la consulta para obtener los datos necesarios
-        const { rows } = await pool.query(queries.getReporteCartasUNION, values);
+        const [rows] = await Credito.devuelveRegistrosReporteCartas(id, zona_id, agencia_id);
 
         // Crear un nuevo libro de Excel
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Reporte Cartas');
 
-
         // Definir encabezados de las columnas y el tipo de datos
         worksheet.columns = [
-            { header: 'Zona', key: 'zona' },
+            { header: 'Zona', key: 'zona', style: { numFmt: '0' } },
             { header: 'Agencia', key: 'agencia' },
-            { header: 'Número de Contrato', key: 'num_contrato', }, // Formato de número sin decimales
-            { header: 'Número de Contrato Histórico', key: 'num_contrato_historico', width: 20 },
-            { header: 'Nombre', key: 'nombre', width: 30 },
-            { header: 'Tarifa Semanal', key: 'monto_semanal', width: 15, style: { numFmt: '#,##0.00' } }, // Formato de número con dos decimales y separador de miles
-            { header: 'Adeudo para liquidar', key: 'total_liquidar', width: 20, style: { numFmt: '#,##0.00' } }, // Formato de número con dos decimales y separador de miles
-            { header: 'Fecha Final de Contrato', key: 'fecha_fin_prog' },
-            { header: 'Último Pago', key: 'fecha_ultimo_pago' },
+            { header: 'Número de Contrato', key: 'num_contrato', width: 20 }, // Formato de número sin decimales
+            { header: 'Número de Contrato Histórico', key: 'num_contrato_historico', width: 30 },
+            { header: 'Nombre', key: 'nombre', width: 60 },
+            { header: 'Tarifa Semanal', key: 'monto_semanal', width: 15, },
+            { header: 'Adeudo para liquidar', key: 'total_liquidar', width: 20, },
+            { header: 'Fecha Final de Contrato', key: 'fecha_fin_prog', width: 20, },
+            { header: 'Último Pago', key: 'fecha_ultimo_pago', width: 20, },
             { header: 'Semanas de Atraso', key: 'semanas_atraso' },
             { header: 'Estatus', key: 'estatus' },
-            { header: 'Acción Correspondiente', key: 'accion_correspondiente' },
+            { header: 'Acción Correspondiente', key: 'accion_correspondiente', width: 20 },
         ];
 
         const semanaReporte = await Semana.findOne({
             where: {
-                id: semana_id
+                id: id
             }
         });
 
@@ -2141,7 +2071,6 @@ const printReporteCartasXLS = async (req, res, next) => {
             let fechaFormateada = '';
 
             let semanaAtraso = 0;
-            let semanaAtraso2 = 0;
             let clasificacion = '';
 
             let diffDias;
@@ -2236,9 +2165,12 @@ const printReporteCartasXLS = async (req, res, next) => {
 
             let monto_total_penalizaciones = Number(num_dias_penalizaciones) * (Number(credito.monto_otorgado) * 0.010);
 
-            total_liquidar = ((credito.monto_total) - (credito.monto_total_pagado)) + Number(monto_total_penalizaciones);
+            total_liquidar = parseFloat((credito.monto_total) - (credito.monto_total_pagado)) + Number(monto_total_penalizaciones);
 
-            total_liquidar = Number(total_liquidar).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            let monto_semanal = parseFloat(credito.monto_semanal)
+
+
+            //total_liquidar = Number(total_liquidar).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
             const fechaFinProgramadoContrato = new Date(credito.fecha_fin_prog2);
 
@@ -2246,13 +2178,13 @@ const printReporteCartasXLS = async (req, res, next) => {
             worksheet.addRow({
                 num_contrato: credito.num_contrato,
                 num_contrato_historico: credito.num_contrato_historico,
-                zona: credito.zona,
-                agencia: credito.agencia,
+                zona: parseInt(credito.zona),
+                agencia: parseInt(credito.agencia),
                 nombre: credito.nombre_completo,
                 fecha_fin_prog: credito.fecha_fin_prog,
                 fecha_ultimo_pago: fechaFormateada ? fechaFormateada : '-',
                 monto_otorgado: credito.monto_otorgado,
-                monto_semanal: credito.monto_semanal,
+                monto_semanal: monto_semanal,
                 semanas_atraso: semanaAtraso != null ? semanaAtraso : '',
                 estatus: fechaFinProgramadoContrato < fechaInicioSemanaReporte ? 'Vencido' : 'Vigente',
                 total_pagado: credito.monto_total_pagado,
@@ -2261,7 +2193,44 @@ const printReporteCartasXLS = async (req, res, next) => {
                 monto_total: credito.monto_total,
                 accion_correspondiente: clasificacion,
             });
+
+            const styleColumns = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'DDDDDD' }
+            }
+
+            //Pintamos de color gris unicamente el row 1
+            const row1 = worksheet.getRow(1);
+            row1.eachCell({ includeEmpty: true }, (cell) => {
+                cell.fill = styleColumns
+            });
+
+            worksheet.autoFilter = {
+                from: 'A1',
+                to: 'L1',
+            };
+
+            const lastRow = worksheet.lastRow;
+
+            const cell_monto_semanal = lastRow.getCell('F');
+            cell_monto_semanal.type = ExcelJS.ValueType.Number;
+            cell_monto_semanal.numFmt = '0.00';
+            cell_monto_semanal.alignment = { horizontal: 'right' };
+
+            const cell_total_liquidar = lastRow.getCell('G');
+            cell_total_liquidar.type = ExcelJS.ValueType.Number;
+            cell_total_liquidar.numFmt = '0.00';
+            cell_total_liquidar.alignment = { horizontal: 'right' };
+
+            const cell_fecha_final_contrato = lastRow.getCell('H');
+            cell_fecha_final_contrato.alignment = { horizontal: 'center' };
+
+            const cell_fecha_ultimo_pago = lastRow.getCell('I');
+            cell_fecha_ultimo_pago.alignment = { horizontal: 'center' }
+
         }));
+
 
         // Escribir el libro de Excel en un stream
         const buffer = await workbook.xlsx.writeBuffer();

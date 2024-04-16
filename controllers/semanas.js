@@ -29,13 +29,40 @@ const semanasGet = async (req, res = response) => {
 
     try {
 
-        const { rows } = await pool.query(queries.getSemanas);
+        const rows = await Semana.findAll({
+        });
+
+        //const { rows } = await pool.query(queries.getSemanas);
 
         res.status(200).json(
             rows
         );
 
     } catch (error) {
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        })
+    }
+}
+
+const semanaOpenedGet = async (req, res = response) => {
+
+    try {
+
+        const semana = await Semana.findAll({
+            where:{
+                estatus: true
+            }
+        });
+
+        res.status(200).json(
+            semana[0]
+        );
+
+    } catch (error) {
+
+        console.log(error);
+
         res.status(500).json({
             msg: mensajes.errorInterno,
         })
@@ -52,10 +79,6 @@ const getSemanasPaginados = async (req, res = response) => {
         const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
 
         const offset = (pageNumber - 1) * limitPerPage;
-
-        console.log(searchTerm);
-
-        let isOpened;
 
         let searchCriteria = {
             [Op.or]: [
@@ -127,8 +150,6 @@ const semanaPost = async (req, res = response) => {
 
         const values = [fecha_inicio, fecha_fin, weekyear, year, estatus];
 
-        console.log(values);
-
         //Cerramos todas las semanas y luego insertamos la nueva abierta si el estatus es igual a true
         if (estatus === true) {
 
@@ -165,8 +186,6 @@ const semanaPost = async (req, res = response) => {
 const semanaPut = async (req, res = response) => {
 
     try {
-
-        console.log(req.body);
 
         const { id } = req.params;
         const { fecha_inicio, fecha_fin, weekyear, year, estatus } = req.body;
@@ -316,6 +335,7 @@ const yearPost = async (req, res = response) => {
 module.exports = {
     semanaGet,
     semanasGet,
+    semanaOpenedGet,
     semanaPost,
     semanaPut,
     semanaDelete,
