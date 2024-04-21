@@ -2249,6 +2249,507 @@ const printReporteCartasXLS = async (req, res, next) => {
 
 }
 
+const printReporteDebitoAgenciasPDF = async (req, res = response) => {
+
+    const { id, zona_id, agencia_id } = req.body;
+
+    //Iniciamos leyendo la plantilla del contrato
+    const template = fs.readFileSync('./views/template_debito_agencias.hbs', 'utf-8');
+
+    //const { rows } = await pool.query(queries.getReporteCartasUNION, values);
+    const [rows] = await Credito.devuelveRegistrosReporteCartas(id, zona_id, agencia_id);
+
+    const semanaReporte = await Semana.findOne({
+        where: {
+            id: id
+        }
+    });
+
+    const zona = await Zona.findOne({
+        where: {
+            id: zona_id
+        }
+    });
+
+    const encabezado_reporte = {
+        zona_numero: zona.nombre,
+        semana: semanaReporte.weekyear,
+        reporte_fecha_inicio: semanaReporte.fecha_inicio
+    };
+
+    const fechaInicioSemanaReporte = new Date(semanaReporte.fecha_inicio);
+
+    const creditosJSON = await Promise.all(rows.map(async (credito, index) => {
+
+        const ultimoPago = await Pago.findOne({
+            where: {
+                credito_id: credito.credito_id,
+            },
+            order: [['fecha', 'DESC']]
+        });
+
+        let fechaOriginal = '';
+        let fechaFormateada = '';
+
+        let semanaAtraso = 0;
+        let clasificacion = '';
+
+        let diffDias;
+
+
+        if (ultimoPago) {
+
+            // Obtenemos la fecha del último pago y la convertimos a un objeto Date
+            const fechaUltimoPago = new Date(ultimoPago.fecha);
+
+            // Restamos la fecha del último pago a la fecha_fin de la semana del reporte
+            const diffTiempo = fechaInicioSemanaReporte.getTime() - fechaUltimoPago.getTime();
+
+            // Convertimos la diferencia de tiempo a días
+            diffDias = Math.ceil(diffTiempo / (1000 * 60 * 60 * 24));
+
+            fechaOriginal = ultimoPago.fecha;
+
+            //semanaAtraso = Math.ceil(diffDias / 7);
+            semanaAtraso = Math.round(diffDias / 7);
+
+
+            const partesFecha = fechaOriginal.split('-'); // Dividimos la fecha en año, mes y día
+            fechaFormateada = `${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`;
+
+        } else {
+
+            fechaFormateada = '';
+
+            //Calculo la primer semana del credito
+            const primerSemanaCredito = await Semana.findOne({
+                where: {
+                    fecha_inicio: {
+                        [Op.lte]: credito.fecha_inicio_real
+                    },
+                    fecha_fin: {
+                        [Op.gte]: credito.fecha_inicio_real
+                    }
+                }
+            });
+
+            semanaAtraso = semanaReporte.weekyear - primerSemanaCredito.weekyear;
+
+            //Debemos de ver los casos cuando apenas empezaran a pagar
+
+            const fecha_inicio_real = new Date(credito.fecha_inicio_real);
+            fecha_inicio_real.setUTCHours(fecha_inicio_real.getUTCHours() - 6);
+
+            if (fecha_inicio_real.getTime() === new Date(fechaInicioSemanaReporte).getTime()) {
+                semanaAtraso = 0;
+            }
+
+        }
+
+        if (semanaAtraso < 0) {
+            clasificacion = 'Visita/Llamada';
+        } else if (semanaAtraso > 14) {
+            clasificacion = 'Extrajudicial';
+        } else {
+
+            let clasificaciones = {
+                0: 'Visita/Llamada',
+                1: 'Visita/Llamada',
+                2: 'Carta N-1',
+                3: 'Carta N-1',
+                4: 'Carta N-2',
+                5: 'Carta N-2',
+                6: 'Carta N-2',
+                7: 'Carta N-2',
+                8: 'Carta N-3',
+                9: 'Carta N-3',
+                10: 'Carta N-3',
+                11: 'Carta N-3',
+                12: 'Incumplimiento',
+                13: 'Incumplimiento',
+                14: 'Extrajudicial'
+            };
+
+            clasificacion = clasificaciones[semanaAtraso] || 'Otro';
+
+        }
+
+
+        let total_liquidar = 0;
+
+        const num_dias_penalizaciones = await BalanceSemanal.sum('num_dias_penalizacion_semanal', {
+            where: {
+                credito_id: credito.credito_id,
+                fecha_inicio: {
+                    [Sequelize.Op.lt]: fechaInicioSemanaReporte
+                }
+            }
+        });
+
+        let monto_total_penalizaciones = Number(num_dias_penalizaciones) * (Number(credito.monto_otorgado) * 0.010);
+
+        total_liquidar = ((credito.monto_total) - (credito.monto_total_pagado)) + Number(monto_total_penalizaciones);
+
+        total_liquidar = Number(total_liquidar).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+        // console.log(`Credito_id: ${credito.credito_id}`);
+        // console.log(`Total a liquidar: ${total_liquidar}`);
+        // console.log(`Monto total de penalizaciones: ${monto_total_penalizaciones}`);
+        // console.log('PENALIZACIONES;', num_dias_penalizaciones);
+
+        const fechaFinProgramadoContrato = new Date(credito.fecha_fin_prog2);
+
+        // console.log('FEcha fin contrato', credito.fecha_fin_prog);
+        // console.log('Fecha Fin Contrato Date', fechaFinProgramadoContrato);
+        // console.log('Fecha Inicio Semana', fechaInicioSemanaReporte);
+        // console.log('Semanas de Atraso', semanaAtraso);
+
+
+        return {
+            index: index + 1,
+            num_contrato: credito.num_contrato,
+            num_contrato_historico: credito.num_contrato_historico,
+            zona: credito.zona,
+            agencia: credito.agencia,
+            nombre: credito.nombre_completo,
+            direccion: credito.direccion,
+            telefono: credito.telefono,
+            fecha_fin_prog: credito.fecha_fin_prog,
+            fecha_ultimo_pago: fechaFormateada ? fechaFormateada : '-',
+            monto_otorgado: credito.monto_otorgado,
+            monto_semanal: credito.monto_semanal,
+            semanas_atraso: semanaAtraso != null ? semanaAtraso : '',
+            estatus: fechaFinProgramadoContrato < fechaInicioSemanaReporte ? 'Vencido' : 'Vigente',
+            total_pagado: credito.monto_total_pagado,
+            total_liquidar: total_liquidar,
+            total_penalizaciones: credito.total_penalizaciones,
+            monto_total: credito.monto_total,
+            accion_correspondiente: clasificacion,
+        }
+
+    }));
+
+    const cantidadRegistros = creditosJSON.length;
+
+
+    const DOC = handlebars.compile(template);
+
+    //Aqui pasamos data al template hbs
+    const html = DOC({ creditosJSON, cantidadRegistros, encabezado_reporte });
+
+    const browser = await puppeteer.launch({
+        'args': [
+            '--no-sandbox',
+            '--disable-setuid-sandbox'
+        ]
+    });
+
+    const page = await browser.newPage();
+
+    await page.setDefaultNavigationTimeout(200000);
+    await page.setContent(html);
+
+    try {
+
+        const pdf = await page.pdf({
+            format: 'letter',
+            landscape: true,
+            margin: {
+                top: '1cm',
+                bottom: '1cm',
+                left: '1cm',
+                right: '1cm'
+            },
+            printBackground: true,
+        });
+
+        await browser.close();
+
+        const buffer = Buffer.from(pdf);
+
+        let namePDF = "contrato_";
+        res.setHeader('Content-disposition', "inline; filename*=UTF-8''" + namePDF + ".pdf");
+        res.setHeader('Content-type', 'application/pdf');
+
+        return res.send(buffer);
+
+    } catch (pdfError) {
+
+        console.log('Error al generar el PDF:', pdfError);
+        await browser.close();
+
+        res.status(500).json({
+            error: 'Error al generar el PDF'
+        });
+    }
+
+}
+
+const printReporteDebitoAgenciasXLS = async (req, res, next) => {
+
+    try {
+
+        const { id, zona_id, agencia_id } = req.body;
+
+        const [rows] = await Credito.devuelveRegistrosReporteCartas(id, zona_id, agencia_id);
+
+        // Crear un nuevo libro de Excel
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Reporte Debito Agencias');
+
+        // Definir encabezados de las columnas y el tipo de datos
+        worksheet.columns = [
+            { header: '#', key: 'indice', },
+            { header: 'Zona', key: 'zona', style: { numFmt: '0' } },
+            { header: 'Agencia', key: 'agencia' },
+            { header: 'Número de Contrato', key: 'num_contrato', width: 20 }, // Formato de número sin decimales
+            { header: 'Número de Contrato Histórico', key: 'num_contrato_historico', width: 30 },
+            { header: 'Nombre', key: 'nombre', width: 60 },
+            { header: 'M', key: 'Mie', width: 4 },
+            { header: 'J', key: 'Jue', width: 4 },
+            { header: 'V', key: 'Vie', width: 4 },
+            { header: 'S', key: 'Sab', width: 4 },
+            { header: 'D', key: 'Dom', width: 4 },
+            { header: 'L', key: 'Lun', width: 4 },
+            { header: 'A', key: 'Aaa', width: 4 },
+            { header: 'B', key: 'Bbb', width: 4 },
+            { header: 'O', key: 'Ooo', width: 4 },
+            { header: 'Tarifa Semanal', key: 'monto_semanal', width: 15, },
+            { header: 'Adeudo para liquidar', key: 'total_liquidar', width: 20, },
+            { header: 'Fecha Final de Contrato', key: 'fecha_fin_prog', width: 20, },
+            { header: 'Último Pago', key: 'fecha_ultimo_pago', width: 20, },
+            { header: 'Semanas de Atraso', key: 'semanas_atraso' },
+            { header: 'Estatus', key: 'estatus' },
+            { header: 'Acción Correspondiente', key: 'accion_correspondiente', width: 20 },
+        ];
+
+        const semanaReporte = await Semana.findOne({
+            where: {
+                id: id
+            }
+        });
+
+        const fechaInicioSemanaReporte = new Date(semanaReporte.fecha_inicio);
+
+        let indice = 1;
+
+        // Iterar sobre los créditos y calcular las acciones correspondientes
+        await Promise.all(rows.map(async (credito) => {
+
+            const ultimoPago = await Pago.findOne({
+                where: {
+                    credito_id: credito.credito_id,
+                },
+                order: [['fecha', 'DESC']]
+            });
+
+            let fechaOriginal = '';
+            let fechaFormateada = '';
+
+            let semanaAtraso = 0;
+            let clasificacion = '';
+
+            let diffDias;
+
+            if (ultimoPago) {
+
+                // Obtenemos la fecha del último pago y la convertimos a un objeto Date
+                const fechaUltimoPago = new Date(ultimoPago.fecha);
+
+                // Restamos la fecha del último pago a la fecha_fin de la semana del reporte
+                const diffTiempo = fechaInicioSemanaReporte.getTime() - fechaUltimoPago.getTime();
+
+                // Convertimos la diferencia de tiempo a días
+                diffDias = Math.ceil(diffTiempo / (1000 * 60 * 60 * 24));
+
+                fechaOriginal = ultimoPago.fecha;
+
+                //semanaAtraso = Math.ceil(diffDias / 7);
+                semanaAtraso = Math.round(diffDias / 7);
+
+
+                const partesFecha = fechaOriginal.split('-'); // Dividimos la fecha en año, mes y día
+                fechaFormateada = `${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`;
+
+            } else {
+
+                fechaFormateada = '';
+
+                //Calculo la primer semana del credito
+                const primerSemanaCredito = await Semana.findOne({
+                    where: {
+                        fecha_inicio: {
+                            [Op.lte]: credito.fecha_inicio_real
+                        },
+                        fecha_fin: {
+                            [Op.gte]: credito.fecha_inicio_real
+                        }
+                    }
+                });
+
+                semanaAtraso = semanaReporte.weekyear - primerSemanaCredito.weekyear;
+
+                //Debemos de ver los casos cuando apenas empezaran a pagar
+
+                const fecha_inicio_real = new Date(credito.fecha_inicio_real);
+                fecha_inicio_real.setUTCHours(fecha_inicio_real.getUTCHours() - 6);
+
+                if (fecha_inicio_real.getTime() === new Date(fechaInicioSemanaReporte).getTime()) {
+                    semanaAtraso = 0;
+                }
+
+            }
+
+            if (semanaAtraso < 0) {
+                clasificacion = 'Visita/Llamada';
+            } else if (semanaAtraso > 14) {
+                clasificacion = 'Extrajudicial';
+            } else {
+
+                let clasificaciones = {
+                    0: 'Visita/Llamada',
+                    1: 'Visita/Llamada',
+                    2: 'Carta N-1',
+                    3: 'Carta N-1',
+                    4: 'Carta N-2',
+                    5: 'Carta N-2',
+                    6: 'Carta N-2',
+                    7: 'Carta N-2',
+                    8: 'Carta N-3',
+                    9: 'Carta N-3',
+                    10: 'Carta N-3',
+                    11: 'Carta N-3',
+                    12: 'Incumplimiento',
+                    13: 'Incumplimiento',
+                    14: 'Extrajudicial'
+                };
+
+                clasificacion = clasificaciones[semanaAtraso] || 'Otro';
+
+            }
+
+            let total_liquidar = 0;
+
+            const num_dias_penalizaciones = await BalanceSemanal.sum('num_dias_penalizacion_semanal', {
+                where: {
+                    credito_id: credito.credito_id,
+                    fecha_inicio: {
+                        [Sequelize.Op.lt]: semanaReporte.fecha_inicio
+                    }
+                }
+            });
+
+            let monto_total_penalizaciones = Number(num_dias_penalizaciones) * (Number(credito.monto_otorgado) * 0.010);
+
+            total_liquidar = parseFloat((credito.monto_total) - (credito.monto_total_pagado)) + Number(monto_total_penalizaciones);
+
+            let monto_semanal = parseFloat(credito.monto_semanal)
+
+            const fechaFinProgramadoContrato = new Date(credito.fecha_fin_prog2);
+
+
+            // Agregar fila al worksheet
+            worksheet.addRow({
+                indice: indice,
+                num_contrato: credito.num_contrato,
+                num_contrato_historico: credito.num_contrato_historico,
+                zona: parseInt(credito.zona),
+                agencia: parseInt(credito.agencia),
+                nombre: credito.nombre_completo,
+                Mie: 'M',
+                Jue: 'J',
+                Vie: 'V',
+                Sab: 'S',
+                Dom: 'D',
+                Lun: 'L',
+                Aaa: 'A',
+                Bbb: 'B',
+                Ooo: 'O',
+                fecha_fin_prog: credito.fecha_fin_prog,
+                fecha_ultimo_pago: fechaFormateada ? fechaFormateada : '-',
+                monto_otorgado: credito.monto_otorgado,
+                monto_semanal: monto_semanal,
+                semanas_atraso: semanaAtraso != null ? semanaAtraso : '',
+                estatus: fechaFinProgramadoContrato < fechaInicioSemanaReporte ? 'Vencido' : 'Vigente',
+                total_pagado: credito.monto_total_pagado,
+                total_liquidar: total_liquidar,
+                total_penalizaciones: credito.total_penalizaciones,
+                monto_total: credito.monto_total,
+                accion_correspondiente: clasificacion,
+            });
+
+            const styleColumns = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'DDDDDD' }
+            }
+
+            //Pintamos de color gris unicamente el row 1
+            const row1 = worksheet.getRow(1);
+            row1.eachCell({ includeEmpty: true }, (cell) => {
+                cell.fill = styleColumns
+            });
+
+            worksheet.autoFilter = {
+                from: 'A1',
+                to: 'V1',
+            };
+
+            const lastRow = worksheet.lastRow;
+
+            const setAlignment = (row, cells, alignment) => {
+                cells.forEach((cellKey) => {
+                    
+                    const cell = row.getCell(cellKey);
+
+                    cell.alignment = alignment;
+                });
+            };
+
+            // Asumimos que 'lastRow' es la última fila
+            const alignmentConfig = { horizontal: 'center' };
+            const cellsToAlign = ['G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
+
+            setAlignment(lastRow, cellsToAlign, alignmentConfig);
+
+            const cell_monto_semanal = lastRow.getCell('P');
+            cell_monto_semanal.type = ExcelJS.ValueType.Number;
+            cell_monto_semanal.numFmt = '0.00';
+            cell_monto_semanal.alignment = { horizontal: 'right' };
+
+            const cell_total_liquidar = lastRow.getCell('Q');
+            cell_total_liquidar.type = ExcelJS.ValueType.Number;
+            cell_total_liquidar.numFmt = '0.00';
+            cell_total_liquidar.alignment = { horizontal: 'right' };
+
+            const cell_fecha_final_contrato = lastRow.getCell('R');
+            cell_fecha_final_contrato.alignment = { horizontal: 'center' };
+
+            const cell_fecha_ultimo_pago = lastRow.getCell('S');
+            cell_fecha_ultimo_pago.alignment = { horizontal: 'center' };
+
+
+            indice++;
+
+        }));
+
+        // Escribir el libro de Excel en un stream
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        // Configurar los headers de la respuesta HTTP
+        res.setHeader('Content-disposition', 'attachment; filename=reporte_debito_agencias.xlsx');
+        res.setHeader('Content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        // Enviar el archivo XLS como respuesta
+        res.send(buffer);
+
+    } catch (error) {
+        console.log('Error al generar el reporte en XLS:', error);
+        res.status(500).json({ error: 'Error al generar el reporte en XLS' });
+    }
+
+}
+
 const printAllDoc = async (req, res = response) => {
 
     try {
@@ -2589,5 +3090,7 @@ module.exports = {
     creditoGetByCriteria,
     creditosGetTotal,
     printReporteCartas,
-    printReporteCartasXLS
+    printReporteCartasXLS,
+    printReporteDebitoAgenciasPDF,
+    printReporteDebitoAgenciasXLS
 } 

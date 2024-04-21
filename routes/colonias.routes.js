@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
-const { coloniaGet, coloniasGet, coloniaPost, coloniaPut, coloniaDelete, coloniasGetByCriteria } = require('../controllers/colonias');
+const { coloniaGet, coloniasGet, coloniaPost, coloniaPut, coloniaDelete, coloniasGetByCriteria, getColoniasPaginadas } = require('../controllers/colonias');
 const { validarCampos } = require('../middlewares/validar-campos');
 
 const router = Router();
@@ -8,6 +8,8 @@ const router = Router();
 router.get('/:id', coloniaGet);
 
 router.get('/', coloniasGet);
+
+router.post('/colonias_list', getColoniasPaginadas);
 
 router.get('/:criterio/:palabra', coloniasGetByCriteria);
 

@@ -1,8 +1,13 @@
 const { response } = require('express');
+
+const { Op, Sequelize } = require('sequelize');
+
 const { buildPatchQuery } = require('../database/build-query');
 const pool = require('../database/connection');
 const { queries } = require('../database/queries');
 const mensajes = require('../helpers/messages');
+const Colonia = require('../models/colonia');
+const TipoAsentamiento = require('../models/tipo_asentamiento');
 
 const table = 'dbo.colonias';
 
@@ -43,6 +48,52 @@ const coloniasGet = async (req, res = response) => {
         })
     }
 }
+
+const getColoniasPaginadas = async (req, res = response) => {
+
+    try {
+        const { page, limit, searchTerm } = req.query;
+
+        const pageNumber = parseInt(page) >= 1 ? parseInt(page) : 1;
+        const limitPerPage = parseInt(limit) >= 1 ? parseInt(limit) : 10;
+        const offset = (pageNumber - 1) * limitPerPage;
+
+        const { count, rows } = await Colonia.findAndCountAll({
+            include: [
+                {
+                    model: TipoAsentamiento,
+                    as: 'tipoAsentamiento',
+                }
+            ],
+            where: {
+                [Op.or]: [
+                    Sequelize.literal(`LOWER("Colonia"."nombre") LIKE LOWER('%${searchTerm}%')`),
+                    Sequelize.literal(`"Colonia"."cp"::TEXT LIKE '%${searchTerm}%'`),
+                    Sequelize.literal(`LOWER("tipoAsentamiento"."nombre") LIKE LOWER('%${searchTerm}%')`),
+                ]
+            },
+            replacements: { searchTerm: `%${searchTerm}%` },
+            offset,
+            limit: limitPerPage,
+            order: [['nombre', 'ASC']]
+        });
+
+
+        const totalElements = count;
+        const totalPages = Math.ceil(totalElements / limitPerPage);
+
+        res.status(200).json({
+            coloniasJSON: rows,
+            totalPages,
+            currentPage: pageNumber
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            msg: mensajes.errorInterno,
+        });
+    }
+};
 
 const coloniaPost = async (req, res = response) => {
 
@@ -182,5 +233,6 @@ module.exports = {
     coloniaPost,
     coloniaPut,
     coloniaDelete,
-    coloniasGetByCriteria
+    coloniasGetByCriteria,
+    getColoniasPaginadas
 }

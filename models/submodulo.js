@@ -26,6 +26,9 @@ const Submodulo = sequelize.define('Submodulo', {
     },
     orden:{
         type: Sequelize.INTEGER
+    },
+    estatus:{
+        type: Sequelize.STRING
     }
 }, {
     tableName: 'submodulos',

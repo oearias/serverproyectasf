@@ -53,7 +53,10 @@ const login = async (req, res = response) => {
             include:{
                 model: Submodulo,
                 as: 'submodulo',
-                attributes: ['nombre','url','icon','orden','modulo_id']
+                attributes: ['nombre','url','icon','orden','modulo_id'],
+                where: {
+                    estatus: 'A',  
+                },
             },
             where: {
                 user_group_id: user_founded.userGroup.id

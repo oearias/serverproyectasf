@@ -158,6 +158,8 @@ Credito.devuelveRegistrosReporteCartas = async (semana_id, zona_id, agencia_id) 
                 a.num_contrato,
                 a.num_contrato_historico,
                 a.nombre_completo,
+                a.direccion,
+                a.telefono,
                 a.monto as monto_otorgado,
                 a.monto_semanal,
                 TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
@@ -203,6 +205,8 @@ Credito.devuelveRegistrosReporteCartas = async (semana_id, zona_id, agencia_id) 
                 a.num_contrato,
                 a.num_contrato_historico,
                 a.nombre_completo,
+                a.direccion,
+                a.telefono,
                 a.monto as monto_otorgado,
                 a.monto_semanal,
                 TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog, 
@@ -232,6 +236,7 @@ Credito.devuelveRegistrosReporteCartas = async (semana_id, zona_id, agencia_id) 
     
     query += `)
 
+    
         ORDER BY zona, agencia, nombre_completo
         
         `;
