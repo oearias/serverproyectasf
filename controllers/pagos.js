@@ -185,31 +185,75 @@ const pagosGetByCreditoId = async (req, res = response) => {
     }
 }
 
+// const pagoPost = async (req, res = response) => {
+
+//     try {
+
+//         const { credito_id, fecha, monto, folio, weekyear } = req.body;
+
+//         const arreglo_credito_id = [credito_id]
+
+//         //Obtenemos la serie
+//         const resultado = await pool.query(queries.getSeriePago, arreglo_credito_id);
+
+//         const agencia = resultado.rows[0]['agencia'];
+//         const zona = resultado.rows[0]['zona'];
+//         const serie = `${zona}-${agencia}-${folio}`;
+
+//         console.log(credito_id, fecha, monto, weekyear, folio, serie);
+
+
+//         const values = [credito_id, fecha, monto, weekyear, folio, serie];
+//         const result = await pool.query(queries.insertPago, values);
+
+//         //Esta linea tengo que ver si todavía es util
+//         //vamos a suspenderla por lo pronto
+//         await pool.query(`CALL pr_update_saldos_balance_after_pago(${credito_id},${monto},'${fecha}')`);
+
+//         await pool.query(`CALL pr_calcula_recargo_credito_test3(${credito_id},'${fecha}')`);
+
+//         res.status(201).json(
+//             `El pago ha sido añadido correctamente.`
+//         );
+
+//     } catch (error) {
+
+//         console.log(error);
+
+//         const errors = [{
+//             msg: error.constraint,
+//             param: error.detail
+//         }]
+
+//         if (errors)
+
+//             return res.status(500).json({
+//                 errors
+//             });
+
+//         res.status(500).json({
+//             msg: mensajes.errorInterno
+//         });
+//     }
+// }
+
 const pagoPost = async (req, res = response) => {
 
     try {
 
         const { credito_id, fecha, monto, folio, weekyear } = req.body;
-
-        const arreglo_credito_id = [credito_id]
-
-        //Obtenemos la serie
-        const resultado = await pool.query(queries.getSeriePago, arreglo_credito_id);
-
-        const agencia = resultado.rows[0]['agencia'];
-        const zona = resultado.rows[0]['zona'];
-        const serie = `${zona}-${agencia}-${folio}`;
-
-        console.log(credito_id, fecha, monto, weekyear, folio, serie);
-
-
-        const values = [credito_id, fecha, monto, weekyear, folio, serie];
-        const result = await pool.query(queries.insertPago, values);
+    
+        await Pago.create({
+            credito_id: credito_id,
+            fecha: fecha,
+            monto: monto,
+            weekyear: weekyear,
+            folio, folio
+        })
 
         //Esta linea tengo que ver si todavía es util
         //vamos a suspenderla por lo pronto
         await pool.query(`CALL pr_update_saldos_balance_after_pago(${credito_id},${monto},'${fecha}')`);
-
         await pool.query(`CALL pr_calcula_recargo_credito_test3(${credito_id},'${fecha}')`);
 
         res.status(201).json(
@@ -219,17 +263,6 @@ const pagoPost = async (req, res = response) => {
     } catch (error) {
 
         console.log(error);
-
-        const errors = [{
-            msg: error.constraint,
-            param: error.detail
-        }]
-
-        if (errors)
-
-            return res.status(500).json({
-                errors
-            });
 
         res.status(500).json({
             msg: mensajes.errorInterno

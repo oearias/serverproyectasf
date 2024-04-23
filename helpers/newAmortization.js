@@ -14,6 +14,8 @@ const generateNewAmortization = async (result = []) => {
         const credito = result[0];
         const semanasMap = {}; // Objeto para mapear num_semana a la información de la semana
 
+        console.log(credito);
+
         const balance_semanal = await BalanceSemanal.findAll({
             attributes: ['num_semana', 'monto_semanal', 'fecha_inicio', 'fecha_fin', 'fecha_inicio_valida', 'fecha_fin_valida', 'fecha_inicio_recargo', 'fecha_fin_recargo'],
             where: {
@@ -193,8 +195,6 @@ const generateNewAmortization = async (result = []) => {
         throw new Error('Error en la generación de la amortización');
     }
 }
-
-
 
 
 
