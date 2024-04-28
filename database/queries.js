@@ -1344,8 +1344,8 @@ const queries = {
     queryPrintAmorti:                   `SELECT b.id as credito_id, a.num_semana,
                                         EXTRACT(DAY from a.fecha_inicio_valida) as dia_pago,
                                         TO_CHAR(a.fecha_inicio_valida,'MM') as mes_pago,
-                                        fu_get_month_letras(a.fecha_fin_valida :: date) as mes_letra_fin,
-                                        EXTRACT(YEAR from a.fecha_fin_valida) as año_pago,
+                                        fu_get_month_letras(a.fecha_inicio_valida :: date) as mes_letra_fin,
+                                        EXTRACT(YEAR from a.fecha_inicio_valida) as año_pago,
                                         TRIM(
                                         TO_CHAR((b.monto_total / c.num_semanas) +
                                         (b.monto_total / c.num_semanas) *

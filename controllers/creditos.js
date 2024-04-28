@@ -1214,7 +1214,10 @@ const setFechaCreditosMasivos = async (req, res = response) => {
 }
 
 const printContratosMasivos = async (req, res = response) => {
+
     try {
+
+        console.log('se entra a la documentation');
 
         const creditosLista = req.body;
 
@@ -1283,6 +1286,8 @@ const printContratosMasivos = async (req, res = response) => {
 
             // Consulta amortizacion
             const result = await pool.query(queries.queryPrintAmorti, values);
+
+            console.log(result);
 
             const resultado = await pool.query(queries.getCredito, values);
 
