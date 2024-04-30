@@ -606,6 +606,14 @@ const solicitudCreditoPost = async (req, res = response) => {
             estado: cliente.estado,
             fecha_creacion: new Date(),
             tarifa_id: body.tarifa_id,
+            nombre_contacto1: body.nombre_contacto1,
+            nombre_contacto2: body.nombre_contacto2,
+            telefono_contacto1: body.telefono_contacto1,
+            telefono_contacto2: body.telefono_contacto2,
+            parentesco_contacto1: body.parentesco_contacto1,
+            parentesco_contacto2: body.parentesco_contacto2,
+            direccion_contacto1: body.direccion_contacto1,
+            direccion_contacto2: body.direccion_contacto2
         }, { transaction: t });
 
         //Creamos los servicios

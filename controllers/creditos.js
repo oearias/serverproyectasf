@@ -2929,22 +2929,21 @@ const printEntregasCredito = async (req, res = response) => {
 
         const values = [fecha_entrega_prog];
 
-        console.log(fecha_entrega_prog);
-
         //Iniciamos leyendo la plantilla del contrato
         const template = fs.readFileSync('./views/template_entrega_creditos.hbs', 'utf-8');
 
         //obtenemos la consult del contrato
         const result = await pool.query(queries.getCreditosPreaprobados, values);
 
-        const resultado = await pool.query(`
-            SELECT '${fecha_entrega_prog}' as fecha_entrega_programada,
-            TRIM(TO_CHAR(fu_get_monto_total_cn_r('${fecha_entrega_prog}','CN'),'999,999D99')) as monto_cn,
-            TRIM(TO_CHAR(fu_get_monto_total_cn_r('${fecha_entrega_prog}','R'),'999,999D99')) as monto_r,
-            fu_get_count_cn_r('${fecha_entrega_prog}') as count_cn_r,
-            fu_get_count_cn('${fecha_entrega_prog}','CN') as count_cn,
-            fu_get_count_r('${fecha_entrega_prog}','R') as count_r,
-            TRIM(TO_CHAR(fu_get_monto_total_creditos_preaprobados($1),'999,999D99')) as monto_total_creditos`, values);
+        let query = `SELECT '${fecha_entrega_prog}' as fecha_entrega_programada,
+        TRIM(TO_CHAR(fu_get_monto_total_cn_r('${fecha_entrega_prog}','CN'),'999,999D99')) as monto_cn,
+        TRIM(TO_CHAR(fu_get_monto_total_cn_r('${fecha_entrega_prog}','R'),'999,999D99')) as monto_r,
+        fu_get_count_cn_r('${fecha_entrega_prog}') as count_cn_r,
+        fu_get_count_cn('${fecha_entrega_prog}','CN') as count_cn,
+        fu_get_count_r('${fecha_entrega_prog}','R') as count_r,
+        TRIM(TO_CHAR(fu_get_monto_total_creditos_preaprobados($1),'999,999D99')) as monto_total_creditos`;
+
+        const resultado = await pool.query(query, values);
 
         //Helpers
         handlebars.registerHelper('ifCond', function (v1, v2, options) {
@@ -2956,7 +2955,7 @@ const printEntregasCredito = async (req, res = response) => {
 
         const DOC = handlebars.compile(template);
 
-        console.log(result.rows[0]);
+        console.log('resultado',result.rows);
 
         const {
             fecha_entrega_programada,
@@ -2975,8 +2974,6 @@ const printEntregasCredito = async (req, res = response) => {
             count_cn_r,
             count_cn, count_r
         };
-
-        console.log(resultado.rows[0]);
 
         //Aqui pasamos data al template hbs
         const html = DOC(result);
