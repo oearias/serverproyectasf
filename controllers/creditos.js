@@ -442,6 +442,7 @@ const getCreditosProgramacionEntregaPaginados = async (req, res = response) => {
             return {
                 id: credito.id,
                 solicitud_credito_id: credito.solicitud_credito_id,
+                solicitudCredito: credito.solicitudCredito,
                 num_contrato: credito.num_contrato,
                 nombre_completo: credito.cliente.getNombreCompleto(),
                 zona: credito.cliente.agencia.zona.nombre,
@@ -1223,6 +1224,10 @@ const printContratosMasivos = async (req, res = response) => {
 
         const creditos = creditosLista.filter(credito => credito['printSelected']);
 
+        const creditos_personal = creditos.filter(credito => credito['tipo_credito'] !=  '2');
+        const creditos_micronegocio = creditos.filter(credito => credito['tipo_credito'] ==  '2');
+
+
         // Configuración de Puppeteer
         const browser = await puppeteer.launch({
             'args': [
@@ -1236,8 +1241,15 @@ const printContratosMasivos = async (req, res = response) => {
 
         //Iniciamos leyendo la plantilla del contrato
         const template = fs.readFileSync('./views/template_documentation.hbs', 'utf-8');
+        
         //Plantilla de la amortizacion
         const template2 = fs.readFileSync('./views/template_tarjeta_pagos.hbs', 'utf-8');
+
+        //Plantilla contratos MICRONEGOCIO
+        const template3 = fs.readFileSync('./views/template_documentation_MICRO.hbs', 'utf-8');
+
+        //Plantilla de la amortizacion MICRONEGOCIO
+        const template4 = fs.readFileSync('./views/template_tarjeta_pagos_MICRO.hbs', 'utf-8');
 
         //Helpers Menor que
         handlebars.registerHelper('ifCond', function (v1, v2, options) {
@@ -1273,21 +1285,23 @@ const printContratosMasivos = async (req, res = response) => {
 
         const DOC = handlebars.compile(template);
         const DOC2 = handlebars.compile(template2);
+        const DOC3 = handlebars.compile(template3);
+        const DOC4 = handlebars.compile(template4);
 
         const outputDirectory = path.resolve(__dirname, '..', 'pdfs');
         fs.mkdirSync(outputDirectory, { recursive: true }); // se crea el directorio si no existe
 
         const pdfsToMerge = [];
 
-        for (const { credito_id } of creditos) {
+        //Imprimimos los contratos PERSONALES
+
+        for (const { credito_id } of creditos_personal) {
             const values = [credito_id];
 
             const { rows } = await pool.query(queries.queryPrintContrato, values);
 
             // Consulta amortizacion
             const result = await pool.query(queries.queryPrintAmorti, values);
-
-            console.log(result);
 
             const resultado = await pool.query(queries.getCredito, values);
 
@@ -1305,8 +1319,6 @@ const printContratosMasivos = async (req, res = response) => {
                 mes_fecha_fin_prog_proyecta,
                 anio_fecha_fin_prog_proyecta
             } = resultado.rows[0];
-
-            console.log(fecha_fin_prog_proyecta);
 
             result['contrato'] = {
                 rows
@@ -1369,6 +1381,96 @@ const printContratosMasivos = async (req, res = response) => {
             pdfsToMerge.push(pdfBuffer2);
         }
 
+        //Procedemos a imprimir los contratos de MICRONEGOCIO
+
+        for (const { credito_id } of creditos_micronegocio) {
+            const values = [credito_id];
+
+            const { rows } = await pool.query(queries.queryPrintContratoMICRONEGOCIO, values);
+
+            // Consulta amortizacion
+            const result = await pool.query(queries.queryPrintAmorti, values);
+
+            const resultado = await pool.query(queries.getCredito, values);
+
+            //dif_num_semanas es la diferencia entre el numero de semanas y el maximo numero de semanas
+            // que pueden aparecer en la tarjeta de pagos.
+            //esto se establece en la query GetCredito.
+
+            const {
+                num_contrato, num_cliente, monto_otorgado, monto_otorgado2, monto_total, monto_semanal,
+                num_semanas, dif_num_semanas,
+                nombre, apellido_paterno, apellido_materno, monto_total_letras,
+                telefono, calle, num_ext, colonia, cp, tipo_asentamiento, zona, agencia, fecha_inicio_prog,
+                fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2, fecha_fin_prog_proyecta,
+                dia_fecha_fin_prog_proyecta,
+                mes_fecha_fin_prog_proyecta,
+                anio_fecha_fin_prog_proyecta
+            } = resultado.rows[0];
+
+            result['contrato'] = {
+                rows
+            }
+
+            result['credito'] = {
+                num_contrato, num_cliente, monto_otorgado, monto_total, monto_otorgado2, monto_total_letras,
+                monto_semanal,
+                num_semanas, dif_num_semanas,
+                fecha_inicio_prog, fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2,
+                fecha_fin_prog_proyecta,
+                dia_fecha_fin_prog_proyecta,
+                mes_fecha_fin_prog_proyecta,
+                anio_fecha_fin_prog_proyecta,
+                nombre, apellido_paterno, apellido_materno, telefono, calle, num_ext, tipo_asentamiento, colonia, cp,
+                zona, agencia
+            };
+
+
+            // Rellenamos la plantilla con los datos de cada crédito
+            const html = DOC3({ ...result, credito_id });
+
+            const html2 = DOC4(result);
+
+            // Generamos el PDF
+            await page.setContent(html, { waitUntil: 'networkidle0' });
+
+            await page2.setContent(html2, { waitUntil: 'networkidle0' });
+
+            const pdf = await page.pdf({
+                format: 'Letter',
+                margin: {
+                    top: '1cm',
+                    bottom: '1cm'
+                },
+                printBackground: true,
+            });
+
+            const pdf2 = await page2.pdf({
+                format: 'Letter',
+                landscape: true,
+                margin: {
+                    top: '1cm',
+                    bottom: '1cm'
+                },
+                printBackground: true,
+            });
+
+            // Guardamos el PDF generado en el servidor
+            const filename = `credito_${credito_id}.pdf`;
+            fs.writeFileSync(`${outputDirectory}/${filename}`, pdf);
+
+            const filename2 = `amortizacion_${credito_id}.pdf`;
+            fs.writeFileSync(`${outputDirectory}/${filename2}`, pdf2);
+
+            const pdfBuffer = fs.readFileSync(`${outputDirectory}/${filename}`);
+            const pdfBuffer2 = fs.readFileSync(`${outputDirectory}/${filename2}`);
+
+            pdfsToMerge.push(pdfBuffer);
+            pdfsToMerge.push(pdfBuffer2);
+        }
+
+
+
         const mergedPdf = await PDFDocument.create();
         for (const pdfBytes of pdfsToMerge) {
             const pdf = await PDFDocument.load(pdfBytes);
@@ -1379,11 +1481,6 @@ const printContratosMasivos = async (req, res = response) => {
         }
 
         const buf = await mergedPdf.save(); // Uint8Array
-
-
-
-
-
 
         await browser.close();
 

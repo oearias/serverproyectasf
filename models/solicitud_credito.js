@@ -11,6 +11,8 @@ const Tarifa = require('./tarifa');
 const Ocupacion = require('./ocupacion');
 const SolicitudServicio = require('./solicitud_servicio');
 const Colonia = require('./colonia');
+const Aval = require('./aval');
+const Negocio = require('./negocio');
 
 const SolicitudCredito = sequelize.define('SolicitudCredito', {
     id: {
@@ -207,6 +209,9 @@ const SolicitudCredito = sequelize.define('SolicitudCredito', {
     observaciones_negocio: {
         type: Sequelize.STRING,
     },
+    tipo_solicitud_credito: {
+        type: Sequelize.STRING,
+    },
 }, {
     tableName: 'solicitud_credito',
     schema: 'dbo',
@@ -224,5 +229,7 @@ SolicitudCredito.belongsTo(Tarifa, { as: 'tarifa', foreignKey: 'tarifa_id' });
 SolicitudCredito.belongsTo(Colonia, { as: 'colonia', foreignKey: 'colonia_id' });
 SolicitudCredito.belongsTo(TipoEmpleo, { as: 'tipoEmpleo', foreignKey: 'tipo_empleo_id' });
 SolicitudCredito.hasOne(SolicitudServicio, { as: 'solicitudServicio', foreignKey: 'solicitud_credito_id' });
+SolicitudCredito.hasOne(Aval, { as: 'aval', foreignKey: 'solicitud_credito_id' });
+SolicitudCredito.hasOne(Negocio, { as: 'negocio', foreignKey: 'solicitud_credito_id' });
 
 module.exports = SolicitudCredito;

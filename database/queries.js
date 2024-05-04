@@ -1340,6 +1340,57 @@ const queries = {
                                         dbo.tipo_asentamiento g
                                         on g.id = f.tipo_asentamiento_id
                                         WHERE a.id = $1`,
+    
+queryPrintContratoMICRONEGOCIO:         `SELECT
+                                        a.num_contrato,
+                                        TO_CHAR(a.fecha_fin_prog, 'DD-MM-YYYY') as fecha_fin,
+                                        b.nombre||' '||b.apellido_paterno||' '||b.apellido_materno as nombre_completo,
+                                        b.rfc, b.curp, b.telefono, b.email,
+                                        LPAD(EXTRACT (DAY FROM b.fecha_nacimiento)::text, 2, '0') as dia_fecha_nacimiento,
+                                        fu_get_month_letras(b.fecha_nacimiento) as mes_fecha_nacimiento,
+                                        EXTRACT (YEAR FROM b.fecha_nacimiento) as año_fecha_nacimiento,
+                                        TO_CHAR(b.fecha_nacimiento, 'DD-MM-YYYY') as fecha_nacimiento, 
+                                        avales.nombre||' '||avales.apellido_paterno||' '||avales.apellido_materno as aval_nombre_completo,
+                                        TO_CHAR(avales.fecha_nacimiento, 'DD-MM-YYYY') as aval_fecha_nacimiento, 
+                                        LPAD(EXTRACT (DAY FROM avales.fecha_nacimiento)::text, 2, '0') as aval_dia_fecha_nacimiento,
+                                        fu_get_month_letras(avales.fecha_nacimiento) as aval_mes_fecha_nacimiento,
+                                        EXTRACT (YEAR FROM avales.fecha_nacimiento) as aval_anio_fecha_nacimiento,
+                                        LPAD(EXTRACT (DAY FROM a.fecha_entrega_prog)::text, 2, '0') as dia_fecha_entrega_prog,
+                                        fu_get_month_letras(a.fecha_entrega_prog) as mes_fecha_entrega_prog,
+                                        EXTRACT (YEAR FROM a.fecha_entrega_prog) as anio_fecha_entrega_prog,
+                                        b.calle, b.num_ext, 
+                                        INITCAP(g.nombre) as tipo_asentamiento, 
+                                        UPPER(f.nombre) as colonia, f.cp,
+                                        d.nombre as ocupacion,
+                                        TRIM(TO_CHAR( (a.monto_total / e.num_semanas ) , '999,999D99')) as monto_semanal,
+                                        TRIM(TO_CHAR(a.monto_otorgado, '999,999D99')) as monto_otorgado,
+                                        TRIM(TO_CHAR(a.monto_total, '999,999D99')) as monto_total,
+                                        fu_numero_letras(a.monto_total) as monto_total_letras,
+                                        EXTRACT (DAY FROM a.fecha_fin_prog) as dia_fin, 
+                                        fu_get_month_letras(a.fecha_fin_prog) as mes_letra_fin,
+                                        EXTRACT (YEAR FROM a.fecha_fin_prog) as año_fin, 
+                                        e.num_semanas
+                                        FROM dbo.creditos a 
+                                        INNER JOIN 
+                                        dbo.clientes b 
+                                        on a.cliente_id = b.id
+                                        INNER JOIN 
+                                        dbo.solicitud_credito c
+                                        on c.id = a.solicitud_credito_id
+                                        LEFT JOIN dbo.avales
+                                        on avales.solicitud_credito_id = c.id
+                                        LEFT JOIN dbo.ocupaciones d
+                                        on c.ocupacion_id = d.id
+                                        INNER JOIN
+                                        dbo.tarifas e
+                                        on e.id = a.tarifa_id
+                                        INNER JOIN
+                                        dbo.colonias f
+                                        on c.colonia_id = f.id
+                                        INNER JOIN
+                                        dbo.tipo_asentamiento g
+                                        on g.id = f.tipo_asentamiento_id
+                                        WHERE a.id = $1`,
 
     queryPrintAmorti:                   `SELECT b.id as credito_id, a.num_semana,
                                         EXTRACT(DAY from a.fecha_inicio_valida) as dia_pago,

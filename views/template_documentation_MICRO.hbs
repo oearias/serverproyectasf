@@ -95,7 +95,7 @@
                 </div>
             </div>
             <div class="col fw-bold d-flex justify-content-end">
-                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+                No. <span class="text-danger"> P-CPER-AVAL-{{contrato.rows.0.num_contrato}}</span>
             </div>
         </div>
 
@@ -167,6 +167,24 @@
                     población:</td>
                 <td class="fs8" style="border-bottom: none; border-right: none;">{{contrato.rows.0.curp}}</td>
             </tr> --}}
+        </table>
+
+        <div class="bg-encabezado encabezado fw-bold">
+            DATOS DEL OBLIGADO SOLIDARIO Y/O AVAL, EN LO SUCESIVO DESIGNADO "OBLIGADO SOLIDARIO Y/O AVAL"
+        </div>
+
+        <table class="customTable">
+            <tr>
+                <td class="fw-bold fs7" style="width: 200px; border-top:none; border-left: none;">Nombre:</td>
+                <td class="fs8" style="border-right: none; border-top: none;">{{contrato.rows.0.aval_nombre_completo}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Lugar y fecha de nacimiento:</td>
+                <td class="fs8" style="border-right: none;">Ciudad del Carmen, Campeche
+                    {{contrato.rows.0.aval_dia_fecha_nacimiento}}-{{contrato.rows.0.aval_mes_fecha_nacimiento}}-{{contrato.rows.0.aval_anio_fecha_nacimiento}}
+                </td>
+            </tr>
+     
         </table>
 
         <div class="bg-encabezado encabezado fw-bold">
@@ -317,7 +335,7 @@
                 </div>
             </div>
             <div id="miContrato" class="col fw-bold d-flex justify-content-end">
-                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+                No. <span class="text-danger"> P-CPER-AVAL-{{contrato.rows.0.num_contrato}}</span>
             </div>
         </div>
 
@@ -330,8 +348,10 @@
                 <span class="fw-bold" style="text-decoration: underline;">{{contrato.rows.0.nombre_completo}}</span> POR
                 SU PROPIO
                 DERECHO A QUIÉN EN LO SUCESIVO SE LE
-                DENOMINARÁ COMO EL <b>"ACREDITADO"</b> DE
-                CONFORMIDAD CON LAS DECLARACIONES Y CLÁUSULAS SIGUIENTES:
+                DENOMINARÁ COMO EL <b>"ACREDITADO"</b>, ADEMÁS COMPARECE 
+                <span class="fw-bold" style="text-decoration: underline;">{{contrato.rows.0.aval_nombre_completo}}</span>, 
+                POR SU PROPIO DERECHO A QUIEN EN LO SUCESIVO 
+                SE LE DENOMINARÁ COMO EL  “OBLIGADO SOLIDARIO Y/O AVAL”, DE CONFORMIDAD CON LAS DECLARACIONES Y CLÁUSULAS SIGUIENTES:
             </p>
 
             <div class="text-center fw-bold" style="letter-spacing: 0.3em;">DECLARACIONES:</div>
@@ -339,62 +359,54 @@
 
             <div>
                 <p>
-                    a. Que es una sociedad mercantil que se encuentra constituida conforme a las leyes de los Estados
-                    Unidos
-                    Mexicanos, según consta en el Acta número 153, Tomo 5, Libro Cuarto, Folio 323, de fecha 10 de
-                    marzo de
-                    2018, otorgada ante la fe del Licenciado en Derecho Luis Enrique López Martín, Notario Público del
-                    Estado de Yucatán, Titular de la Notaría Pública número 23, con residencia en la Ciudad de Mérida,
-                    Yucatán, misma que se encuentra debidamente inscrita en el Registro Público de la Propiedad y de
-                    Comercio de su jurisdicción, bajo el folio mercantil electrónico número N-2018022490, de fecha 15 de
-                    marzo de 2018, con Registro Federal de Contribuyente PSF180310464.
+                    a. Que es una sociedad mercantil que se encuentra constituida conforme a las leyes de los Estados 
+                    Unidos Mexicanos, según consta en el Acta número 153, Tomo 5, Libro Cuarto, Folio 323, de 
+                    fecha 10 de marzo de 2018, otorgada ante la fe del Licenciado en Derecho Luis Enrique López Martín, 
+                    Notario Público del Estado de Yucatán, Titular de la Notaría Pública número 23, con residencia en la 
+                    Ciudad de Mérida, Yucatán, misma que se encuentra debidamente inscrita en el Registro Público de la 
+                    Propiedad y de Comercio de su jurisdicción, bajo el folio mercantil electrónico número N-2018022490, 
+                    de fecha 15 de marzo de 2018, con Registro Federal de Contribuyente PSF180310464.
                     <br>
-                    b. Que dentro de su objeto social se encuentra el de “obtener y conceder toda clase de préstamos,
-                    créditos o financiamientos, otorgando o recibiendo garantías específicas, entre otras actividades,
-                    la cual ha sido debidamente autorizado por todas las medidas corporativas pertinentes y no están
-                    en conflicto con, ni son inconsistentes con, ni resultan en incumplimiento de (i) sus estatutos
-                    vigentes a la fecha del presente contrato, ni (ii) cualquier ley, término, condición obligación o
-                    restricción contractual alguna que obligue o afecte el presente contrato.
+                    b. Que dentro de su objeto social se encuentra el de “obtener y conceder toda clase de préstamos, 
+                    créditos o financiamientos, otorgando o recibiendo garantías específicas, entre otras actividades, 
+                    la cual ha sido debidamente autorizado por todas las medidas corporativas pertinentes y no están en 
+                    conflicto con, ni son inconsistentes con, ni resultan en incumplimiento de (i) sus estatutos 
+                    vigentes a la fecha del presente contrato, ni (ii) cualquier ley, término, condición obligación o 
+                    restricción contractual alguna que obligue o afecte el presente contrato. 
                     <br>
-                    c. Que cuenta con capacidad legal y facultades suficientes para celebrar el presente Contrato en
-                    nombre y representación de PROYECTA, mismas que al momento de su celebración no le han sido
-                    revocadas, limitadas ni modificadas en forma alguna y está autorizado para residir y tener su
-                    estancia legal en México.
+                    c. Que cuenta con capacidad legal y facultades suficientes para celebrar el presente Contrato en 
+                    nombre y representación de PROYECTA, mismas que al momento de su celebración no le han sido revocadas, 
+                    limitadas ni modificadas en forma alguna y está autorizado para residir y tener su estancia legal en México. 
                     <br>
-                    d. Que su domicilio se encuentra ubicado en: Calle 31-A, número 54, colonia Aviación, código
-                    postal 24170, Ciudad del Carmen, Campeche.
+                    d. Que su domicilio se encuentra ubicado en: Calle 31-A, número 54, colonia Aviación, código postal 24170, Ciudad del Carmen, Campeche. 
                     <br>
-                    e. Que cuenta con una Unidad de Atención al Usuario con domicilio en: Avenida Periférica Norte
-                    número 60 colonia Fraccionamiento Malibran código postal 24197 Ciudad del Carmen, Campeche;
-                    a quien podrás dirigirte en el número telefónico: 938-38-14413, en un horario de atención de
-                    lunes a viernes de 09:00 a 14:00 horas; o bien, a través de correo electrónico:
-                    admon.proyectasf@gmail.com en cualquier horario.
+                    e. Que cuenta con una Unidad de Atención al Usuario con domicilio en: Calle Águila número 23 Plaza 
+                    Concordia Local 8 de la colonia Aeropuerto código postal 24119 Ciudad del Carmen, Campeche; a 
+                    quien podrás dirigirte en el número telefónico: 938-38-14413, en un horario de atención de lunes a viernes 
+                    de 09:00 a 14:00 horas; o bien, a través de correo electrónico: admon.proyectasf@gmail.com en cualquier horario. 
+
+            
                     <br>
                     <span class="fw-bold">B. Declara el "ACREDITADO", Bajo Protesta de decir verdad:</span>
                     <br>
-                    a. Ser de nacionalidad mexicana, mayor de edad y con plena capacidad legal para obligarse y
-                    celebrar el presente Contrato, así como para asumir y dar cumplimiento a las obligaciones que en
-                    él se establecen.
+                    a. Ser de nacionalidad mexicana, mayor de edad y con plena capacidad legal para obligarse y 
+                    celebrar el presente Contrato, así como para asumir y dar cumplimiento a las obligaciones que en él se establecen. 
                     <br>
-                    b. Que para la celebración del contrato actúa a nombre y por cuenta propia y no por cuenta de un
-                    tercero.
+                    b. Que para la celebración del contrato actúa a nombre y por cuenta propia y no por cuenta de un tercero. 
                     <br>
-                    c. Que ha solicitado a "PROYECTA" un crédito simple en los términos establecidos en el presente
-                    Contrato. Manifestando que los beneficios que recibirá de dicho Crédito son para él y no para una
-                    tercera persona.
+                    c. Que ha solicitado a “PROYECTA” un crédito simple en los términos establecidos en el presente 
+                    Contrato. Manifestando que los beneficios que recibirá de dicho Crédito son para él y no para una tercera persona. 
                     <br>
-                    d. Que toda la información y documentación que ha proporcionado a "PROYECTA"; para el análisis
-                    y estudio del otorgamiento del Crédito objeto del presente Contrato es verdadera y refleja en
-                    forma correcta y compleja su situación actual.
+                    d. Que toda la información y documentación que ha proporcionado a “PROYECTA” para el análisis y 
+                    estudio del otorgamiento del Crédito objeto del presente Contrato es verdadera y refleja en 
+                    forma correcta y completa su situación actual. 
                     <br>
-                    e. Que "PROYECTA" hizo de su conocimiento, previo a la firma del presente Contrato y de los
-                    documentos que forman parte integrante del mismo, su contenido y efectos jurídicos, cargos o
-                    gastos que se generarán por su celebración.
+                    Que “PROYECTA” hizo de su conocimiento, previo a la firma del presente Contrato y de los documentos 
+                    que forman parte integrante del mismo, su contenido y efectos jurídicos, cargos o gastos que se generarán por su celebración. 
                     <br>
-                    f. Que una vez que le fueron explicados el contenido y alcances legales del presente contrato, al
-                    momento de la celebración de la operación "PROYECTA" le hizo entrega de un ejemplar del
-                    contrato, de la "Carátula del contrato sirviendo su firma como el recibo mas amplio y suficiente
-                    que en derecho proceda.
+                    f. Que una vez que le fueron explicados el contenido y alcances legales del presente contrato, 
+                    al momento de la celebración de la operación “PROYECTA” le hizo entrega de un ejemplar del contrato, 
+                    de la “Carátula del Contrato” sirviendo su firma como el recibo más amplio y suficiente que en derecho proceda. 
                     <br>
                     g. Que su domicilio se encuentra ubicado en: Calle <span
                         class="subrayado">&nbsp;&nbsp;{{contrato.rows.0.calle}}&nbsp;&nbsp;</span> número
@@ -403,45 +415,47 @@
                         class="subrayado">&nbsp;&nbsp;{{contrato.rows.0.colonia}}&nbsp;&nbsp;</span> código postal <span
                         class="subrayado">&nbsp;{{contrato.rows.0.cp}}&nbsp;</span>,Ciudad del Carmen Campeche.
                     <br>
-                    h. Que conoce y está conforme con el Aviso de Privacidad de "PROYECTA", cuyo contenido se le
-                    ha hecho saber previo al otorgamiento de la firma de este instrumento, el cual Se encuentra
-                    conforme a los términos de la Ley Federal de Protección de Datos Personales en Posesión de los
-                    Particulares vigente, su reglamento y demás disposiciones aplicables.
+                    h. Que autoriza a “PROYECTA” en términos del documento que se adjunta al presente contrato 
+                    como “Anexo ____” a llevar a cabo investigaciones periódicas sobre el historial crediticio en la sociedad de 
+                    información crediticia que estime conveniente, durante todo el tiempo que mantenga una relación 
+                    jurídica con “PROYECTA” y que conoce la naturaleza y alcance de la información que proporcionan las 
+                    sociedades de información crediticia, así como las implicaciones que pueda generar el hecho de estar 
+                    registrado por el incumplimiento en el pago del crédito otorgado, y que el historial crediticio podrá 
+                    servir de base para la aprobación de futuros créditos con “PROYECTA”. 
                     <br>
-                    i. Que cuenta con los recursos financieros, necesarios y suficientes para cumplir con las
-                    obligaciones derivadas del presente contrato y sus anexos y que dichos recursos no son ni serán de
-                    procedencia ilícita.
+                    i. Que conoce y está conforme con el Aviso de Privacidad de “PROYECTA”, cuyo contenido 
+                    se le ha hecho saber previo al otorgamiento de la firma de este instrumento, el cual 
+                    se encuentra conforme a los términos de la Ley Federal de Protección de Datos Personales 
+                    en Posesión de los Particulares vigente, su reglamento y demás disposiciones aplicables. 
+                    <br>
+                    j. Que cuenta con los recursos financieros, necesarios y suficientes para cumplir con 
+                    las obligaciones derivadas del presente contrato y sus anexos y que dichos recursos 
+                    no son ni serán de procedencia ilícita.
                     <br>
                     <span class="fw-bold">C. Declara el "ACREDITADO" y "PROYECTA":</span>
                     <br>
-                    a. Se reconocen la capacidad jurídica y personalidad, con las que, respectivamente, comparecen para
-                    celebrar el Contrato.
+                    a. Se reconocen la capacidad jurídica y personalidad, con las que, respectivamente, comparecen para celebrar el Contrato. 
                     <br>
-                    b. Para el supuesto de intervenir de manera conjunta en diversas estipulaciones del Contrato, se les
-                    denominará como
-                    las "PARTES".
+                    b. Para el supuesto de intervenir de manera conjunta en diversas estipulaciones del Contrato, se les denominará como las “PARTES”. 
                     <br>
-                    c. El Contrato lo celebran: (i) de mutuo acuerdo; (ii) sin que medie coacción alguna
-                    de diversa especie; (iii) sin que exista diverso vicio de la voluntad; y, (iv) bajo el amparo de sus
-                    estipulaciones.
+                    c. El Contrato lo celebran: (i) de mutuo acuerdo; (ii) sin que medie coacción alguna de diversa especie; (iii) sin que exista diverso vicio de la voluntad; y, (iv) bajo el amparo de sus estipulaciones. 
                     <br>
-                    En virtud de lo anterior, las partes convienen sujetar el presente Contrato al
-                    contenido de las siguientes:
+                    En virtud de lo anterior, las partes convienen sujetar el presente Contrato al contenido de las siguientes: 
+
                 </p>
                 <div class="text-center fw-bold">CLÁUSULAS:</div>
                 <p>
-                    <b>PRIMERA. - DEFINICIONES. -</b> A reserva de que existan términos que sean definidos cualquier
-                    otra sección o cláusula del presente contrato, las "PARTES" acuerdan que, para efectos del presente
-                    contrato, los siguientes términos tendrán el significado que se indica a continuación,
-                    independientemente de su utilización en singular o en plural:
+                    <b>PRIMERA. - DEFINICIONES. -</b> A reserva de que existan términos que sean definidos cualquier otra 
+                    sección o cláusula del presente contrato, las “PARTES” acuerdan que, para efectos del presente contrato, 
+                    los siguientes términos tendrán el significado que se indica a continuación, independientemente de su 
+                    utilización en singular o en plural: 
                     <br>
                     <b>a. "Carátula del Contrato":</b> significa el documento que contiene el formulario que forma parte
                     integrante del presente contrato como "Anexo 1".
                     <br>
-                    <b>b. "Comisión":</b> significa cualquier cargo, independientemente de su denominación o modalidad,
-                    diferente al interés, que una entidad financiera cobre a un usuario
-                    por operaciones pasivas, activas o de servicio, incluidos los cargos por el uso o aceptación de
-                    medios de disposición.
+                    <b>b. "Comisión":</b> significa cualquier cargo, independientemente de su denominación o modalidad, 
+                    diferente al interés, que una entidad financiera cobre a un usuario por operaciones pasivas, 
+                    activas o de servicio, incluidos los cargos por el uso o aceptación de medios de disposición. 
                     <br>
                     <b>SEGUNDA. - OBJETO DEL CONTRATO. -</b> "PROYECTA" otorga al "ACREDITADO" un crédito simple hasta
                     por la cantidad de $<span class="subrayado">{{contrato.rows.0.monto_total}}</span>, son <span
@@ -522,7 +536,7 @@
                 </div>
             </div>
             <div class="col fw-bold d-flex justify-content-end">
-                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+                No. <span class="text-danger"> P-CPER-AVAL-{{contrato.rows.0.num_contrato}}</span>
             </div>
         </div>
 
@@ -550,16 +564,21 @@
                     el "ACREDITADO" realice pagos anticipados o adelantados, se sujetará a lo indicado en la cláusula
                     séptima.
                     <br>
-                    <b>DÉCIMA. - PAGO TOTAL DEL ADEUDO. - </b>Una vez que el ACREDITADO cubra el "Monto total a Pagar",
+                    <b>DÉCIMA. - OBLIGADO SOLIDARIO. - </b>En caso de estar contemplado el “OBLIGADO SOLIDARIO Y/O AVAL” 
+                    en la “CARATULA”; se constituye a _______________________________________________________ con 
+                    el carácter de OBLIGADO SOLIDARIO y/o AVAL, respecto de todas y cada una de las obligaciones 
+                    que se derivan de este contrato a cargo del ACREDITADO y a favor de “PROYECTA”. 
+                    <br>
+                    <b>DÉCIMA PPRIMERA. - PAGO TOTAL DEL ADEUDO. - </b>Una vez que el ACREDITADO cubra el "Monto total a Pagar",
                     tendrá
                     derecho a solicitar a PROYECTA una constancia de no
                     adeudo.
                     <br>
-                    <b>DÉCIMA PRIMERA. - MODIFICACIONES AL CONTRATO. - </b>Cualquier modificación que se realice al
+                    <b>DÉCIMA SEGUNDA. - MODIFICACIONES AL CONTRATO. - </b>Cualquier modificación que se realice al
                     presente contrato forzosamente deberá de constar por escrito y
                     firmado por las PARTES.
                     <br>
-                    <b>DÉCIMA SEGUNDA. - INCUMPLIMIENTO. - </b>Serán causas de incumplimiento las siguientes:
+                    <b>DÉCIMA TERCERA. - INCUMPLIMIENTO. - </b>Serán causas de incumplimiento las siguientes:
                     <br>
                     a.- Si el cliente incumple cualquier obligación de pago derivada de este contrato, ya sea por causas
                     imputables a éste o a que cualquier representante, empleado
@@ -568,16 +587,15 @@
                     a dicho pago. Por tal motivo, la cantidad que se haya dejado de recibir deberá ser entregada a
                     PROYECTA junto con el siguiente pago Semanal.
                     <br>
-                    b.- Por lo anterior, para los efectos de este contrato se entenderá que el ACREDITADO incurre en
-                    mora cuando no realice el pago puntual el día señalado de
-                    cualquiera de los pagos Semanales establecidos en la carátula del presente contrato (Anexo 1), por
-                    causas imputables al Cliente. <span class="fw-bold subrayado">La penalización por mora se aplicará
-                        por cada día de pago incumplido contándose a partir del día jueves de la Semana
-                        correspondiente.</span>
+                    b.- Por lo anterior, para los efectos de este contrato se entenderá que el ACREDITADO 
+                    incurre en mora cuando no realice el pago puntual a más tardar el tercer día natural siguiente de 
+                    cualquiera de los pagos semanales establecidos en la carátula del presente contrato, por causas imputables al Cliente. 
+                    La penalización por mora se aplicará por cada semana de pago incumplido.
                     <br>
                     c.- En caso, de incumplimiento del pago total y puntual de cada pago semanal, las partes acuerdan
                     que el “Monto total a pagar” pendiente de pago será
                     considerado inmediatamente como devengado y pagadero a solicitud de PROYECTA.
+                    <br>
                     d.- En caso, de que el ACREDITADO cambie su domicilio, deberá notificarlo por escrito a PROYECTA, y
                     en el supuesto de que el cliente no notifique dicho cambio
                     previamente a PROYECTA, se obliga a reembolsar a éste último, todos los gastos en que haya incurrido
@@ -588,15 +606,15 @@
                     sociedad de información crediticia autorizada, por cualquier
                     falta de pago.
                     <br>
-                    <b>DÉCIMA TERCERA. - VENCIMIENTO ANTICIPADO. - </b> "PROYECTA" podrá dar por vencido anticipadamente
+                    <b>DÉCIMA CUARTA. - VENCIMIENTO ANTICIPADO. - </b> "PROYECTA" podrá dar por vencido anticipadamente
                     el
                     plazo para el pago de Crédito efectivamente dispuesto
                     por el "ACREDITADO", en caso de que:
                     a. El "ACREDITADO" no efectúe uno o más pagos en términos del presente contrato y los anexos al
-                    mismo. .
+                    mismo.<br>
                     b. Si el "ACREDITADO" cambia de domicilio, número telefónico o empleo y no da aviso a "PROYECTA"
                     dentro de los 10 (diez) días naturales siguientes a la fecha
-                    en que se dé cualquiera de esos eventos.
+                    en que se dé cualquiera de esos eventos.<br>
                     c. Si resulta ser falsa cualquier información o dato proporcionado por el “ACREDITADO” 0 cualquier
                     información que hubiese o deba proporcionar a "PROYECTA".
                     Para que "PROYECTA" dé por vencido anticipadamente el presente contrato bastará que dé aviso al
@@ -607,7 +625,7 @@
                     extrajudicial alguno, deberá cubrir de inmediato a “PROYECTA" el saldo del Crédito que estuviere
                     pendiente de pago a dicha fecha.
                     <br>
-                    <b>DÉCIMA CUARTA. - TERMINACIÓN ANTICIPADA. - </b>El "ACREDITADO" podrá en todo momento solicitar la
+                    <b>DÉCIMA QUINTA. - TERMINACIÓN ANTICIPADA. - </b>El "ACREDITADO" podrá en todo momento solicitar la
                     terminación anticipada del presente Contrato, para lo cual
                     bastará la petición hecha a "PROYECTA" en forma escrita con documento que contenga la firma
                     autógrafa del "ACREDITADO".
@@ -626,7 +644,7 @@
                     que el “ACREDITADO” haya formulado su petición, el importe de los adeudos y una vez liquidados los
                     mismos se dará por terminado el presente contrato.
                     <br>
-                    <b>DÉCIMA QUINTA. - PROCEDIMIENTO PARA LA PRESENTACIÓN Y SEGUIMIENTO DE SOLICITUDES, DUDAS,
+                    <b>DÉCIMA SEXTA. - PROCEDIMIENTO PARA LA PRESENTACIÓN Y SEGUIMIENTO DE SOLICITUDES, DUDAS,
                         ACLARACIONES Y QUEJAS. - </b>En caso de que el ACREDITADO
                     tenga alguna duda, requiera alguna aclaración o presentar alguna queja referente a este Contrato,
                     así como a sus recibos, estados de cuenta, entre otros, podrá
@@ -635,7 +653,7 @@
                     mínimo de 24 horas y máximo de 30 días naturales, dependiendo de la naturaleza de la solicitud,
                     duda, aclaración y/o queja.
                     <br>
-                    <b>DÉCIMA SEXTA. - CESIÓN Y TRASPASO DE LOS DERECHOS DEL PRESENTE CONTRATO. - </b>"PROYECTA" queda
+                    <b>DÉCIMA SÉPTIMA. - CESIÓN Y TRASPASO DE LOS DERECHOS DEL PRESENTE CONTRATO. - </b>"PROYECTA" queda
                     expresamente autorizado, para ceder o traspasar todos o
                     parte de los derechos que a su favor se derivan del presente contrato, así como a dar en garantía
                     los derechos que a su favor se deriven del mismo.
@@ -646,7 +664,7 @@
                     quedando obligado además a cubrir a "PROYECTA" los daños y perjuicios que le ocasione dicha
                     violación.
                     <br>
-                    <b>DÉCIMA SÉPTIMA. - AVISO DE PRIVACIDAD Y PROTECCIÓN DE DATOS PERSONALES. - </b>El ACREDITADO
+                    <b>DÉCIMA OCTAVA. - AVISO DE PRIVACIDAD Y PROTECCIÓN DE DATOS PERSONALES. - </b>El ACREDITADO
                     autoriza a
                     PROYECTA para captar, usar, almacenar, transferir,
                     adminisitrar y en general tratar los datos personales y financieros que de forma voluntaria le
@@ -655,19 +673,19 @@
                     divulgación de sus datos personales, de conformidad con el aviso de
                     Privacidad que previamente fue puesto a su disposición.
                     <br>
-                    <b>DÉCIMO OCTAVA: - ANEXOS. - </b>Forman parte integrante del presente Contrato los anexos que se
+                    <b>DÉCIMA NOVENA: - ANEXOS. - </b>Forman parte integrante del presente Contrato los anexos que se
                     enlistan a continuación, los cuales se tienen por reproducidos en
                     el presente Contrato como sí a la letra se insertaran:
                     Anexo 1. “Carátula del Contrato, Anexo 2. “Pagaré”.
                     <br>
-                    <b>DÉCIMO NOVENA. - JURISDICCIÓN Y COMPETENCIA. - </b>Para todo lo que se refiere a la
+                    <b>VIGÉSIMA. - JURISDICCIÓN Y COMPETENCIA. - </b>Para todo lo que se refiere a la
                     interpretación,
                     cumplimiento y ejecución del presente contrato, las partes se
                     someten a la jurisdicción y competencia de los tribunales competentes de la Ciudad de del Carmen,
                     Campeche, renunciando a cualquier otro fuero que por
                     razón de sus domicilios presentes o futuros o por cualquier otra causa pudiera corresponderles.
                     <br>
-                    <b>VIGÉSIMA. - TÍTULOS DE LAS CLÁUSULAS. </b>Los subtítulos en las CLÁUSULAS del Contrato, son
+                    <b>VIGÉSIMA PRIMERA. - TÍTULOS DE LAS CLÁUSULAS. </b>Los subtítulos en las CLÁUSULAS del Contrato, son
                     exclusivamente por conveniencia de las “PARTES”, para una referencia y
                     lectura, por lo que no podrán afectar la interpretación de este Contrato.
                     <br>
@@ -684,7 +702,7 @@
             <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.mes_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> de <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.anio_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> </b>.
         </div>
 
-        <div class="mt-4 row text-center" style="font-size: 10px;">
+        <div class="mt-3 row text-center" style="font-size: 10px;">
             <div class="col">
                 <div class="fw-bold">
                     "PROYECTA SF" S.A. DE C.V.
@@ -710,6 +728,18 @@
             </div>
         </div>
 
+        <div class="mt-2 row text-center" style="font-size: 10px;">
+
+            <div class="col">
+                <div class="fw-bold">
+                    OBLIGADO SOLIDARIO Y/O AVAL
+                </div>
+                <div class="mt-4">_______________________________________________</div>
+                <div class="fw-bold">Nombre:</div>
+                <div class="fw-bold">{{contrato.rows.0.aval_nombre_completo}}</div>
+            </div>
+        </div>
+
 
     </div>
 
@@ -724,14 +754,14 @@
                 </div>
             </div>
             <div class="col fw-bold d-flex justify-content-end">
-                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+                No. <span class="text-danger"> P-CPER-AVAL-{{contrato.rows.0.num_contrato}}</span>
             </div>
         </div>
 
         <div class="text-center fw-bold">
             "ANEXO 1"
         </div>
-        <div class="text-center fw-bold">
+        <div style="text-align: center;">
             "CARATULA DE CONTRATO"
         </div>
         <div class="bg-encabezado encabezado">
@@ -799,6 +829,24 @@
         </table>
 
         <div class="bg-encabezado encabezado fw-bold">
+            DATOS DEL OBLIGADO SOLIDARIO Y/O AVAL, EN LO SUCESIVO DESIGNADO "OBLIGADO SOLIDARIO Y/O AVAL"
+        </div>
+
+        <table class="customTable">
+            <tr>
+                <td class="fw-bold fs7" style="width: 200px; border-top:none; border-left: none;">Nombre:</td>
+                <td class="fs8" style="border-right: none; border-top: none;">{{contrato.rows.0.aval_nombre_completo}}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold fs7" style="border-left: none;">Lugar y fecha de nacimiento:</td>
+                <td class="fs8" style="border-right: none;">Ciudad del Carmen, Campeche
+                    {{contrato.rows.0.aval_dia_fecha_nacimiento}}-{{contrato.rows.0.aval_mes_fecha_nacimiento}}-{{contrato.rows.0.aval_anio_fecha_nacimiento}}
+                </td>
+            </tr>
+     
+        </table>
+
+        <div class="bg-encabezado encabezado fw-bold">
             DATOS DEL CRÉDITO
         </div>
 
@@ -830,7 +878,7 @@
             </tr>
             <tr>
                 <td class="fw-bold fs7" style="border-left: none;">Fecha límite de pago:</td>
-                <td class="fs8" style="border-right: none;">{{credito.fecha_fin_prog_proyecta}}</td>
+                <td class="fs8" style="border-right: none;">{{contrato.rows.0.fecha_fin}}</td>
             </tr>
             <tr>
                 <td class="fw-bold fs7" style="border-left: none;">Penalización por incumplimiento:</td>
@@ -929,6 +977,8 @@
             </p>
         </div>
 
+        
+
 
 
 
@@ -943,8 +993,8 @@
                         src="https://system-proyectasfweb.com//assets/images/proyecta_logo_gris.png" alt="">
                 </div>
             </div>
-            <div class="col fw-bold d-flex justify-content-end">
-                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+            <div id="miContrato" class="col fw-bold d-flex justify-content-end">
+                No. <span class="text-danger"> P-CPER-AVAL-{{contrato.rows.0.num_contrato}}</span>
             </div>
         </div>
 
@@ -957,8 +1007,10 @@
                 <span class="fw-bold" style="text-decoration: underline;">{{contrato.rows.0.nombre_completo}}</span> POR
                 SU PROPIO
                 DERECHO A QUIÉN EN LO SUCESIVO SE LE
-                DENOMINARÁ COMO EL <b>"ACREDITADO"</b> DE
-                CONFORMIDAD CON LAS DECLARACIONES Y CLÁUSULAS SIGUIENTES:
+                DENOMINARÁ COMO EL <b>"ACREDITADO"</b>, ADEMÁS COMPARECE 
+                <span class="fw-bold" style="text-decoration: underline;">{{contrato.rows.0.aval_nombre_completo}}</span>, 
+                POR SU PROPIO DERECHO A QUIEN EN LO SUCESIVO 
+                SE LE DENOMINARÁ COMO EL  “OBLIGADO SOLIDARIO Y/O AVAL”, DE CONFORMIDAD CON LAS DECLARACIONES Y CLÁUSULAS SIGUIENTES:
             </p>
 
             <div class="text-center fw-bold" style="letter-spacing: 0.3em;">DECLARACIONES:</div>
@@ -966,62 +1018,54 @@
 
             <div>
                 <p>
-                    a. Que es una sociedad mercantil que se encuentra constituida conforme a las leyes de los Estados
-                    Unidos
-                    Mexicanos, según consta en el Acta número 153, Tomo 5, Libro Cuarto, Folio 323, de fecha 10 de
-                    marzo de
-                    2018, otorgada ante la fe del Licenciado en Derecho Luis Enrique López Martín, Notario Público del
-                    Estado de Yucatán, Titular de la Notaría Pública número 23, con residencia en la Ciudad de Mérida,
-                    Yucatán, misma que se encuentra debidamente inscrita en el Registro Público de la Propiedad y de
-                    Comercio de su jurisdicción, bajo el folio mercantil electrónico número N-2018022490, de fecha 15 de
-                    marzo de 2018, con Registro Federal de Contribuyente PSF180310464.
+                    a. Que es una sociedad mercantil que se encuentra constituida conforme a las leyes de los Estados 
+                    Unidos Mexicanos, según consta en el Acta número 153, Tomo 5, Libro Cuarto, Folio 323, de 
+                    fecha 10 de marzo de 2018, otorgada ante la fe del Licenciado en Derecho Luis Enrique López Martín, 
+                    Notario Público del Estado de Yucatán, Titular de la Notaría Pública número 23, con residencia en la 
+                    Ciudad de Mérida, Yucatán, misma que se encuentra debidamente inscrita en el Registro Público de la 
+                    Propiedad y de Comercio de su jurisdicción, bajo el folio mercantil electrónico número N-2018022490, 
+                    de fecha 15 de marzo de 2018, con Registro Federal de Contribuyente PSF180310464.
                     <br>
-                    b. Que dentro de su objeto social se encuentra el de “obtener y conceder toda clase de préstamos,
-                    créditos o financiamientos, otorgando o recibiendo garantías específicas, entre otras actividades,
-                    la cual ha sido debidamente autorizado por todas las medidas corporativas pertinentes y no están
-                    en conflicto con, ni son inconsistentes con, ni resultan en incumplimiento de (i) sus estatutos
-                    vigentes a la fecha del presente contrato, ni (ii) cualquier ley, término, condición obligación o
-                    restricción contractual alguna que obligue o afecte el presente contrato.
+                    b. Que dentro de su objeto social se encuentra el de “obtener y conceder toda clase de préstamos, 
+                    créditos o financiamientos, otorgando o recibiendo garantías específicas, entre otras actividades, 
+                    la cual ha sido debidamente autorizado por todas las medidas corporativas pertinentes y no están en 
+                    conflicto con, ni son inconsistentes con, ni resultan en incumplimiento de (i) sus estatutos 
+                    vigentes a la fecha del presente contrato, ni (ii) cualquier ley, término, condición obligación o 
+                    restricción contractual alguna que obligue o afecte el presente contrato. 
                     <br>
-                    c. Que cuenta con capacidad legal y facultades suficientes para celebrar el presente Contrato en
-                    nombre y representación de PROYECTA, mismas que al momento de su celebración no le han sido
-                    revocadas, limitadas ni modificadas en forma alguna y está autorizado para residir y tener su
-                    estancia legal en México.
+                    c. Que cuenta con capacidad legal y facultades suficientes para celebrar el presente Contrato en 
+                    nombre y representación de PROYECTA, mismas que al momento de su celebración no le han sido revocadas, 
+                    limitadas ni modificadas en forma alguna y está autorizado para residir y tener su estancia legal en México. 
                     <br>
-                    d. Que su domicilio se encuentra ubicado en: Calle 31-A, número 54, colonia Aviación, código
-                    postal 24170, Ciudad del Carmen, Campeche.
+                    d. Que su domicilio se encuentra ubicado en: Calle 31-A, número 54, colonia Aviación, código postal 24170, Ciudad del Carmen, Campeche. 
                     <br>
-                    e. Que cuenta con una Unidad de Atención al Usuario con domicilio en: Avenida Periférica Norte
-                    número 60 colonia Fraccionamiento Malibran código postal 24197 Ciudad del Carmen, Campeche;
-                    a quien podrás dirigirte en el número telefónico: 938-38-14413, en un horario de atención de
-                    lunes a viernes de 09:00 a 14:00 horas; o bien, a través de correo electrónico:
-                    admon.proyectasf@gmail.com en cualquier horario.
+                    e. Que cuenta con una Unidad de Atención al Usuario con domicilio en: Calle Águila número 23 Plaza 
+                    Concordia Local 8 de la colonia Aeropuerto código postal 24119 Ciudad del Carmen, Campeche; a 
+                    quien podrás dirigirte en el número telefónico: 938-38-14413, en un horario de atención de lunes a viernes 
+                    de 09:00 a 14:00 horas; o bien, a través de correo electrónico: admon.proyectasf@gmail.com en cualquier horario. 
+
+            
                     <br>
                     <span class="fw-bold">B. Declara el "ACREDITADO", Bajo Protesta de decir verdad:</span>
                     <br>
-                    a. Ser de nacionalidad mexicana, mayor de edad y con plena capacidad legal para obligarse y
-                    celebrar el presente Contrato, así como para asumir y dar cumplimiento a las obligaciones que en
-                    él se establecen.
+                    a. Ser de nacionalidad mexicana, mayor de edad y con plena capacidad legal para obligarse y 
+                    celebrar el presente Contrato, así como para asumir y dar cumplimiento a las obligaciones que en él se establecen. 
                     <br>
-                    b. Que para la celebración del contrato actúa a nombre y por cuenta propia y no por cuenta de un
-                    tercero.
+                    b. Que para la celebración del contrato actúa a nombre y por cuenta propia y no por cuenta de un tercero. 
                     <br>
-                    c. Que ha solicitado a "PROYECTA" un crédito simple en los términos establecidos en el presente
-                    Contrato. Manifestando que los beneficios que recibirá de dicho Crédito son para él y no para una
-                    tercera persona.
+                    c. Que ha solicitado a “PROYECTA” un crédito simple en los términos establecidos en el presente 
+                    Contrato. Manifestando que los beneficios que recibirá de dicho Crédito son para él y no para una tercera persona. 
                     <br>
-                    d. Que toda la información y documentación que ha proporcionado a "PROYECTA"; para el análisis
-                    y estudio del otorgamiento del Crédito objeto del presente Contrato es verdadera y refleja en
-                    forma correcta y compleja su situación actual.
+                    d. Que toda la información y documentación que ha proporcionado a “PROYECTA” para el análisis y 
+                    estudio del otorgamiento del Crédito objeto del presente Contrato es verdadera y refleja en 
+                    forma correcta y completa su situación actual. 
                     <br>
-                    e. Que "PROYECTA" hizo de su conocimiento, previo a la firma del presente Contrato y de los
-                    documentos que forman parte integrante del mismo, su contenido y efectos jurídicos, cargos o
-                    gastos que se generarán por su celebración.
+                    Que “PROYECTA” hizo de su conocimiento, previo a la firma del presente Contrato y de los documentos 
+                    que forman parte integrante del mismo, su contenido y efectos jurídicos, cargos o gastos que se generarán por su celebración. 
                     <br>
-                    f. Que una vez que le fueron explicados el contenido y alcances legales del presente contrato, al
-                    momento de la celebración de la operación "PROYECTA" le hizo entrega de un ejemplar del
-                    contrato, de la "Carátula del contrato sirviendo su firma como el recibo mas amplio y suficiente
-                    que en derecho proceda.
+                    f. Que una vez que le fueron explicados el contenido y alcances legales del presente contrato, 
+                    al momento de la celebración de la operación “PROYECTA” le hizo entrega de un ejemplar del contrato, 
+                    de la “Carátula del Contrato” sirviendo su firma como el recibo más amplio y suficiente que en derecho proceda. 
                     <br>
                     g. Que su domicilio se encuentra ubicado en: Calle <span
                         class="subrayado">&nbsp;&nbsp;{{contrato.rows.0.calle}}&nbsp;&nbsp;</span> número
@@ -1030,45 +1074,47 @@
                         class="subrayado">&nbsp;&nbsp;{{contrato.rows.0.colonia}}&nbsp;&nbsp;</span> código postal <span
                         class="subrayado">&nbsp;{{contrato.rows.0.cp}}&nbsp;</span>,Ciudad del Carmen Campeche.
                     <br>
-                    h. Que conoce y esíá conforme con el Aviso de Privacidad de "PROYECTA", cuyo contenido se le
-                    ha hecho saber previo al otorgamiento de la firma de este instrumento, el cual Se encuentra
-                    conforme a los iérminos de la Ley Federal de Protección de Datos Personales en Posesión de los
-                    Particulares vigente, su reglamento y demás disposiciones aplicables.
+                    h. Que autoriza a “PROYECTA” en términos del documento que se adjunta al presente contrato 
+                    como “Anexo ____” a llevar a cabo investigaciones periódicas sobre el historial crediticio en la sociedad de 
+                    información crediticia que estime conveniente, durante todo el tiempo que mantenga una relación 
+                    jurídica con “PROYECTA” y que conoce la naturaleza y alcance de la información que proporcionan las 
+                    sociedades de información crediticia, así como las implicaciones que pueda generar el hecho de estar 
+                    registrado por el incumplimiento en el pago del crédito otorgado, y que el historial crediticio podrá 
+                    servir de base para la aprobación de futuros créditos con “PROYECTA”. 
                     <br>
-                    i. Que cuenta con los recursos financieros, necesarios y suficientes para cumplir con las
-                    obligaciones derivadas del presente contrato y sus anexos y que dichos recursos no son ni serán de
-                    procedencia ilícita.
+                    i. Que conoce y está conforme con el Aviso de Privacidad de “PROYECTA”, cuyo contenido 
+                    se le ha hecho saber previo al otorgamiento de la firma de este instrumento, el cual 
+                    se encuentra conforme a los términos de la Ley Federal de Protección de Datos Personales 
+                    en Posesión de los Particulares vigente, su reglamento y demás disposiciones aplicables. 
+                    <br>
+                    j. Que cuenta con los recursos financieros, necesarios y suficientes para cumplir con 
+                    las obligaciones derivadas del presente contrato y sus anexos y que dichos recursos 
+                    no son ni serán de procedencia ilícita.
                     <br>
                     <span class="fw-bold">C. Declara el "ACREDITADO" y "PROYECTA":</span>
                     <br>
-                    a. Se reconocen la capacidad jurídica y personalidad, con las que, respectivamente, comparecen para
-                    celebrar el Contrato.
+                    a. Se reconocen la capacidad jurídica y personalidad, con las que, respectivamente, comparecen para celebrar el Contrato. 
                     <br>
-                    b. Para el supuesto de intervenir de manera conjunta en diversas estipulaciones del Contrato, se les
-                    denominará como
-                    las "PARTES".
+                    b. Para el supuesto de intervenir de manera conjunta en diversas estipulaciones del Contrato, se les denominará como las “PARTES”. 
                     <br>
-                    c. El Contrato lo celebran: (i) de mutuo acuerdo; (ii) sin que medie coacción alguna
-                    de diversa especie; (iii) sin que exista diverso vicio de la voluntad; y, (iv) bajo el amparo de sus
-                    estipulaciones.
+                    c. El Contrato lo celebran: (i) de mutuo acuerdo; (ii) sin que medie coacción alguna de diversa especie; (iii) sin que exista diverso vicio de la voluntad; y, (iv) bajo el amparo de sus estipulaciones. 
                     <br>
-                    En virtud de lo anterior, las partes convienen sujetar el presente Contrato al
-                    contenido de las siguientes:
+                    En virtud de lo anterior, las partes convienen sujetar el presente Contrato al contenido de las siguientes: 
+
                 </p>
                 <div class="text-center fw-bold">CLÁUSULAS:</div>
                 <p>
-                    <b>PRIMERA. - DEFINICIONES. -</b> A reserva de que existan términos que sean definidos cualquier
-                    otra sección o cláusula del presente contrato, las "PARTES" acuerdan que, para efectos del presente
-                    contrato, los siguientes términos tendrán el significado que se indica a continuación,
-                    independientemente de su utilización en singular o en plural:
+                    <b>PRIMERA. - DEFINICIONES. -</b> A reserva de que existan términos que sean definidos cualquier otra 
+                    sección o cláusula del presente contrato, las “PARTES” acuerdan que, para efectos del presente contrato, 
+                    los siguientes términos tendrán el significado que se indica a continuación, independientemente de su 
+                    utilización en singular o en plural: 
                     <br>
                     <b>a. "Carátula del Contrato":</b> significa el documento que contiene el formulario que forma parte
                     integrante del presente contrato como "Anexo 1".
                     <br>
-                    <b>b. "Comisión":</b> significa cualquier cargo, independientemente de su denominación o modalidad,
-                    diferente al interés, que una entidad financiera cobre a un usuario
-                    por operaciones pasivas, activas o de servicio, incluidos los cargos por el uso o aceptación de
-                    medios de disposición.
+                    <b>b. "Comisión":</b> significa cualquier cargo, independientemente de su denominación o modalidad, 
+                    diferente al interés, que una entidad financiera cobre a un usuario por operaciones pasivas, 
+                    activas o de servicio, incluidos los cargos por el uso o aceptación de medios de disposición. 
                     <br>
                     <b>SEGUNDA. - OBJETO DEL CONTRATO. -</b> "PROYECTA" otorga al "ACREDITADO" un crédito simple hasta
                     por la cantidad de $<span class="subrayado">{{contrato.rows.0.monto_total}}</span>, son <span
@@ -1149,7 +1195,7 @@
                 </div>
             </div>
             <div class="col fw-bold d-flex justify-content-end">
-                No. <span class="text-danger">{{contrato.rows.0.num_contrato}}</span>
+                No. <span class="text-danger"> P-CPER-AVAL-{{contrato.rows.0.num_contrato}}</span>
             </div>
         </div>
 
@@ -1177,16 +1223,21 @@
                     el "ACREDITADO" realice pagos anticipados o adelantados, se sujetará a lo indicado en la cláusula
                     séptima.
                     <br>
-                    <b>DÉCIMA. - PAGO TOTAL DEL ADEUDO. - </b>Una vez que el ACREDITADO cubra el "Monto total a Pagar",
+                    <b>DÉCIMA. - OBLIGADO SOLIDARIO. - </b>En caso de estar contemplado el “OBLIGADO SOLIDARIO Y/O AVAL” 
+                    en la “CARATULA”; se constituye a _______________________________________________________ con 
+                    el carácter de OBLIGADO SOLIDARIO y/o AVAL, respecto de todas y cada una de las obligaciones 
+                    que se derivan de este contrato a cargo del ACREDITADO y a favor de “PROYECTA”. 
+                    <br>
+                    <b>DÉCIMA PPRIMERA. - PAGO TOTAL DEL ADEUDO. - </b>Una vez que el ACREDITADO cubra el "Monto total a Pagar",
                     tendrá
                     derecho a solicitar a PROYECTA una constancia de no
                     adeudo.
                     <br>
-                    <b>DÉCIMA PRIMERA. - MODIFICACIONES AL CONTRATO. - </b>Cualquier modificación que se realice al
+                    <b>DÉCIMA SEGUNDA. - MODIFICACIONES AL CONTRATO. - </b>Cualquier modificación que se realice al
                     presente contrato forzosamente deberá de constar por escrito y
                     firmado por las PARTES.
                     <br>
-                    <b>DÉCIMA SEGUNDA. - INCUMPLIMIENTO. - </b>Serán causas de incumplimiento las siguientes:
+                    <b>DÉCIMA TERCERA. - INCUMPLIMIENTO. - </b>Serán causas de incumplimiento las siguientes:
                     <br>
                     a.- Si el cliente incumple cualquier obligación de pago derivada de este contrato, ya sea por causas
                     imputables a éste o a que cualquier representante, empleado
@@ -1195,16 +1246,15 @@
                     a dicho pago. Por tal motivo, la cantidad que se haya dejado de recibir deberá ser entregada a
                     PROYECTA junto con el siguiente pago Semanal.
                     <br>
-                    b.- Por lo anterior, para los efectos de este contrato se entenderá que el ACREDITADO incurre en
-                    mora cuando no realice el pago puntual el día señalado de
-                    cualquiera de los pagos Semanales establecidos en la carátula del presente contrato (Anexo 1), por
-                    causas imputables al Cliente. <span class="fw-bold subrayado">La penalización por mora se aplicará
-                        por cada día de pago incumplido contándose a partir del día jueves de la Semana
-                        correspondiente.</span>
+                    b.- Por lo anterior, para los efectos de este contrato se entenderá que el ACREDITADO 
+                    incurre en mora cuando no realice el pago puntual a más tardar el tercer día natural siguiente de 
+                    cualquiera de los pagos semanales establecidos en la carátula del presente contrato, por causas imputables al Cliente. 
+                    La penalización por mora se aplicará por cada semana de pago incumplido.
                     <br>
                     c.- En caso, de incumplimiento del pago total y puntual de cada pago semanal, las partes acuerdan
                     que el “Monto total a pagar” pendiente de pago será
                     considerado inmediatamente como devengado y pagadero a solicitud de PROYECTA.
+                    <br>
                     d.- En caso, de que el ACREDITADO cambie su domicilio, deberá notificarlo por escrito a PROYECTA, y
                     en el supuesto de que el cliente no notifique dicho cambio
                     previamente a PROYECTA, se obliga a reembolsar a éste último, todos los gastos en que haya incurrido
@@ -1215,15 +1265,15 @@
                     sociedad de información crediticia autorizada, por cualquier
                     falta de pago.
                     <br>
-                    <b>DÉCIMA TERCERA. - VENCIMIENTO ANTICIPADO. - </b> "PROYECTA" podrá dar por vencido anticipadamente
+                    <b>DÉCIMA CUARTA. - VENCIMIENTO ANTICIPADO. - </b> "PROYECTA" podrá dar por vencido anticipadamente
                     el
                     plazo para el pago de Crédito efectivamente dispuesto
                     por el "ACREDITADO", en caso de que:
                     a. El "ACREDITADO" no efectúe uno o más pagos en términos del presente contrato y los anexos al
-                    mismo. .
+                    mismo.<br>
                     b. Si el "ACREDITADO" cambia de domicilio, número telefónico o empleo y no da aviso a "PROYECTA"
                     dentro de los 10 (diez) días naturales siguientes a la fecha
-                    en que se dé cualquiera de esos eventos.
+                    en que se dé cualquiera de esos eventos.<br>
                     c. Si resulta ser falsa cualquier información o dato proporcionado por el “ACREDITADO” 0 cualquier
                     información que hubiese o deba proporcionar a "PROYECTA".
                     Para que "PROYECTA" dé por vencido anticipadamente el presente contrato bastará que dé aviso al
@@ -1234,7 +1284,7 @@
                     extrajudicial alguno, deberá cubrir de inmediato a “PROYECTA" el saldo del Crédito que estuviere
                     pendiente de pago a dicha fecha.
                     <br>
-                    <b>DÉCIMA CUARTA. - TERMINACIÓN ANTICIPADA. - </b>El "ACREDITADO" podrá en todo momento solicitar la
+                    <b>DÉCIMA QUINTA. - TERMINACIÓN ANTICIPADA. - </b>El "ACREDITADO" podrá en todo momento solicitar la
                     terminación anticipada del presente Contrato, para lo cual
                     bastará la petición hecha a "PROYECTA" en forma escrita con documento que contenga la firma
                     autógrafa del "ACREDITADO".
@@ -1253,7 +1303,7 @@
                     que el “ACREDITADO” haya formulado su petición, el importe de los adeudos y una vez liquidados los
                     mismos se dará por terminado el presente contrato.
                     <br>
-                    <b>DÉCIMA QUINTA. - PROCEDIMIENTO PARA LA PRESENTACIÓN Y SEGUIMIENTO DE SOLICITUDES, DUDAS,
+                    <b>DÉCIMA SEXTA. - PROCEDIMIENTO PARA LA PRESENTACIÓN Y SEGUIMIENTO DE SOLICITUDES, DUDAS,
                         ACLARACIONES Y QUEJAS. - </b>En caso de que el ACREDITADO
                     tenga alguna duda, requiera alguna aclaración o presentar alguna queja referente a este Contrato,
                     así como a sus recibos, estados de cuenta, entre otros, podrá
@@ -1262,7 +1312,7 @@
                     mínimo de 24 horas y máximo de 30 días naturales, dependiendo de la naturaleza de la solicitud,
                     duda, aclaración y/o queja.
                     <br>
-                    <b>DÉCIMA SEXTA. - CESIÓN Y TRASPASO DE LOS DERECHOS DEL PRESENTE CONTRATO. - </b>"PROYECTA" queda
+                    <b>DÉCIMA SÉPTIMA. - CESIÓN Y TRASPASO DE LOS DERECHOS DEL PRESENTE CONTRATO. - </b>"PROYECTA" queda
                     expresamente autorizado, para ceder o traspasar todos o
                     parte de los derechos que a su favor se derivan del presente contrato, así como a dar en garantía
                     los derechos que a su favor se deriven del mismo.
@@ -1273,7 +1323,7 @@
                     quedando obligado además a cubrir a "PROYECTA" los daños y perjuicios que le ocasione dicha
                     violación.
                     <br>
-                    <b>DÉCIMA SÉPTIMA. - AVISO DE PRIVACIDAD Y PROTECCIÓN DE DATOS PERSONALES. - </b>El ACREDITADO
+                    <b>DÉCIMA OCTAVA. - AVISO DE PRIVACIDAD Y PROTECCIÓN DE DATOS PERSONALES. - </b>El ACREDITADO
                     autoriza a
                     PROYECTA para captar, usar, almacenar, transferir,
                     adminisitrar y en general tratar los datos personales y financieros que de forma voluntaria le
@@ -1282,19 +1332,19 @@
                     divulgación de sus datos personales, de conformidad con el aviso de
                     Privacidad que previamente fue puesto a su disposición.
                     <br>
-                    <b>DÉCIMO OCTAVA: - ANEXOS. - </b>Forman parte integrante del presente Contrato los anexos que se
+                    <b>DÉCIMA NOVENA: - ANEXOS. - </b>Forman parte integrante del presente Contrato los anexos que se
                     enlistan a continuación, los cuales se tienen por reproducidos en
                     el presente Contrato como sí a la letra se insertaran:
                     Anexo 1. “Carátula del Contrato, Anexo 2. “Pagaré”.
                     <br>
-                    <b>DÉCIMO NOVENA. - JURISDICCIÓN Y COMPETENCIA. - </b>Para todo lo que se refiere a la
+                    <b>VIGÉSIMA. - JURISDICCIÓN Y COMPETENCIA. - </b>Para todo lo que se refiere a la
                     interpretación,
                     cumplimiento y ejecución del presente contrato, las partes se
                     someten a la jurisdicción y competencia de los tribunales competentes de la Ciudad de del Carmen,
                     Campeche, renunciando a cualquier otro fuero que por
                     razón de sus domicilios presentes o futuros o por cualquier otra causa pudiera corresponderles.
                     <br>
-                    <b>VIGÉSIMA. - TÍTULOS DE LAS CLÁUSULAS. </b>Los subtítulos en las CLÁUSULAS del Contrato, son
+                    <b>VIGÉSIMA PRIMERA. - TÍTULOS DE LAS CLÁUSULAS. </b>Los subtítulos en las CLÁUSULAS del Contrato, son
                     exclusivamente por conveniencia de las “PARTES”, para una referencia y
                     lectura, por lo que no podrán afectar la interpretación de este Contrato.
                     <br>
@@ -1311,7 +1361,7 @@
             <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.mes_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> de <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.anio_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> </b>.
         </div>
 
-        <div class="mt-4 row text-center" style="font-size: 10px;">
+        <div class="mt-3 row text-center" style="font-size: 10px;">
             <div class="col">
                 <div class="fw-bold">
                     "PROYECTA SF" S.A. DE C.V.
@@ -1334,6 +1384,18 @@
                 <div class="mt-4">_______________________________________________</div>
                 <div class="fw-bold">Nombre:</div>
                 <div class="fw-bold">{{credito.nombre}} {{credito.apellido_paterno}} {{credito.apellido_materno}}</div>
+            </div>
+        </div>
+
+        <div class="mt-2 row text-center" style="font-size: 10px;">
+
+            <div class="col">
+                <div class="fw-bold">
+                    OBLIGADO SOLIDARIO Y/O AVAL
+                </div>
+                <div class="mt-4">_______________________________________________</div>
+                <div class="fw-bold">Nombre:</div>
+                <div class="fw-bold">{{contrato.rows.0.aval_nombre_completo}}</div>
             </div>
         </div>
 

@@ -9,6 +9,8 @@ const { buildPatchQuery, buildPostQuery, buildDeleteQueryById } = require('../da
 const mensajes = require('../helpers/messages');
 const SolicitudCredito = require('../models/solicitud_credito');
 const Cliente = require('../models/cliente');
+const Aval = require('../models/aval');
+const Negocio = require('../models/negocio');
 const Agencia = require('../models/agencia');
 const Zona = require('../models/zona');
 const TipoEstatusSolicitud = require('../models/tipo_estatus_solicitud');
@@ -21,7 +23,6 @@ const Sucursal = require('../models/sucursal');
 const Colonia = require('../models/colonia');
 
 const table = 'dbo.solicitud_credito';
-const tableUSer = 'dbo.clientes';
 
 const solicitudCreditoGet = async (req, res = response) => {
 
@@ -40,7 +41,24 @@ const solicitudCreditoGet = async (req, res = response) => {
                 {
                     model: Cliente,
                     as: 'cliente',
-                }, {
+                },
+                {
+                    model: Aval,
+                    as: 'aval',
+                    include:{
+                        model: Colonia,
+                        as: 'colonia'
+                    }
+                },
+                {
+                    model: Negocio,
+                    as: 'negocio',
+                    include:{
+                        model: Colonia,
+                        as: 'colonia'
+                    }
+                },
+                {
                     model: Agencia,
                     as: 'agencia',
                     include: {
@@ -51,10 +69,10 @@ const solicitudCreditoGet = async (req, res = response) => {
                             as: 'sucursal'
                         }
                     }
-                },{
+                }, {
                     model: SolicitudServicio,
                     as: 'solicitudServicio'
-                },{
+                }, {
                     model: Colonia,
                     as: 'colonia'
                 }
@@ -132,6 +150,8 @@ const getSolicitudesCreditoPaginados = async (req, res = response) => {
 
         // const searchTermLower = searchTerm.toLowerCase();
 
+        console.log(searchTerm);
+
         const { count, rows } = await SolicitudCredito.findAndCountAll({
 
             include: [
@@ -169,8 +189,6 @@ const getSolicitudesCreditoPaginados = async (req, res = response) => {
             limit: limitPerPage,
             order: [['id', 'ASC']]
         });
-
-        console.log(rows);
 
         const totalElements = count;
         const totalPages = Math.ceil(totalElements / limitPerPage);
@@ -543,20 +561,23 @@ const solicitudCreditosGetTotal = async (req, res = response) => {
 
 const solicitudCreditoPost = async (req, res = response) => {
 
+    console.log('entramos al controller');
+
     let t;
+    let clienteId;
 
     try {
 
         const { body } = req;
 
-        const { cliente, servicios } = body;
+        const { cliente, servicios, aval, negocio, tipo_solicitud } = body;
 
-        console.log(req.body);
+        clienteId = body.cliente_id
 
         t = await sequelize.transaction();
 
-        // Verificar si existe el cliente_id, sino existe lo creamos
-        let clienteId = body.cliente_id;
+        //Ahora debemos de saber que tipo de Solicitud es...
+        //1.PERSONAL - 2.MICRONEGOCIO
 
         //preguntamos si ya existe el cliente_id, sino existe lo creamos
         if (!body.cliente_id) {
@@ -590,7 +611,6 @@ const solicitudCreditoPost = async (req, res = response) => {
 
         }
 
-        //TODO: Pendiente completar los otros datos no obligatorios
         //Creamos la solicitud
         const solicitud_credito = await SolicitudCredito.create({
             cliente_id: clienteId,
@@ -613,7 +633,8 @@ const solicitudCreditoPost = async (req, res = response) => {
             parentesco_contacto1: body.parentesco_contacto1,
             parentesco_contacto2: body.parentesco_contacto2,
             direccion_contacto1: body.direccion_contacto1,
-            direccion_contacto2: body.direccion_contacto2
+            direccion_contacto2: body.direccion_contacto2,
+            tipo_solicitud_credito: tipo_solicitud
         }, { transaction: t });
 
         //Creamos los servicios
@@ -631,6 +652,34 @@ const solicitudCreditoPost = async (req, res = response) => {
             tv: servicios.tv,
             alumbrado_publico: servicios.alumbrado_publico
         }, { transaction: t });
+
+        if (tipo_solicitud == 2) {
+
+            await Aval.create({
+                solicitud_credito_id: solicitud_credito.id,
+                nombre: aval.nombre,
+                apellido_paterno: aval.apellido_paterno,
+                apellido_materno: aval.apellido_materno,
+                fecha_nacimiento: aval.fecha_nacimiento,
+                calle: aval.calle,
+                num_ext: aval.num_ext,
+                colonia_id: aval.colonia_id,
+                telefono: aval.telefono
+            }, { transaction: t });
+
+            await Negocio.create({
+                solicitud_credito_id: solicitud_credito.id,
+                nombre: negocio.nombre,
+                giro: negocio.giro,
+                calle: negocio.calle,
+                num_ext: negocio.num_ext,
+                telefono: negocio.telefono,
+                hora_pago: negocio.hora_pago,
+                colonia_id: negocio.colonia_id
+            }, { transaction: t })
+
+        }
+
 
         await t.commit();
 
@@ -653,121 +702,265 @@ const solicitudCreditoPost = async (req, res = response) => {
 
 const solicitudCreditoPut = async (req, res = response) => {
 
+    let t;
+
     try {
 
-        const { id } = req.params;
+        console.log('procedemos a actualizar');
 
-        req.body.calle = req.body.cliente.calle;
-        req.body.num_int = req.body.cliente.num_int;
-        req.body.num_ext = req.body.cliente.num_ext;
-        req.body.cruzamientos = req.body.cliente.cruzamientos;
-        req.body.referencia = req.body.cliente.referencia;
-        req.body.colonia_id = req.body.cliente.colonia_id;
-        req.body.municipio = req.body.cliente.municipio;
-        req.body.localidad = req.body.cliente.localidad;
-        req.body.estado = req.body.cliente.estado;
+        const {body, params} = req;
+        const {negocio, aval, servicios} = body;
 
-        const usuario = req.body.usuario;
+        t = await sequelize.transaction();
 
-        //Borramos vivienda_propia si no hay radiobutton3 seleccionado
-        if (req.body.vivienda == 'VIVIENDA PROPIA' || req.body.vivienda == 'VIVIENDA RENTADA') {
-            req.body.vivienda_otra = null;
-        }
-
-        const servicios = {
-            luz: req.body.servicios.luz,
-            agua_potable: req.body.servicios.agua_potable,
-            auto_propio: req.body.servicios.auto_propio,
-            telefono_fijo: req.body.servicios.telefono_fijo,
-            telefono_movil: req.body.servicios.telefono_movil,
-            refrigerador: req.body.servicios.refrigerador,
-            estufa: req.body.servicios.estufa,
-            internet: req.body.servicios.internet,
-            gas: req.body.servicios.gas,
-            tv: req.body.servicios.tv,
-            alumbrado_publico: req.body.servicios.alumbrado_publico
-        }
-
-        delete req.body.dependientes;
-        delete req.body.cliente;
-        delete req.body.cliente_id;
-        delete req.body.servicios;
-        delete req.body.id;
-        delete req.body.sucursal_id;
-        delete req.body.zona_id;
-        delete req.body.usuario;
-        delete req.body.fecha_creacion;
-
-        console.log(req.body.estatus_sol_id);
-
-        let consulta = buildPatchQuery(id, table, req.body);
-
-        const result = await pool.query(consulta);
-
-        const values = [
-            servicios.luz,
-            servicios.agua_potable,
-            servicios.auto_propio,
-            servicios.telefono_fijo,
-            servicios.telefono_movil,
-            servicios.refrigerador,
-            servicios.estufa,
-            servicios.internet,
-            servicios.gas,
-            servicios.tv,
-            servicios.alumbrado_publico,
-            id
-        ]
-
-        const { rows } = await pool.query(queries.updateServicios, values);
-
-        if (req.body.observaciones && usuario) {
-
-            // Obtén la fecha actual
-            const currentDate = new Date();
-
-            // Formatea la fecha para que sea compatible con PostgreSQL
-            const fechaObservacion = moment(currentDate).format('YYYY-MM-DD HH:mm:ss');
-
-            let evento;
-
-
-            if (req.body.estatus_sol_id === 2) {
-                evento = 'SE CANCELA'
-            } else if (req.body.estatus_sol_id === 1) {
-                evento = 'CAMBIOS REQUERIDOS'
-            } else {
-                evento = '-'
+        const cliente_founded = await Cliente.findOne({
+            where:{
+                id: body.cliente_id,
             }
+        });
 
-            //Definamos un evento
-            await pool.query(`INSERT INTO dbo.solicitud_eventos (solicitud_credito_id, observacion, fecha, usuario, evento) VALUES(${id}, '${req.body.observaciones}','${fechaObservacion}','${usuario}', '${evento}')`)
+        const solicitudCredito = await SolicitudCredito.findOne({
+            where:{
+                id: body.id
+            }
+        });
+
+        const solicitudServiciosFounded = await SolicitudServicio.findOne({
+            where:{
+                solicitud_credito_id: body.id
+            }
+        })
+
+        if(body.tipo_solicitud_credito == 'MICRONEGOCIO'){
+
+            const aval_founded = await Aval.findOne({
+                where:{
+                    solicitud_credito_id: solicitudCredito.id
+                }
+            });
+    
+            const negocio_founded = await Negocio.findOne({
+                where:{
+                    solicitud_credito_id: solicitudCredito.id
+                }
+            });
+
+            await aval_founded.update({
+                nombre: aval.nombre,
+                apellido_paterno: aval.apellido_paterno,
+                apellido_materno: aval.apellido_materno,
+                fecha_nacimiento: aval.fecha_nacimiento,
+                calle: aval.calle,
+                num_ext: aval.num_ext,
+                colonia_id: aval.colonia_id,
+                telefono: aval.telefono
+            }, {transaction: t});
+
+            await negocio_founded.update({
+                nombre: negocio.nombre,
+                giro: negocio.giro,
+                calle: negocio.calle,
+                num_ext: negocio.num_ext,
+                telefono: negocio.telefono,
+                hora_pago: negocio.hora_pago,
+                colonia_id: negocio.colonia_id
+            }, {transaction: t})
+
         }
+
+
+        await cliente_founded.update({
+            nombre: body.cliente.nombre,
+            apellido_paterno: body.cliente.apellido_paterno,
+            apellido_materno: body.cliente.apellido_materno,
+            telefono: body.cliente.telefono,
+            sexo: body.cliente.sexo,
+            agencia_id: body.agencia_id,
+            fecha_nacimiento: body.cliente.fecha_nacimiento,
+            email: body.cliente.email,
+            calle: body.cliente.calle,
+            num_ext: body.cliente.num_ext,
+            colonia_id: body.cliente.colonia_id,
+            municipio: body.cliente.municipio,
+            localidad: body.cliente.localidad,
+            estado: body.cliente.estado,
+            cruzamientos: body.cliente.cruzamientos,
+            referencia: body.cliente.referencia
+        }, { transaction: t});
+
+        await solicitudCredito.update({
+            estatus_sol_id: body.estatus_sol_id,
+            agencia_id: body.agencia_id,
+            colonia_id: body.cliente.colonia_id,
+            calle: body.cliente.calle,
+            num_ext: body.cliente.num_ext,
+            num_int: body.cliente.num_int,
+            municipio: body.cliente.municipio,
+            localidad: body.cliente.localidad,
+            estado: body.cliente.estado,
+            tarifa_id: body.tarifa_id,
+            nombre_contacto1: body.nombre_contacto1,
+            nombre_contacto2: body.nombre_contacto2,
+            telefono_contacto1: body.telefono_contacto1,
+            telefono_contacto2: body.telefono_contacto2,
+            parentesco_contacto1: body.parentesco_contacto1,
+            parentesco_contacto2: body.parentesco_contacto2,
+            direccion_contacto1: body.direccion_contacto1,
+            direccion_contacto2: body.direccion_contacto2,
+        }, { transaction: t});
+
+        await solicitudServiciosFounded.update({
+            agua_potable: servicios.agua_potable,
+            luz: servicios.luz,
+            telefono_fijo: servicios.telefono_fijo,
+            auto_propio: servicios.auto_propio,
+            refrigerador: servicios.refrigerador,
+            estufa: servicios.estufa,
+            internet: servicios.internet,
+            gas: servicios.gas,
+            alumbrado_publico: servicios.alumbrado_publico,
+            tv: servicios.tv
+        }, {transaction: t})
+
+
+        await t.commit();
 
         res.status(200).json(
-            `La solicitud: ${result.rows[0]['id']} ha sido modificada correctamente.`
+            `La solicitud ha sido modificada correctamente.`
         );
 
     } catch (error) {
 
         console.log(error);
 
-        const errors = [{
-            msg: error.constraint,
-            param: error.detail
-        }]
-
-        if (errors)
-
-            return res.status(500).json({
-                errors
-            })
+        await t.rollback();
 
         res.status(500).json({
             msg: mensajes.errorInterno
         });
     }
 }
+
+
+// const solicitudCreditoPut = async (req, res = response) => {
+
+//     try {
+
+//         const { id } = req.params;
+
+//         console.log(req.body);
+
+//         req.body.calle = req.body.cliente.calle;
+//         req.body.num_int = req.body.cliente.num_int;
+//         req.body.num_ext = req.body.cliente.num_ext;
+//         req.body.cruzamientos = req.body.cliente.cruzamientos;
+//         req.body.referencia = req.body.cliente.referencia;
+//         req.body.colonia_id = req.body.cliente.colonia_id;
+//         req.body.municipio = req.body.cliente.municipio;
+//         req.body.localidad = req.body.cliente.localidad;
+//         req.body.estado = req.body.cliente.estado;
+
+//         const usuario = req.body.usuario;
+
+//         //Borramos vivienda_propia si no hay radiobutton3 seleccionado
+//         if (req.body.vivienda == 'VIVIENDA PROPIA' || req.body.vivienda == 'VIVIENDA RENTADA') {
+//             req.body.vivienda_otra = null;
+//         }
+
+//         const servicios = {
+//             luz: req.body.servicios.luz,
+//             agua_potable: req.body.servicios.agua_potable,
+//             auto_propio: req.body.servicios.auto_propio,
+//             telefono_fijo: req.body.servicios.telefono_fijo,
+//             telefono_movil: req.body.servicios.telefono_movil,
+//             refrigerador: req.body.servicios.refrigerador,
+//             estufa: req.body.servicios.estufa,
+//             internet: req.body.servicios.internet,
+//             gas: req.body.servicios.gas,
+//             tv: req.body.servicios.tv,
+//             alumbrado_publico: req.body.servicios.alumbrado_publico
+//         }
+
+//         delete req.body.dependientes;
+//         delete req.body.cliente;
+//         delete req.body.cliente_id;
+//         delete req.body.servicios;
+//         delete req.body.id;
+//         delete req.body.sucursal_id;
+//         delete req.body.zona_id;
+//         delete req.body.usuario;
+//         delete req.body.fecha_creacion;
+
+//         console.log(req.body.estatus_sol_id);
+
+//         let consulta = buildPatchQuery(id, table, req.body);
+
+//         const result = await pool.query(consulta);
+
+//         const values = [
+//             servicios.luz,
+//             servicios.agua_potable,
+//             servicios.auto_propio,
+//             servicios.telefono_fijo,
+//             servicios.telefono_movil,
+//             servicios.refrigerador,
+//             servicios.estufa,
+//             servicios.internet,
+//             servicios.gas,
+//             servicios.tv,
+//             servicios.alumbrado_publico,
+//             id
+//         ]
+
+//         const { rows } = await pool.query(queries.updateServicios, values);
+
+//         if (req.body.observaciones && usuario) {
+
+//             // Obtén la fecha actual
+//             const currentDate = new Date();
+
+//             // Formatea la fecha para que sea compatible con PostgreSQL
+//             const fechaObservacion = moment(currentDate).format('YYYY-MM-DD HH:mm:ss');
+
+//             let evento;
+
+
+//             if (req.body.estatus_sol_id === 2) {
+//                 evento = 'SE CANCELA'
+//             } else if (req.body.estatus_sol_id === 1) {
+//                 evento = 'CAMBIOS REQUERIDOS'
+//             } else {
+//                 evento = '-'
+//             }
+
+//             //Definamos un evento
+//             await pool.query(`INSERT INTO dbo.solicitud_eventos (solicitud_credito_id, observacion, fecha, usuario, evento) VALUES(${id}, '${req.body.observaciones}','${fechaObservacion}','${usuario}', '${evento}')`)
+//         }
+
+//         res.status(200).json(
+//             `La solicitud: ${result.rows[0]['id']} ha sido modificada correctamente.`
+//         );
+
+//     } catch (error) {
+
+//         console.log(error);
+
+//         const errors = [{
+//             msg: error.constraint,
+//             param: error.detail
+//         }]
+
+//         if (errors)
+
+//             return res.status(500).json({
+//                 errors
+//             })
+
+//         res.status(500).json({
+//             msg: mensajes.errorInterno
+//         });
+//     }
+// }
 
 const solicitudCreditoDelete = async (req, res = response) => {
 
