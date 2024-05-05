@@ -281,9 +281,10 @@
 
         <div class="mt-2" style="font-size: 10px;">
             <p>
-                <b>LUGAR Y FECHA DE FIRMA: Ciudad del Carmen, Campeche a </b>___________ <b>de</b> __________________
-                <b>del</b>
-                _____________.
+                <b>LUGAR Y FECHA DE FIRMA: Ciudad del Carmen, Campeche a </b> 
+                <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.dia_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> 
+                <b>de</b> <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.mes_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> 
+                <b>del</b> <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.anio_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> .
             </p>
         </div>
 
@@ -940,9 +941,10 @@
 
         <div class="mt-2" style="font-size: 10px;">
             <p>
-                <b>LUGAR Y FECHA DE FIRMA: Ciudad del Carmen, Campeche a </b>___________ <b>de</b> __________________
-                <b>del</b>
-                _____________.
+                <b>LUGAR Y FECHA DE FIRMA: Ciudad del Carmen, Campeche a </b> 
+                <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.dia_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> 
+                <b>de</b> <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.mes_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> 
+                <b>del</b> <span class="subrayado">&nbsp;&nbsp;&nbsp;{{contrato.rows.0.anio_fecha_entrega_prog}}&nbsp;&nbsp;&nbsp;</span> .
             </p>
         </div>
 
@@ -1475,16 +1477,52 @@
 
             <div class="mt-2">Fecha de suscripción: ___________________________________________</div>
 
+            <div class="mt-2">Teléfono: ___________________________________________</div>
+
         </div>
 
-        <div class="fw-bold mt-3" style="font-size: 13px;">
-            <b>A C E P T O:</b>
+        <div class="mt-2" style="font-size: 13px;">
+            <b>Datos del obligado Solidario y/o aval</b>
         </div>
 
-        <div class="mt-5">
-            <div>_____________________</div>
-            <div style="font-size: 13px;">FIRMA DEUDOR</div>
+        <div style="font-size: 14px;" class="mt-1">
+
+            <div>Nombre:___________________________________________
+            </div>
+
+            <div class="mt-2">Domicilio:___________________________________________
+            </div>
+
+            <div class="mt-2">Teléfono: ___________________________________________</div>
+
         </div>
+
+        <div class="row mt-5">
+            <div class="col">
+                <div class="fw-bold" style="font-size: 13px;">
+                    <b>A C E P T O:</b>
+                </div>
+
+                <div >
+                    <div>_____________________</div>
+                    <div style="font-size: 13px;">FIRMA DEUDOR</div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="fw-bold" style="font-size: 13px;">
+                    <b>A C E P T O:</b>
+                </div>
+
+                <div >
+                    <div>_____________________</div>
+                    <div style="font-size: 13px;">FIRMA OBLIGADO SOLIDARIO Y/O AVAL</div>
+                </div>
+
+            </div>
+        </div>
+
+        
 
     </div>
 

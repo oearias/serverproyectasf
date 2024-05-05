@@ -1175,6 +1175,85 @@ const queries = {
                         on m.tipo_asentamiento_id = n.id
                         WHERE a.id = $1 `,
 
+    getCreditoMICRONEGOCIO:        `SELECT 
+                        a.id, 
+                        a.cliente_id,
+                        k.clave ||'-'||a.cliente_id as num_cliente,
+                        a.solicitud_credito_id,
+                        a.num_contrato, a.monto_otorgado, a.monto_total, 
+                        TRIM(TO_CHAR(a.monto_otorgado,'999,999D99')) as monto_otorgado2, 
+                        fu_numero_letras(a.monto_total) as monto_total_letras,
+                        ( 36 - b.num_semanas ) as dif_num_semanas,
+                        ROUND((a.monto_total / b.num_semanas),2) as monto_semanal,
+                        a.fecha_creacion, a.fecha_inicio_prog, a.hora_entrega, a.fecha_fin_prog, a.fecha_entrega_prog,  
+                        TO_CHAR(a.fecha_entrega_prog,'DD-MM-YYYY') as fecha_entrega_prog2, 
+                        TO_CHAR(a.fecha_fin_prog,'DD-MM-YYYY') as fecha_fin_prog2, 
+                        TO_CHAR(a.fecha_fin_prog_proyecta,'DD-MM-YYYY') as fecha_fin_prog_proyecta, 
+                        LPAD(EXTRACT (DAY FROM a.fecha_fin_prog_proyecta)::text, 2, '0') as dia_fecha_fin_prog_proyecta,
+                        fu_get_month_letras(a.fecha_fin_prog_proyecta) as mes_fecha_fin_prog_proyecta,
+                        EXTRACT (YEAR FROM a.fecha_fin_prog_proyecta) as anio_fecha_fin_prog_proyecta,
+                        a.fecha_inicio_real, a.fecha_fin_real, a.fecha_entrega_real,
+                        h.id as fuente_financ_id, 
+                        b.id tarifa_id, 
+                        b.cociente, b.num_semanas, 
+                        c.nombre, c.apellido_paterno, c.apellido_materno,
+                        j.nombre as zona, i.nombre as agencia,
+                        avales.nombre as aval_nombre,
+						avales.apellido_paterno as aval_apellido_paterno,
+						avales.apellido_materno as aval_apellido_materno,
+                        avales.telefono as aval_telefono,
+						avales.calle as aval_calle,
+						avales.num_ext as aval_num_ext,
+						(SELECT nombre FROM dbo.colonias WHERE id = avales.colonia_id) as aval_colonia,
+                        l.calle, l.num_ext, UPPER(m.nombre) as colonia, m.cp, n.nombre as tipo_asentamiento, c.telefono, 
+                        e.id as tipo_contrato_id, f.id as tipo_credito_id, 
+                        g.nombre as estatus_credito,
+                        a.locked,
+                        a.renovacion,
+                        a.entregado,
+                        a.preaprobado,
+                        a.inversion_positiva
+                        FROM  
+                        dbo.creditos a 
+                        LEFT JOIN  
+                        dbo.tarifas b on a.tarifa_id=b.id 
+                        LEFT JOIN 
+                        dbo.clientes c on a.cliente_id = c.id 
+                        LEFT JOIN 
+                        dbo.tipo_contrato e 
+                        on a.tipo_contrato_id = e.id 
+                        LEFT JOIN 
+                        dbo.tipo_credito f 
+                        on a.tipo_credito_id = f.id 
+                        LEFT JOIN  
+                        dbo.tipo_estatus_credito g 
+                        on a.estatus_credito_id = g.id 
+                        LEFT JOIN 
+                        dbo.tipo_fuente_financiamiento h 
+                        on a.fuente_financ_id = h.id 
+                        INNER JOIN
+                        dbo.agencias i 
+                        on c.agencia_id = i.id
+                        INNER JOIN
+                        dbo.zonas j on 
+                        i.zona_id = j.id
+                        INNER JOIN
+                        dbo.sucursales k 
+                        on j.sucursal_id = k.id
+                        INNER JOIN
+                        dbo.solicitud_credito l 
+                        on a.solicitud_credito_id = l.id
+                        LEFT JOIN
+						dbo.avales 
+						on avales.solicitud_credito_id = l.id
+                        INNER JOIN
+                        dbo.colonias m
+                        on m.id = l.colonia_id
+                        INNER JOIN
+                        dbo.tipo_asentamiento n
+                        on m.tipo_asentamiento_id = n.id
+                        WHERE a.id = $1 `,
+
     deleteCredito:      'DELETE FROM dbo.creditos WHERE id = $1 RETURNING *',
     
     getTipoContratos:   'SELECT * FROM dbo.tipo_contrato order by nombre',

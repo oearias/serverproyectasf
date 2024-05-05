@@ -85,7 +85,7 @@
                                 </tr>
                                 <tr>
                                     <td class="text-end">
-                                        Folio <span class="fw-bold text-danger">{{credito.num_contrato}}</span> 
+                                        Folio <span class="fw-bold text-danger"> P-CPER-AVAL-{{credito.num_contrato}}</span> 
                                     </td>
                                 </tr>
                             </table>
@@ -207,6 +207,41 @@
                             </div>
                         </div>
 
+                    </div>
+
+                    <div class="row mt-1">
+
+                        <div class="col punteado" style="border-radius: 5px;">
+
+                            <div style="font-size: 8px; ">
+
+                                <div class="row">
+                                    <span class="letter-small" style="padding-left: 4px; font-weight: bold;">NOMBRE DEL OBLIGADO SOLIDARIO</span>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col" style="padding-left: 4px; padding-right: 2px">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.aval_nombre}} {{credito.aval_apellido_paterno}} {{credito.aval_apellido_materno}}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <span class="letter-small" style="padding-left: 4px; ">DIRECCIÓN, N. TELEFÓNICO</span>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col" style="padding-left: 4px; padding-right: 2px">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.aval_calle}} {{credito.aval_num_ext}} Col. {{credito.aval_colonia}} - {{credito.aval_telefono}}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -231,7 +266,7 @@
 
                             {{#ifCond this.num_semana 17}}
                                 <div class="row"
-                                    style="font-size:10px; height:24px; padding-left: 5px; margin-top:2px; margin-bottom:2px; padding-right: 0;">
+                                    style="font-size:10px; height:23px; padding-left: 5px; margin-top:2px; margin-bottom:2px; padding-right: 0;">
                                     
                                     <div class="col-1" style="padding-right: 1px;">
                                         <div class="bg-encabezado hoja2 d-flex justify-content-center align-items-center"
@@ -411,7 +446,7 @@
                                 </tr>
                                 <tr>
                                     <td class="text-end">
-                                        Folio <span class="fw-bold text-danger">{{credito.num_contrato}}</span> 
+                                        Folio <span class="fw-bold text-danger"> P-CPER-AVAL-{{credito.num_contrato}}</span> 
                                     </td>
                                 </tr>
                             </table>
@@ -427,6 +462,7 @@
                                     <span class="letter-small" style="padding-left: 4px; font-weight: bold;">DATOS DEL
                                         CLIENTE</span>
                                 </div>
+
                                 <div class="row">
                                     <div class="col-6" style="padding-left: 4px; padding-right: 2px">
                                         <div class="bg-encabezado hoja2">
@@ -533,6 +569,41 @@
                             </div>
                         </div>
 
+                    </div>
+
+                    <div class="row mt-1">
+
+                        <div class="col punteado" style="border-radius: 5px;">
+
+                            <div style="font-size: 8px; ">
+
+                                <div class="row">
+                                    <span class="letter-small" style="padding-left: 4px; font-weight: bold;">NOMBRE DEL OBLIGADO SOLIDARIO</span>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col" style="padding-left: 4px; padding-right: 2px">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.aval_nombre}} {{credito.aval_apellido_paterno}} {{credito.aval_apellido_materno}}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <span class="letter-small" style="padding-left: 4px; ">DIRECCIÓN, N. TELEFÓNICO</span>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col" style="padding-left: 4px; padding-right: 2px">
+                                        <div class="bg-encabezado hoja2">
+                                            {{credito.aval_calle}} {{credito.aval_num_ext}} Col. {{credito.aval_colonia}} - {{credito.aval_telefono}}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
 

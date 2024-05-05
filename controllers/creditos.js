@@ -1391,7 +1391,7 @@ const printContratosMasivos = async (req, res = response) => {
             // Consulta amortizacion
             const result = await pool.query(queries.queryPrintAmorti, values);
 
-            const resultado = await pool.query(queries.getCredito, values);
+            const resultado = await pool.query(queries.getCreditoMICRONEGOCIO, values);
 
             //dif_num_semanas es la diferencia entre el numero de semanas y el maximo numero de semanas
             // que pueden aparecer en la tarjeta de pagos.
@@ -1400,7 +1400,10 @@ const printContratosMasivos = async (req, res = response) => {
             const {
                 num_contrato, num_cliente, monto_otorgado, monto_otorgado2, monto_total, monto_semanal,
                 num_semanas, dif_num_semanas,
-                nombre, apellido_paterno, apellido_materno, monto_total_letras,
+                nombre, apellido_paterno, apellido_materno,
+                aval_nombre, aval_apellido_paterno,aval_apellido_materno, aval_telefono,
+                aval_calle, aval_num_ext, aval_colonia,
+                monto_total_letras,
                 telefono, calle, num_ext, colonia, cp, tipo_asentamiento, zona, agencia, fecha_inicio_prog,
                 fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2, fecha_fin_prog_proyecta,
                 dia_fecha_fin_prog_proyecta,
@@ -1422,6 +1425,8 @@ const printContratosMasivos = async (req, res = response) => {
                 mes_fecha_fin_prog_proyecta,
                 anio_fecha_fin_prog_proyecta,
                 nombre, apellido_paterno, apellido_materno, telefono, calle, num_ext, tipo_asentamiento, colonia, cp,
+                aval_nombre, aval_apellido_paterno, aval_apellido_materno, aval_telefono,
+                aval_calle, aval_num_ext, aval_colonia,
                 zona, agencia
             };
 

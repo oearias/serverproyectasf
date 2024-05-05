@@ -74,6 +74,7 @@
                             <th class="text-center">Monto</th>
                             <th class="text-center">Hora</th>
                             <th class="text-center">F. de entrega</th>
+                            <th class="text-center">N. de cheque</th>
                             <th class="text-center">Estatus</th>
 
                         </tr>
@@ -122,6 +123,10 @@
                             </td>
 
                             <td class="text-center align-middle">
+                                {{this.num_cheque}}
+                            </td>
+
+                            <td class="text-center align-middle">
                                 {{#ifCond this.cn_r 0}}
                                 CN
                                 {{else}}
@@ -152,13 +157,129 @@
 
         <div class="d-flex mt-4">
 
-            <div style="width: 40%; font-size: 8px;">
-                <div>*Anexo
-                    <br>
-                    Comprobante de transferencia
+            <div style="width: 50%; font-size: 8px; margin-right: 20px">
+
+                <div>
+                    <span style="font-weight: bold;">DETALLES DE RESULTADOS</span>
+                    <table class="customTable">
+                        <thead>
+                            <tr>
+                                <td colspan="5" class="text-center">ZONA 1</td>
+                                <td colspan="4" class="text-center">ZONA 2</td>
+                                <td colspan="4" class="text-center">ZONA 3</td>
+                            </tr>
+                            <tr>
+                                <td>Agencia</td>
+                                <td>R/RF</td>
+                                <td>CN</td>
+                                <td>MC</td>
+                                <td>RMC</td>
+                                <td>R/RF</td>
+                                <td>CN</td>
+                                <td>MC</td>
+                                <td>RMC</td>
+                                <td>R/RF</td>
+                                <td>CN</td>
+                                <td>MC</td>
+                                <td>RMC</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center">1</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">2</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">3</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">4</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">5</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">6</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div style="width: 60%; border: 1px solid black;">
+            <div style="width: 50%; border: 1px solid black;">
                 <div class="col">
                     <table class="customTable" style="width: 50%; font-size: 8px; ">
                         <thead>
