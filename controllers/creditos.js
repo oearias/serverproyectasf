@@ -1324,6 +1324,8 @@ const printContratosMasivos = async (req, res = response) => {
                 rows
             }
 
+            console.log(fecha_fin_prog_proyecta);
+
             result['credito'] = {
                 num_contrato, num_cliente, monto_otorgado, monto_total, monto_otorgado2, monto_total_letras,
                 monto_semanal,
@@ -1405,7 +1407,8 @@ const printContratosMasivos = async (req, res = response) => {
                 aval_calle, aval_num_ext, aval_colonia,
                 monto_total_letras,
                 telefono, calle, num_ext, colonia, cp, tipo_asentamiento, zona, agencia, fecha_inicio_prog,
-                fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2, fecha_fin_prog_proyecta,
+                fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2, 
+                fecha_fin_prog_proyecta,
                 dia_fecha_fin_prog_proyecta,
                 mes_fecha_fin_prog_proyecta,
                 anio_fecha_fin_prog_proyecta
@@ -1429,6 +1432,9 @@ const printContratosMasivos = async (req, res = response) => {
                 aval_calle, aval_num_ext, aval_colonia,
                 zona, agencia
             };
+
+            console.log(dia_fecha_fin_prog_proyecta);
+            console.log(fecha_fin_prog_proyecta);
 
 
             // Rellenamos la plantilla con los datos de cada crédito
@@ -2925,16 +2931,18 @@ const printAllDoc = async (req, res = response) => {
         const { num_contrato, num_cliente, monto_otorgado, monto_otorgado2, monto_total, monto_semanal,
             nombre, apellido_paterno, apellido_materno, monto_total_letras,
             telefono, calle, num_ext, colonia, cp, tipo_asentamiento, zona, agencia, fecha_inicio_prog,
-            fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2 } = resultado.rows[0];
+            fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2, fecha_fin_prog_proyecta } = resultado.rows[0];
 
         result['contrato'] = {
             rows
         }
 
+        console.log(fecha_fin_prog_proyecta);
+
 
         result['credito'] = {
             num_contrato, num_cliente, monto_otorgado, monto_total, monto_otorgado2, monto_total_letras,
-            monto_semanal, fecha_inicio_prog, fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2,
+            monto_semanal, fecha_inicio_prog, fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2, fecha_fin_prog_proyecta,
             nombre, apellido_paterno, apellido_materno, telefono, calle, num_ext, tipo_asentamiento, colonia, cp,
             zona, agencia
         };

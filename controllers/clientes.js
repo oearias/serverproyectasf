@@ -235,27 +235,81 @@ const clientesGetTotal = async (req, res = response) => {
     }
 }
 
+// const clientePost = async (req, res = response) => {
+
+//     try {
+
+//         //req.body.created_at = new Date().toISOString();
+//         delete req.body.id;
+//         delete req.body.sucursal_id;
+//         delete req.body.zona_id;
+
+//         let consulta = buildPostQuery(table, req.body);
+
+//         const result = await pool.query(consulta);
+
+//         if (result.rowCount != 1) {
+//             return res.status(500).json({
+//                 msg: mensajes.registroNoInsert
+//             });
+//         }
+
+//         res.status(200).json(
+//             `El(La) cliente: ${result.rows[0]['nombre']} ${result.rows[0]['apellido_paterno']} ha sido añadido(a) correctamente.`
+//         );
+
+//     } catch (error) {
+
+//         console.log(error);
+
+//         const errors = [{
+//             msg: error.constraint,
+//             param: error.detail
+//         }]
+
+//         if (errors)
+
+//             return res.status(500).json({
+//                 errors
+//             })
+
+//         res.status(500).json({
+//             msg: mensajes.errorInterno
+//         });
+//     }
+// }
+
 const clientePost = async (req, res = response) => {
+
+    const {body} = req;
 
     try {
 
-        //req.body.created_at = new Date().toISOString();
-        delete req.body.id;
-        delete req.body.sucursal_id;
-        delete req.body.zona_id;
 
-        let consulta = buildPostQuery(table, req.body);
+        await Cliente.create({
+            nombre: body.nombre,
+            apellido_paterno: body.apellido_paterno,
+            apellido_materno: body.apellido_materno,
+            agencia_id: body.agencia_id,
+            sexo: body.sexo,
+            tipo_cliente_id: 1,
+            rfc: body.rfc,
+            curp: body.curp,
+            fecha_nacimiento: body.fecha_nacimiento,
+            calle: body.calle,
+            num_ext: body.num_ext,
+            num_int: body.num_int,
+            colonia_id: body.colonia_id,
+            municipio: body.municipio,
+            localidad: body.localidad,
+            estado: body.estado,
+            cruzamientos: body.cruzamientos,
+            referencia: body.referencia
 
-        const result = await pool.query(consulta);
-
-        if (result.rowCount != 1) {
-            return res.status(500).json({
-                msg: mensajes.registroNoInsert
-            });
-        }
+        })
 
         res.status(200).json(
-            `El(La) cliente: ${result.rows[0]['nombre']} ${result.rows[0]['apellido_paterno']} ha sido añadido(a) correctamente.`
+            `El(La) cliente ha sido añadido(a) correctamente.`
         );
 
     } catch (error) {
@@ -283,39 +337,56 @@ const clientePut = async (req, res = response) => {
 
     try {
 
-        const { id } = req.params;
+        const {body, params } = req;
 
-        console.log(req.body);
+        const { id } = params;
 
-        //borramos el id para que no se inserte ni actualice
-        delete req.body.id;
-        delete req.body.sucursal_id;
-        delete req.body.zona_id;
+        const cliente_founded = await Cliente.findOne({
+            where: {
+                id: id
+            }
+        });
 
-        let consulta = buildPatchQuery(id, table, req.body);
+        // Verifica si el cliente existe
+        if (!cliente_founded) {
+            return res.status(404).json({
+                message: `Cliente con no encontrado.`,
+            });
+        }
 
-        const result = await pool.query(consulta);
+        cliente_founded.update({
+            nombre: body.nombre,
+            apellido_paterno: body.apellido_paterno,
+            apellido_materno: body.apellido_materno,
+            agencia_id: body.agencia_id,
+            sexo: body.sexo,
+            tipo_cliente_id: 1,
+            rfc: body.rfc,
+            curp: body.curp,
+            fecha_nacimiento: body.fecha_nacimiento,
+            calle: body.calle,
+            num_ext: body.num_ext,
+            num_int: body.num_int,
+            colonia_id: body.colonia_id,
+            municipio: body.municipio,
+            localidad: body.localidad,
+            estado: body.estado,
+            cruzamientos: body.cruzamientos,
+            referencia: body.referencia
+
+        })
 
         res.status(200).json(
-            `El(La) cliente: ${result.rows[0]['nombre']} ${result.rows[0]['apellido_paterno']} ha sido modificado(a) correctamente.`
+            `El(La) cliente  ha sido modificado(a) correctamente.`
         );
 
     } catch (error) {
 
-        const errors = [{
-            msg: error.constraint,
-            param: error.detail
-        }]
+        console.log(error);
 
-        if (errors)
-
-            return res.status(500).json({
-                errors
-            })
-
-        res.status(500).json({
-            msg: mensajes.errorInterno
-        });
+        return res.status(500).json({
+            errors
+        })
     }
 }
 
