@@ -435,6 +435,8 @@ const getCreditosProgramacionEntregaPaginados = async (req, res = response) => {
             order: [['id', 'ASC']]
         });
 
+        console.log(rows);
+
         const totalElements = count;
         const totalPages = Math.ceil(totalElements / limitPerPage);
 
