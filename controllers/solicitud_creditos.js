@@ -963,67 +963,67 @@ const solicitudCreditoGetByClienteId = async (req, res = response) => {
     }
 }
 
-// const solChangeEstatusAprobadaToDelivery = async (req, res = response) => {
-
-//     const solIds = req.body;
-//     const fecha_presupuestal = new Date().toISOString();
-//     const updatedSolicitudes = [];
-
-//     try {
-
-//         for (const id of solIds) {
-
-//             const result = await pool.query(`CALL pr_crea_credito_preaprobado(${id})`);
-
-//         }
-
-
-//         res.status(200).json(
-//             'Solicitud(es) autorizada(s)'
-//         );
-
-//     } catch (error) {
-
-//         console.log(error);
-
-//         res.status(500).json({
-//             msg: mensajes.errorInterno
-//         })
-//     }
-// }
-
-
 const solChangeEstatusAprobadaToDelivery = async (req, res = response) => {
 
-    //Se optimiza el conntrolador con transacciones
-
     const solIds = req.body;
+    const fecha_presupuestal = new Date().toISOString();
+    const updatedSolicitudes = [];
 
-    const transaction = await sequelize.transaction();
-    
     try {
-        const promises = solIds.map(id => {
-            return sequelize.query('CALL pr_crea_credito_preaprobado(:id)', {
-                replacements: { id },
-                transaction
-            });
-        });
 
-        await Promise.all(promises);
-        await transaction.commit();
+        for (const id of solIds) {
 
-        res.status(200).json('Solicitud(es) autorizada(s)');
+            const result = await pool.query(`CALL pr_crea_credito_preaprobado(${id})`);
+
+        }
+
+
+        res.status(200).json(
+            'Solicitud(es) autorizada(s)'
+        );
 
     } catch (error) {
-        await transaction.rollback();
-        console.error(error);
+
+        console.log(error);
 
         res.status(500).json({
-            msg: mensajes.errorInterno,
-            error: error.message  // Proporcionar detalles del error
-        });
+            msg: mensajes.errorInterno
+        })
     }
-};
+}
+
+
+// const solChangeEstatusAprobadaToDelivery = async (req, res = response) => {
+
+//     //Se optimiza el conntrolador con transacciones
+
+//     const solIds = req.body;
+
+//     const transaction = await sequelize.transaction();
+    
+//     try {
+//         const promises = solIds.map(id => {
+//             return sequelize.query('CALL pr_crea_credito_preaprobado(:id)', {
+//                 replacements: { id },
+//                 transaction
+//             });
+//         });
+
+//         await Promise.all(promises);
+//         await transaction.commit();
+
+//         res.status(200).json('Solicitud(es) autorizada(s)');
+
+//     } catch (error) {
+//         await transaction.rollback();
+//         console.error(error);
+
+//         res.status(500).json({
+//             msg: mensajes.errorInterno,
+//             error: error.message  // Proporcionar detalles del error
+//         });
+//     }
+// };
 
 const changeEstatusPendingToApproved = async (req, res = response) => {
 
