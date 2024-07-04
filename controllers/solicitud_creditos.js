@@ -1,12 +1,13 @@
 const { response } = require('express');
 const pool = require('../database/connection');
-const moment = require('moment');
-
 const { Op, Sequelize } = require('sequelize');
 
+const sequelize = require('../database/config');
+
+//Queries y utilidades
 const { queries } = require('../database/queries');
-const { buildPatchQuery, buildPostQuery, buildDeleteQueryById } = require('../database/build-query');
 const mensajes = require('../helpers/messages');
+
 const SolicitudCredito = require('../models/solicitud_credito');
 const Cliente = require('../models/cliente');
 const Aval = require('../models/aval');
@@ -18,11 +19,8 @@ const Credito = require('../models/credito');
 const Tarifa = require('../models/tarifa');
 const SolicitudEvento = require('../models/solicitud_evento');
 const SolicitudServicio = require('../models/solicitud_servicio');
-const sequelize = require('../database/config');
 const Sucursal = require('../models/sucursal');
 const Colonia = require('../models/colonia');
-
-const table = 'dbo.solicitud_credito';
 
 const solicitudCreditoGet = async (req, res = response) => {
 
@@ -841,127 +839,6 @@ const solicitudCreditoPut = async (req, res = response) => {
     }
 }
 
-
-// const solicitudCreditoPut = async (req, res = response) => {
-
-//     try {
-
-//         const { id } = req.params;
-
-//         console.log(req.body);
-
-//         req.body.calle = req.body.cliente.calle;
-//         req.body.num_int = req.body.cliente.num_int;
-//         req.body.num_ext = req.body.cliente.num_ext;
-//         req.body.cruzamientos = req.body.cliente.cruzamientos;
-//         req.body.referencia = req.body.cliente.referencia;
-//         req.body.colonia_id = req.body.cliente.colonia_id;
-//         req.body.municipio = req.body.cliente.municipio;
-//         req.body.localidad = req.body.cliente.localidad;
-//         req.body.estado = req.body.cliente.estado;
-
-//         const usuario = req.body.usuario;
-
-//         //Borramos vivienda_propia si no hay radiobutton3 seleccionado
-//         if (req.body.vivienda == 'VIVIENDA PROPIA' || req.body.vivienda == 'VIVIENDA RENTADA') {
-//             req.body.vivienda_otra = null;
-//         }
-
-//         const servicios = {
-//             luz: req.body.servicios.luz,
-//             agua_potable: req.body.servicios.agua_potable,
-//             auto_propio: req.body.servicios.auto_propio,
-//             telefono_fijo: req.body.servicios.telefono_fijo,
-//             telefono_movil: req.body.servicios.telefono_movil,
-//             refrigerador: req.body.servicios.refrigerador,
-//             estufa: req.body.servicios.estufa,
-//             internet: req.body.servicios.internet,
-//             gas: req.body.servicios.gas,
-//             tv: req.body.servicios.tv,
-//             alumbrado_publico: req.body.servicios.alumbrado_publico
-//         }
-
-//         delete req.body.dependientes;
-//         delete req.body.cliente;
-//         delete req.body.cliente_id;
-//         delete req.body.servicios;
-//         delete req.body.id;
-//         delete req.body.sucursal_id;
-//         delete req.body.zona_id;
-//         delete req.body.usuario;
-//         delete req.body.fecha_creacion;
-
-//         console.log(req.body.estatus_sol_id);
-
-//         let consulta = buildPatchQuery(id, table, req.body);
-
-//         const result = await pool.query(consulta);
-
-//         const values = [
-//             servicios.luz,
-//             servicios.agua_potable,
-//             servicios.auto_propio,
-//             servicios.telefono_fijo,
-//             servicios.telefono_movil,
-//             servicios.refrigerador,
-//             servicios.estufa,
-//             servicios.internet,
-//             servicios.gas,
-//             servicios.tv,
-//             servicios.alumbrado_publico,
-//             id
-//         ]
-
-//         const { rows } = await pool.query(queries.updateServicios, values);
-
-//         if (req.body.observaciones && usuario) {
-
-//             // Obtén la fecha actual
-//             const currentDate = new Date();
-
-//             // Formatea la fecha para que sea compatible con PostgreSQL
-//             const fechaObservacion = moment(currentDate).format('YYYY-MM-DD HH:mm:ss');
-
-//             let evento;
-
-
-//             if (req.body.estatus_sol_id === 2) {
-//                 evento = 'SE CANCELA'
-//             } else if (req.body.estatus_sol_id === 1) {
-//                 evento = 'CAMBIOS REQUERIDOS'
-//             } else {
-//                 evento = '-'
-//             }
-
-//             //Definamos un evento
-//             await pool.query(`INSERT INTO dbo.solicitud_eventos (solicitud_credito_id, observacion, fecha, usuario, evento) VALUES(${id}, '${req.body.observaciones}','${fechaObservacion}','${usuario}', '${evento}')`)
-//         }
-
-//         res.status(200).json(
-//             `La solicitud: ${result.rows[0]['id']} ha sido modificada correctamente.`
-//         );
-
-//     } catch (error) {
-
-//         console.log(error);
-
-//         const errors = [{
-//             msg: error.constraint,
-//             param: error.detail
-//         }]
-
-//         if (errors)
-
-//             return res.status(500).json({
-//                 errors
-//             })
-
-//         res.status(500).json({
-//             msg: mensajes.errorInterno
-//         });
-//     }
-// }
-
 const solicitudCreditoDelete = async (req, res = response) => {
 
     try {
@@ -1086,42 +963,67 @@ const solicitudCreditoGetByClienteId = async (req, res = response) => {
     }
 }
 
+// const solChangeEstatusAprobadaToDelivery = async (req, res = response) => {
+
+//     const solIds = req.body;
+//     const fecha_presupuestal = new Date().toISOString();
+//     const updatedSolicitudes = [];
+
+//     try {
+
+//         for (const id of solIds) {
+
+//             const result = await pool.query(`CALL pr_crea_credito_preaprobado(${id})`);
+
+//         }
+
+
+//         res.status(200).json(
+//             'Solicitud(es) autorizada(s)'
+//         );
+
+//     } catch (error) {
+
+//         console.log(error);
+
+//         res.status(500).json({
+//             msg: mensajes.errorInterno
+//         })
+//     }
+// }
+
+
 const solChangeEstatusAprobadaToDelivery = async (req, res = response) => {
 
+    //Se optimiza el conntrolador con transacciones
+
     const solIds = req.body;
-    const fecha_presupuestal = new Date().toISOString();
-    const updatedSolicitudes = [];
 
+    const transaction = await sequelize.transaction();
+    
     try {
+        const promises = solIds.map(id => {
+            return sequelize.query('CALL pr_crea_credito_preaprobado(:id)', {
+                replacements: { id },
+                transaction
+            });
+        });
 
-        for (const id of solIds) {
+        await Promise.all(promises);
+        await transaction.commit();
 
-            //CALL pr_crea_credito_preaprobado(102)
-
-            //const result = await pool.query(`UPDATE dbo.solicitud_credito SET estatus_sol_id = 7, fecha_presupuestal = '${fecha_presupuestal}' WHERE id = ${id} RETURNING*`);
-
-            const result = await pool.query(`CALL pr_crea_credito_preaprobado(${id})`);
-
-            // if (result.rows[0]) {
-
-            //     updatedSolicitudes.push(result.rows[0]['id']);
-            // }
-        }
-
-
-        res.status(200).json(
-            'Solicitud(es) autorizada(s)'
-        );
+        res.status(200).json('Solicitud(es) autorizada(s)');
 
     } catch (error) {
-
-        console.log(error);
+        await transaction.rollback();
+        console.error(error);
 
         res.status(500).json({
-            msg: mensajes.errorInterno
-        })
+            msg: mensajes.errorInterno,
+            error: error.message  // Proporcionar detalles del error
+        });
     }
-}
+};
 
 const changeEstatusPendingToApproved = async (req, res = response) => {
 
