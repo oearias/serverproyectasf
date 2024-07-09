@@ -1226,8 +1226,8 @@ const printContratosMasivos = async (req, res = response) => {
 
         const creditos = creditosLista.filter(credito => credito['printSelected']);
 
-        const creditos_personal = creditos.filter(credito => credito['tipo_credito'] !=  '2');
-        const creditos_micronegocio = creditos.filter(credito => credito['tipo_credito'] ==  '2');
+        const creditos_personal = creditos.filter(credito => credito['tipo_credito'] != '2');
+        const creditos_micronegocio = creditos.filter(credito => credito['tipo_credito'] == '2');
 
 
         // Configuración de Puppeteer
@@ -1243,7 +1243,7 @@ const printContratosMasivos = async (req, res = response) => {
 
         //Iniciamos leyendo la plantilla del contrato
         const template = fs.readFileSync('./views/template_documentation.hbs', 'utf-8');
-        
+
         //Plantilla de la amortizacion
         const template2 = fs.readFileSync('./views/template_tarjeta_pagos.hbs', 'utf-8');
 
@@ -1405,11 +1405,11 @@ const printContratosMasivos = async (req, res = response) => {
                 num_contrato, num_cliente, monto_otorgado, monto_otorgado2, monto_total, monto_semanal,
                 num_semanas, dif_num_semanas,
                 nombre, apellido_paterno, apellido_materno,
-                aval_nombre, aval_apellido_paterno,aval_apellido_materno, aval_telefono,
+                aval_nombre, aval_apellido_paterno, aval_apellido_materno, aval_telefono,
                 aval_calle, aval_num_ext, aval_colonia,
                 monto_total_letras,
                 telefono, calle, num_ext, colonia, cp, tipo_asentamiento, zona, agencia, fecha_inicio_prog,
-                fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2, 
+                fecha_entrega_prog, fecha_entrega_prog2, fecha_fin_prog2,
                 fecha_fin_prog_proyecta,
                 dia_fecha_fin_prog_proyecta,
                 mes_fecha_fin_prog_proyecta,
@@ -2226,14 +2226,18 @@ const printReporteCartasXLS = async (req, res, next) => {
                     }
                 });
 
-                semanaAtraso = semanaReporte.weekyear - primerSemanaCredito.weekyear;
+                if (primerSemanaCredito) {
+                    semanaAtraso = semanaReporte.weekyear - primerSemanaCredito.weekyear;
 
-                //Debemos de ver los casos cuando apenas empezaran a pagar
+                    //Debemos de ver los casos cuando apenas empezaran a pagar
 
-                const fecha_inicio_real = new Date(credito.fecha_inicio_real);
-                fecha_inicio_real.setUTCHours(fecha_inicio_real.getUTCHours() - 6);
+                    const fecha_inicio_real = new Date(credito.fecha_inicio_real);
+                    fecha_inicio_real.setUTCHours(fecha_inicio_real.getUTCHours() - 6);
 
-                if (fecha_inicio_real.getTime() === new Date(fechaInicioSemanaReporte).getTime()) {
+                    if (fecha_inicio_real.getTime() === new Date(fechaInicioSemanaReporte).getTime()) {
+                        semanaAtraso = 0;
+                    }
+                } else {
                     semanaAtraso = 0;
                 }
 
@@ -2814,7 +2818,7 @@ const printReporteDebitoAgenciasXLS = async (req, res, next) => {
 
             const setAlignment = (row, cells, alignment) => {
                 cells.forEach((cellKey) => {
-                    
+
                     const cell = row.getCell(cellKey);
 
                     cell.alignment = alignment;
@@ -3067,7 +3071,7 @@ const printEntregasCredito = async (req, res = response) => {
 
         const DOC = handlebars.compile(template);
 
-        console.log('resultado',result.rows);
+        console.log('resultado', result.rows);
 
         const {
             fecha_entrega_programada,

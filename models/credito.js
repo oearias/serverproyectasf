@@ -181,7 +181,7 @@ Credito.devuelveRegistrosReporteCartas = async (semana_id, zona_id, agencia_id) 
                 AND b.fecha_fin = c.fecha_fin 
                 AND b.weekyear = c.weekyear
             WHERE 
-                c.id = ${semana_id} ` 
+                c.id = ${semana_id} AND a.entregado = 1 ` 
 
         if(zona_id){
             query += `AND a.zona_id = ${zona_id} `
@@ -223,7 +223,8 @@ Credito.devuelveRegistrosReporteCartas = async (semana_id, zona_id, agencia_id) 
                 dbo.semanas c 
                 ON a.fecha_fin_prog <= c.fecha_inicio
             WHERE c.id = ${semana_id}
-            AND a.estatus_credito_id = 2 `
+            AND a.estatus_credito_id = 2 
+            AND a.entregado = 1 `
 
         if(zona_id){
             query += `AND a.zona_id = ${zona_id} `
