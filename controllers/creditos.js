@@ -157,11 +157,30 @@ const getCreditoOptimizado = async (req, res = response) => {
             order: [['id', 'ASC']],
         });
 
+        //let apellido_materno = '';
+
+        // if (credito) {
+
+        //     if(credito.cliente.apellido_materno != null){
+        //         apellido_materno = credito.cliente.apellido_materno
+        //     }
+            
+        //     credito.tarifa_id = credito.tarifa_id
+        //     credito.tipoCredito = credito.tipoCredito
+        //     credito.monto_semanal = credito.tarifa.monto_semanal
+        //     credito.cliente.dataValues.nombre_completo = `${credito.cliente.nombre} ${credito.cliente.apellido_paterno} ${apellido_materno}`
+        // }
+
         if (credito) {
-            credito.tarifa_id = credito.tarifa_id
-            credito.tipoCredito = credito.tipoCredito
-            credito.monto_semanal = credito.tarifa.monto_semanal
-            credito.cliente.dataValues.nombre_completo = `${credito.cliente.nombre} ${credito.cliente.apellido_paterno} ${credito.cliente.apellido_materno}`
+            const { cliente, tarifa, tarifa_id, tipoCredito } = credito;
+            const { nombre, apellido_paterno, apellido_materno } = cliente;
+        
+            credito.tarifa_id = tarifa_id;
+            credito.tipoCredito = tipoCredito;
+            credito.monto_semanal = tarifa.monto_semanal;
+        
+            const apellidoMaterno = apellido_materno || '';
+            cliente.dataValues.nombre_completo = `${nombre} ${apellido_paterno} ${apellidoMaterno}`;
         }
 
 
