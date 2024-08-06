@@ -123,7 +123,7 @@ const generateNewAmortization = async (result = []) => {
                 num_semana: semana_balance.num_semana,
                 monto_semanal: semana_balance.monto_semanal,
                 weekyear: semana.weekyear,
-                fecha_inicio: semana_balance.fecha_inicio,
+                fecha_inicio: semana_balance?.fecha_inicio,
                 pagos,
                 dias_penalizacion,
                 penalizacion_semanal,

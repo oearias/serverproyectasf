@@ -33,6 +33,7 @@ const Semana = require('../models/semana');
 const { generateAmortizacionOptimizada } = require('../helpers/calculateAmorticacionOptimized');
 const BalanceSemanal = require('../models/balance_semanal');
 const { generateNewAmortization } = require('../helpers/newAmortization');
+const sequelize = require('../database/config');
 
 
 
@@ -164,7 +165,7 @@ const getCreditoOptimizado = async (req, res = response) => {
         //     if(credito.cliente.apellido_materno != null){
         //         apellido_materno = credito.cliente.apellido_materno
         //     }
-            
+
         //     credito.tarifa_id = credito.tarifa_id
         //     credito.tipoCredito = credito.tipoCredito
         //     credito.monto_semanal = credito.tarifa.monto_semanal
@@ -174,11 +175,11 @@ const getCreditoOptimizado = async (req, res = response) => {
         if (credito) {
             const { cliente, tarifa, tarifa_id, tipoCredito } = credito;
             const { nombre, apellido_paterno, apellido_materno } = cliente;
-        
+
             credito.tarifa_id = tarifa_id;
             credito.tipoCredito = tipoCredito;
             credito.monto_semanal = tarifa.monto_semanal;
-        
+
             const apellidoMaterno = apellido_materno || '';
             cliente.dataValues.nombre_completo = `${nombre} ${apellido_paterno} ${apellidoMaterno}`;
         }
@@ -2292,14 +2293,33 @@ const printReporteCartasXLS = async (req, res, next) => {
 
             let total_liquidar = 0;
 
-            const num_dias_penalizaciones = await BalanceSemanal.sum('num_dias_penalizacion_semanal', {
-                where: {
-                    credito_id: credito.credito_id,
-                    fecha_inicio: {
-                        [Sequelize.Op.lt]: semanaReporte.fecha_inicio
-                    }
-                }
+            //ESTE SE CAMBIA, ya que al parecer está devolviendo registros de más, como si fuera un menor igual qué, por eso optamos 
+            //por la consulta SQL,
+            // const num_dias_penalizaciones = await BalanceSemanal.sum('num_dias_penalizacion_semanal', {
+            //     where: {
+            //         credito_id: credito.credito_id,
+            //         fecha_inicio: {
+            //             [Sequelize.Op.lt]: semanaReporte.fecha_inicio
+            //         }
+            //     }
+            // });
+
+            let num_dias_penalizaciones;
+
+
+            const [results, metadata] = await sequelize.query(`
+                    SELECT SUM(num_dias_penalizacion_semanal) AS num_dias_penalizaciones_aux
+                    FROM dbo.balance_semanal
+                    WHERE credito_id = :credito_id
+                    AND fecha_inicio < :fecha_inicio
+                `, {
+                replacements: { credito_id: credito.credito_id, fecha_inicio: semanaReporte.fecha_inicio },
+                type: Sequelize.QueryTypes.SELECT
             });
+
+            const { num_dias_penalizaciones_aux } = results;
+
+            num_dias_penalizaciones = Number(num_dias_penalizaciones_aux);
 
             let monto_total_penalizaciones = Number(num_dias_penalizaciones) * (Number(credito.monto_otorgado) * 0.010);
 
