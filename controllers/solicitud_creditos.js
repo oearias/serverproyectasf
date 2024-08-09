@@ -43,7 +43,7 @@ const solicitudCreditoGet = async (req, res = response) => {
                 {
                     model: Aval,
                     as: 'aval',
-                    include:{
+                    include: {
                         model: Colonia,
                         as: 'colonia'
                     }
@@ -51,7 +51,7 @@ const solicitudCreditoGet = async (req, res = response) => {
                 {
                     model: Negocio,
                     as: 'negocio',
-                    include:{
+                    include: {
                         model: Colonia,
                         as: 'colonia'
                     }
@@ -706,39 +706,39 @@ const solicitudCreditoPut = async (req, res = response) => {
 
         console.log('procedemos a actualizar');
 
-        const {body, params} = req;
-        const {negocio, aval, servicios} = body;
+        const { body, params } = req;
+        const { negocio, aval, servicios } = body;
 
         t = await sequelize.transaction();
 
         const cliente_founded = await Cliente.findOne({
-            where:{
+            where: {
                 id: body.cliente_id,
             }
         });
 
         const solicitudCredito = await SolicitudCredito.findOne({
-            where:{
+            where: {
                 id: body.id
             }
         });
 
         const solicitudServiciosFounded = await SolicitudServicio.findOne({
-            where:{
+            where: {
                 solicitud_credito_id: body.id
             }
         })
 
-        if(body.tipo_solicitud_credito == 'MICRONEGOCIO'){
+        if (body.tipo_solicitud_credito == 'MICRONEGOCIO') {
 
             const aval_founded = await Aval.findOne({
-                where:{
+                where: {
                     solicitud_credito_id: solicitudCredito.id
                 }
             });
-    
+
             const negocio_founded = await Negocio.findOne({
-                where:{
+                where: {
                     solicitud_credito_id: solicitudCredito.id
                 }
             });
@@ -752,7 +752,7 @@ const solicitudCreditoPut = async (req, res = response) => {
                 num_ext: aval.num_ext,
                 colonia_id: aval.colonia_id,
                 telefono: aval.telefono
-            }, {transaction: t});
+            }, { transaction: t });
 
             await negocio_founded.update({
                 nombre: negocio.nombre,
@@ -762,7 +762,7 @@ const solicitudCreditoPut = async (req, res = response) => {
                 telefono: negocio.telefono,
                 hora_pago: negocio.hora_pago,
                 colonia_id: negocio.colonia_id
-            }, {transaction: t})
+            }, { transaction: t })
 
         }
 
@@ -784,7 +784,7 @@ const solicitudCreditoPut = async (req, res = response) => {
             estado: body.cliente.estado,
             cruzamientos: body.cliente.cruzamientos,
             referencia: body.cliente.referencia
-        }, { transaction: t});
+        }, { transaction: t });
 
         await solicitudCredito.update({
             estatus_sol_id: body.estatus_sol_id,
@@ -805,7 +805,7 @@ const solicitudCreditoPut = async (req, res = response) => {
             parentesco_contacto2: body.parentesco_contacto2,
             direccion_contacto1: body.direccion_contacto1,
             direccion_contacto2: body.direccion_contacto2,
-        }, { transaction: t});
+        }, { transaction: t });
 
         await solicitudServiciosFounded.update({
             agua_potable: servicios.agua_potable,
@@ -818,7 +818,7 @@ const solicitudCreditoPut = async (req, res = response) => {
             gas: servicios.gas,
             alumbrado_publico: servicios.alumbrado_publico,
             tv: servicios.tv
-        }, {transaction: t})
+        }, { transaction: t })
 
 
         await t.commit();
@@ -963,17 +963,56 @@ const solicitudCreditoGetByClienteId = async (req, res = response) => {
     }
 }
 
+//FIXME: Este sirve pero está generando inconsistencia entre la id de la tabla solicitud_creditos y solicitud_credito_id de la tabla creditos
+// const solChangeEstatusAprobadaToDelivery = async (req, res = response) => {
+
+//     const solIds = req.body;
+//     const fecha_presupuestal = new Date().toISOString();
+//     const updatedSolicitudes = [];
+
+//     try {
+
+//         for (const id of solIds) {
+
+//             const result = await pool.query(`CALL pr_crea_credito_preaprobado(${id})`);
+
+//         }
+
+
+//         res.status(200).json(
+//             'Solicitud(es) autorizada(s)'
+//         );
+
+//     } catch (error) {
+
+//         console.log(error);
+
+//         res.status(500).json({
+//             msg: mensajes.errorInterno
+//         })
+//     }
+// }
+
+//Este cambio se hace el 08 de ago de 2024
 const solChangeEstatusAprobadaToDelivery = async (req, res = response) => {
 
     const solIds = req.body;
-    const fecha_presupuestal = new Date().toISOString();
-    const updatedSolicitudes = [];
 
     try {
 
         for (const id of solIds) {
 
-            const result = await pool.query(`CALL pr_crea_credito_preaprobado(${id})`);
+            // Iniciamos una transacción
+            await sequelize.transaction(async (t) => {
+                for (const id of solIds) {
+
+                    // Ejecuta el procedimiento almacenado para cada ID
+                    await sequelize.query('CALL pr_crea_credito_preaprobado(:id)', {
+                        replacements: { id },
+                        transaction: t
+                    });
+                }
+            });
 
         }
 
@@ -992,38 +1031,6 @@ const solChangeEstatusAprobadaToDelivery = async (req, res = response) => {
     }
 }
 
-
-// const solChangeEstatusAprobadaToDelivery = async (req, res = response) => {
-
-//     //Se optimiza el conntrolador con transacciones
-
-//     const solIds = req.body;
-
-//     const transaction = await sequelize.transaction();
-    
-//     try {
-//         const promises = solIds.map(id => {
-//             return sequelize.query('CALL pr_crea_credito_preaprobado(:id)', {
-//                 replacements: { id },
-//                 transaction
-//             });
-//         });
-
-//         await Promise.all(promises);
-//         await transaction.commit();
-
-//         res.status(200).json('Solicitud(es) autorizada(s)');
-
-//     } catch (error) {
-//         await transaction.rollback();
-//         console.error(error);
-
-//         res.status(500).json({
-//             msg: mensajes.errorInterno,
-//             error: error.message  // Proporcionar detalles del error
-//         });
-//     }
-// };
 
 const changeEstatusPendingToApproved = async (req, res = response) => {
 
